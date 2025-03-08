@@ -17,6 +17,11 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
+    {
+      path: '/template-api-fetch',
+      name: 'template-api-fetch',
+      component: () => import('../views/TemplateApiFetch.vue'),
+    }
   ],
 })
 
