@@ -1,8 +1,8 @@
-const API_URL = 'http://localhost:3000/api/template-routes';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getData = async () => {
   try {
-    const response = await fetch(API_URL);
+    const response = await fetch(API_BASE_URL + '/template-routes');
     if (!response.ok) {
       throw new Error('Gagal mengambil data');
     }
