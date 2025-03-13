@@ -21,6 +21,11 @@ const router = createRouter({
       path: '/template-api-fetch',
       name: 'template-api-fetch',
       component: () => import('../views/TemplateApiFetch.vue'),
+    },
+    {
+      path: '/userlisttest',
+      name: 'userlisttest',
+      component: () => import('../views/UserlistTestView.vue'),
     }
   ],
 })
