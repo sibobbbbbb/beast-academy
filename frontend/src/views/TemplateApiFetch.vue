@@ -2,7 +2,7 @@
     <div>
       <h1>Data dari Backend:</h1>
       <div v-if="data">
-        <p>Nama: {{ data }}</p>
+        <p class="text-red-500">Nama: {{ data }}</p>
       </div>
       <div v-else>
         <p>Memuat data...</p>
