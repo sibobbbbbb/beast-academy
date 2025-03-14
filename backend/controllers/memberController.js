@@ -1,5 +1,5 @@
 import { prisma } from "../db/prisma/prisma.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { body, validationResult } from "express-validator";
 
 // Add a new member
