@@ -6,16 +6,9 @@ import { body, validationResult } from "express-validator";
 export const addMemberControllers = async (req, res) => {
   // Validasi data masuk
   await Promise.all([
-    body("username")
-      .isLength({ min: 3 })
-      .withMessage("Username minimal 3 karakter")
-      .run(req),
-    body("password")
-      .isStrongPassword()
-      .withMessage("Password harus kuat")
-      .run(req),
     body("email").isEmail().withMessage("Format email tidak valid").run(req),
     body("phone_no")
+      .optional()
       .isMobilePhone()
       .withMessage("Nomor telepon tidak valid")
       .run(req),
@@ -26,18 +19,10 @@ export const addMemberControllers = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { username, password, email, phone_no, role } = req.body;
+  const { name, img_url, phone_no, email } = req.body;
 
   try {
-    // Cek jika username atau email ada
-    const existingUser = await prisma.users.findFirst({
-      where: { username },
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ message: "Request Tidak Valid" });
-    }
-
+    // Cek jika email atau nomor hp sudah ada
     const existingEmail = await prisma.members.findUnique({
       where: { email },
     });
@@ -46,29 +31,24 @@ export const addMemberControllers = async (req, res) => {
       return res.status(409).json({ message: "Request Tidak Valid" });
     }
 
-    const existingPhoneNo = await prisma.members.findUnique({
-      where: { phone_no },
-    });
+    if (phone_no) {
+      const existingPhoneNo = await prisma.members.findUnique({
+        where: { phone_no },
+      });
 
-    if (existingPhoneNo) {
-      return res.status(409).json({ message: "Request Tidak Valid" });
+      if (existingPhoneNo) {
+        return res.status(409).json({ message: "Request Tidak Valid" });
+      }
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Buat user baru
-    const newUser = await prisma.users.create({
+    const newUser = await prisma.members.create({
       data: {
-        username,
-        password: hashedPassword,
-        role: "member",
-        members: {
-          create: {
-            email,
-            phone_no,
-          },
-        },
-      },
+        name,
+        img_url,
+        phone_no : phone_no || null,
+        email,
+      }
     });
 
     res
