@@ -1,8 +1,9 @@
 <!-- <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
 import { inject, ref , reactive, computed, onMounted, watch} from 'vue';
-import { dummyFetchUserData, type dataItem, type filterItem } from '@/services/datafetch';
+import { dummyFetchUserData, deleteUserData, updateUserData, type dataItem, type filterItem } from '@/services/datafetch';
 import type { ComputedRefSymbol } from '@vue/reactivity';
+import { deleteMemberById } from '@/services/memberServices';
 
     //fetch data from link
     interface data {
@@ -19,6 +20,11 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
     var maxPage = false;
 
     const lastFetch = ref<dataItem[]>([]);
+
+    const editingItem = ref<string | null>(null);
+    const originalName = ref<string | null>(null);
+
+    const showDeleteColumn = ref(false);
 
     async function dataFetcher(page : number) {
       return dummyFetchUserData(perPage.value, page)
@@ -53,6 +59,38 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
         console.log("Yup go on")
       }
       // here we reset pagination stuff
+    }
+
+    function editItem(item: dataItem) {
+      editingItem.value = item.id;
+      originalName.value = item.name;
+    }
+
+    async function saveItem(item: dataItem) {
+      editingItem.value = null;
+      originalName.value = null;
+      await updateUserData(item.id, item.name);
+      refresh();
+      console.log('Save item:', item);
+    }
+
+    function cancelEdit(item: dataItem) {
+      item.name = originalName.value;
+      editingItem.value = null;
+      originalName.value = null;
+      console.log('Edit cancelled:', item);
+    }
+
+    const deleteMember = async (id: number) => {
+      const confirmed = confirm('Are you sure you want to delete this member?');
+      if (confirmed) {
+        await deleteMemberById(id);
+        fetchData(); // Refresh data after deletion
+      }
+    };
+
+    function toggleDeleteColumn() {
+      showDeleteColumn.value = !showDeleteColumn.value;
     }
 
     onMounted(() => {
@@ -270,5 +308,14 @@ span {
     margin-right: 1rem;
   }
 }
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.table-container button {
+  margin-bottom: 10px;
+}
 </style>
-  
