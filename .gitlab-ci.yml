@@ -1,0 +1,35 @@
+stages:
+  - lint
+  - test
+  - build
+
+lint:
+  image: node:20
+  stage: lint
+  before_script:
+    - cd frontend
+    - npm install
+  script:
+    - npm run lint
+
+test:
+  image: node:20
+  stage: test
+  before_script:
+    - cd backend
+    - npm install
+    - npx prisma generate
+  script:
+    - npm run test
+
+build:
+  image: node:20
+  stage: build
+  before_script:
+    - cd frontend
+    - npm install
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist
