@@ -111,11 +111,12 @@ import Pagination from '@/components/Pagination.vue';
                 <td>{{ item.joinDate }}</td>
             </tr>
         </table>
-        <span id="pagination">
+        <span id="pagination" class="dripping">
           <button @click="() => { currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')}"> Prev </button>
             <Pagination :current-page="currentPage" @go-to-page="(page) => {currentPage = page}" :page-count="pageCount"/>
           <button @click="() => { maxPage ? console.log('Already max!') : refresh(currentPage + 1)}"> Next </button>
         </span>
+        <hr style="margin-bottom: 10dvh; margin-top: 5dvh;">
     </div>
 </template>
   
@@ -143,5 +144,18 @@ span {
     margin-right: 1rem;
   }
 }
+
+.dripping {
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -1dvh 2dvh 2dvh var(--color-background);
+  margin-top: 4dvh;
+  border-top: medium solid var(--color-background);
+  min-height: 5dvh;
+  background-color: var(--color-background-soft);
+  padding: 2dvh;
+  /* box-shadow: inset 0px 0px 40px 40px var(--color-background); */
+}
+
 </style>
   
