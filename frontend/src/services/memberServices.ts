@@ -27,3 +27,22 @@ export const deleteMemberById = async (id: number) => {
     return null;
   }
 };
+
+export const updateUserData = async (id: number, name: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/update-member/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok) {
+      throw new Error('Gagal mengupdate member');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating member:', error);
+    return null;
+  }
+};
