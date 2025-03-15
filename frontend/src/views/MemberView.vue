@@ -36,8 +36,11 @@
   };
 
   const deleteMember = async (id: string) => {
-    await deleteMemberById(id);
-    fetchData();
+    const confirmed = confirm('Are you sure you want to delete this member?');
+    if (confirmed) {
+      await deleteMemberById(id);
+      fetchData(); // Refresh data after deletion
+    }
   };
 
   onMounted(fetchData);
