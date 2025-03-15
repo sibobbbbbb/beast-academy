@@ -81,3 +81,79 @@ export const addMemberControllers = async (req, res) => {
       .json({ message: "Terjadi kesalahan saat menambahkan member" });
   }
 };
+
+// Get all members
+export const getMemberControllers = async (req, res) => {
+  try {
+    const members = await prisma.members.findMany();
+    res.status(200).json(members);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan saat mengambil data member" });
+  }
+};
+
+// Delete a member
+export const deleteMemberControllers = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.members.delete({
+      where: { id: parseInt(id) },
+    });
+    res.status(200).json({ message: "Member berhasil dihapus" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan saat menghapus member" });
+  }
+};
+
+export const updateMemberControllers = async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    await prisma.members.update({
+      where: { id: parseInt(id) },
+      data: {
+        name
+      },
+    });
+    res.status(200).json({ message: "Member berhasil diupdate" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan saat mengupdate member" });
+  }
+}
+
+// import { prisma } from "../db/prisma/prisma.js";
+
+// export const templateControllers = async (req, res) => {
+//     try {
+//       const members = await prisma.members.findMany();
+//       res.status(200).json(members);
+//     } catch (error) {
+//       res.status(404).json({ message: error.message });
+//     }
+//   };
+
+// export const getUsers = async (req, res) => {
+//   try {
+//     const users = await prisma.users.findMany();
+//     res.status(200).json(users);
+//   } catch (error) {
+//     res.status(404).json({ message: error.message });
+//   }
+// }
+
+// export const deleteMemberControllers = async (req, res) => {
+//   const { id } = req.params;
+//   try {
+//     await prisma.members.delete({
+//       where: { id: parseInt(id) },
+//     });
+//     res.status(200).json({ message: "Member berhasil dihapus" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Terjadi kesalahan saat menghapus member" });
+//   }
+// };

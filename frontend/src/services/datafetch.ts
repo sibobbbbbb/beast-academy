@@ -10,33 +10,7 @@ export interface filterItem {
     reference : string | number
 }
 
-export async function fetchUserData(count : number, page : number, sortBy? : string, invert? : boolean, filter? : filterItem[]) : Promise<dataItem[]> {
-    // sort by string
-    // filter for every filter item
-    // get from (page * count to (page + 1) * count)
-    return []
-}
-
-export async function fetchUserPages(count : number, filter? : filterItem[]){
-    // sort by string
-    // filter for every filter item
-    // get from (page * count to (page + 1) * count)
-}
-
-export async function dummyFetchUserData(count : number, page : number, sortBy? : string, invert? : boolean, filter? : filterItem[]) : Promise<dataItem[]> {
-
-    return dummy.slice(page*count, Math.min((page+1) * count,dummy.length-1))
-}
-
-export function dummyFetchUserPages(count : number, filter? : filterItem[]){
-
-    return Math.ceil(dummy.length/count)
-
-}
-
-export default {fetchUserData}
-
-const dummy: dataItem[] = [
+let dummy: dataItem[] = [
     { id: "100", name: "Samuel", joinDate: "2022-01-15" },
     { id: "101", name: "Jackson", joinDate: "2021-11-22" },
     { id: "102", name: "Emma", joinDate: "2023-03-10" },
@@ -110,4 +84,41 @@ const dummy: dataItem[] = [
     { id: "170", name: "Charlie", joinDate: "2018-04-30" },
     { id: "171", name: "Everly", joinDate: "2023-12-05" },
     { id: "172", name: "Adam", joinDate: "2020-08-11" },
-  ];
+];
+
+export async function fetchUserData(count : number, page : number, sortBy? : string, invert? : boolean, filter? : filterItem[]) : Promise<dataItem[]> {
+    // sort by string
+    // filter for every filter item
+    // get from (page * count to (page + 1) * count)
+    return []
+}
+
+export async function fetchUserPages(count : number, filter? : filterItem[]){
+    // sort by string
+    // filter for every filter item
+    // get from (page * count to (page + 1) * count)
+}
+
+export async function dummyFetchUserData(count : number, page : number, sortBy? : string, invert? : boolean, filter? : filterItem[]) : Promise<dataItem[]> {
+    return dummy.slice(page*count, Math.min((page+1) * count,dummy.length))
+}
+
+export function dummyFetchUserPages(count : number, filter? : filterItem[]){
+    return Math.ceil(dummy.length/count)
+}
+
+export async function deleteUserData(id: string): Promise<void> {
+    const index = dummy.findIndex(item => item.id === id);
+    if (index !== -1) {
+        dummy.splice(index, 1);
+    }
+}
+
+export async function updateUserData(id: string, name: string): Promise<void> {
+    const index = dummy.findIndex(item => item.id === id);
+    if (index !== -1) {
+        dummy[index].name = name;
+    }
+}
+
+export default {fetchUserData}
