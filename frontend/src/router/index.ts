@@ -1,5 +1,20 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import Login from '../views/Login.vue';
+import Home from '../views/Home.vue';
+import Register from '../views/Register.vue';
+import AddMembersView from '../components/AddMembersForm.vue';
+
+const routes = [
+  { path: '/', component: Home },
+  { path: '/login', component: Login },
+  { path: '/home', component: Home },
+  { path: '/register', component: Register },
+  {
+    path: '/add-member',
+    name: 'add-member',
+    component: AddMembersView,
+  }
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,8 +41,13 @@ const router = createRouter({
       path: '/userlisttest',
       name: 'userlisttest',
       component: () => import('../views/UserlistTestView.vue'),
+    },
+    {
+      path: '/userlist',
+      name: 'userlist',
+      component: () => import('../views/memberView.vue'),
     }
   ],
 })
 
-export default router
+export default router;
