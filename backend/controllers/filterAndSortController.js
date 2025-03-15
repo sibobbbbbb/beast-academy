@@ -4,9 +4,10 @@ const prisma = new PrismaClient();
 
 export const getMembers = async (req, res) => {
   try {
-    const { search = "", sortBy = "created_at", order = "asc", page = "1", limit = "10", filterBy = "" } = req.query;
+    const { search = "", sortBy = "created_at", order = "asc", page = "1", limit = "3", filterBy = "" } = req.query;
 
-    const validSortFields = ["created_at", "email", "phone_no", "last_activity"];
+    // Field yang valid untuk sorting
+    const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name"];
     const validOrderValues = ["asc", "desc"];
 
     if (!validSortFields.includes(sortBy)) {
@@ -17,33 +18,48 @@ export const getMembers = async (req, res) => {
     }
 
     const pageNumber = parseInt(page, 10) || 1;
-    const limitNumber = parseInt(limit, 10) || 10;
+    const limitNumber = parseInt(limit, 10) || 5;
     const offset = (pageNumber - 1) * limitNumber;
 
-    
+    // Membuat kondisi pencarian dan filter
     const whereCondition = {};
 
+    // Filter berdasarkan role (via relasi many-to-many dengan users)
     if (filterBy) {
-      whereCondition.users = { role: filterBy }; 
+      whereCondition.member_user = {
+        some: {
+          users: {
+            role: filterBy,
+          },
+        },
+      };
     }
 
+    // Pencarian berdasarkan name, email, atau phone_no
     if (search) {
       whereCondition.OR = [
+        { name: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
         { phone_no: { contains: search, mode: "insensitive" } },
       ];
     }
 
+    // Query untuk mendapatkan daftar members
     const members = await prisma.members.findMany({
       where: whereCondition,
       orderBy: { [sortBy]: order },
       skip: offset,
       take: limitNumber,
       include: {
-        users: true, 
+        member_user: {
+          include: {
+            users: true, // Menyertakan data users dalam hasil query
+          },
+        },
       },
     });
 
+    // Menghitung total members
     const totalMembers = await prisma.members.count({
       where: whereCondition,
     });

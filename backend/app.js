@@ -12,7 +12,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', templateRoutes);
-app.use('/members', getMembers);
+app.use('/api/members', getMembers);
 app.use('/api', memberRoutes);
 
 export default app;
