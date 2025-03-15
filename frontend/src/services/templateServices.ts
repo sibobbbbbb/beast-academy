@@ -15,37 +15,38 @@ export const getData = async () => {
 
 
 export type Member = {
-    id: number;
-    name: string;
-    email: string;
-    phone_no: string;
-    created_at: string;
-    last_activity: string;
-  };
-  
-  
-  export const fetchMembers = async (perPage: number, page: number, sortBy?: string, order?: string, search?: string, filterBy?: string) => {
-    try {
-      const params = new URLSearchParams({
-        limit: perPage.toString(),
-        page: (page + 1).toString(), 
-        sortBy: sortBy || 'created_at',
-        order: order || 'asc',
-      });
-  
-      if (search) params.append('search', search);
-      if (filterBy) params.append('filterBy', filterBy);
-  
-      const response = await fetch(`${API_BASE_URL}/members?${params.toString()}`);
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching members:", error);
-      throw error;
+  id: number;
+  name: string;
+  email: string;
+  phone_no: string;
+  created_at: string;
+  last_activity: string;
+};
+
+export const fetchMembers = async (perPage: number, page: number, sortBy?: string, order?: string, search?: string, filterBy?: string) => {
+  try {
+    const params = new URLSearchParams({
+      limit: perPage.toString(),
+      page: (page + 1).toString(), // Backend mulai dari 1
+      sortBy: sortBy || 'created_at',
+      order: order || 'asc',
+    });
+
+    if (search) params.append('search', search);
+    if (filterBy) params.append('filterBy', filterBy);
+
+    const fullURL = `${API_BASE_URL}/members?${params.toString()}`;
+    console.log("Fetching data from:", fullURL); // 🔹 Debug URL
+
+    const response = await fetch(fullURL);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
-  };
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching members:", error);
+    throw error;
+  }
+};

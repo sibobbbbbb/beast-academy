@@ -7,6 +7,7 @@ import { deleteMemberById } from '@/services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers, type Member } from '@/services/templateServices';
+import Pagination from '@/components/Pagination.vue';
 
 
     //fetch data from link
@@ -16,7 +17,7 @@ import { fetchMembers, type Member } from '@/services/templateServices';
     }
 
     // State utama
-  const perPage = ref(3);
+  const perPage = ref(10);
   const currentPage = ref(0);
   const lastFetch = ref<Member[]>([]);
   const maxPage = ref(false);
@@ -24,22 +25,13 @@ import { fetchMembers, type Member } from '@/services/templateServices';
   const order = ref("asc"); // "asc" atau "desc"
   const searchQuery = ref("");
   const selectedRole = ref("");
-  var pageCount = ref(0); 
+  const totalPages = ref(1);
 
     const editingItem = ref<string | null>(null);
     const originalName = ref<string | null>(null);
 
     const showDeleteColumn = ref(false);
 
-    //On perpage change
-    watch(perPage, async (newValue, oldValue) => {
-      // for the time being, fetch from 0
-      let fetchValues : dataItem[] = await dataFetcher(0);
-      lastFetch.value = fetchValues;
-      currentPage.value = 0
-
-      // wait until new data is fetcheda
-    })
 
     function editItem(item: dataItem) {
       editingItem.value = item.id;
@@ -54,12 +46,12 @@ import { fetchMembers, type Member } from '@/services/templateServices';
       console.log('Save item:', item);
     }
 
-    function cancelEdit(item: dataItem) {
-      item.name = originalName.value;
-      editingItem.value = null;
-      originalName.value = null;
-      console.log('Edit cancelled:', item);
-    }
+    // function cancelEdit(item: dataItem) {
+    //   item.name = originalName.value;
+    //   editingItem.value = null;
+    //   originalName.value = null;
+    //   console.log('Edit cancelled:', item);
+    // }
 
     const deleteMember = async (id: number) => {
       const confirmed = confirm('Are you sure you want to delete this member?');
@@ -73,26 +65,28 @@ import { fetchMembers, type Member } from '@/services/templateServices';
       showDeleteColumn.value = !showDeleteColumn.value;
     }
 
-    //Pagination and frineds
-    var pageCount = ref(0);
+    
 
-async function dataFetcher(page : number) {
-  return dummyFetchUserData(perPage.value, page)
-}
+    const dataFetcher = async (page: number) => {
+      try {
+        const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
+        
+        lastFetch.value = response.data;
+        totalPages.value = response.pagination.totalPages; // 🔹 Pastikan backend mengembalikan total halaman
 
-async function dataMaxFetcher() {
-  return dummyFetchUserPages(perPage.value)
-}
+        // Cek apakah ini halaman terakhir
+        maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
+      } catch (error) {
+        console.error("Failed to fetch members:", error);
+      }
+    };
+
 
 //On perpage change
-watch(perPage, async (newValue, oldValue) => {
-  // for the time being, fetch from 0
-  let fetchValues : dataItem[] = await dataFetcher(0);
-  lastFetch.value = fetchValues;
-  await refresh(0,true)
-
-  // wait until new data is fetcheda
-})
+watch(perPage, async () => {
+  currentPage.value = 0;
+  await dataFetcher(0);
+});
 
 // Fungsi untuk menangani sorting dari SortableHeader
 const handleSort = (column: string, reverse: boolean) => {
@@ -116,33 +110,12 @@ const handleFilter = (role: string) => {
 
 //I might need to make a filter watcher aswell ngl
 
-async function refresh(newPage? : number, filterChanged? : boolean) {
-  //
-  if (newPage === undefined) {
-    newPage = currentPage.value
-  } else {
-    currentPage.value = newPage
+const refresh = async (newPage?: number) => {
+  if (newPage !== undefined) {
+    currentPage.value = newPage;
   }
-
-  // fetch page
-  lastFetch.value = await dataFetcher(newPage);
-
-  if (lastFetch.value.length < perPage.value) {
-    maxPage = true
-    console.log("Edge!!! %d %d",lastFetch.value.length , perPage.value)
-  } else {
-    maxPage = false
-    console.log("Yup go on")
-  }
-
-  // here we reset pagination stuff
-  // Handle specifically amt-reducing actions to reset pagination numbers
-  if (filterChanged) {
-    pageCount.value = await dataMaxFetcher();
-
-    console.log("There are",pageCount.value,"pages lol")
-  }
-}
+  await dataFetcher(currentPage.value);
+};
 
 onMounted(() => {
   refresh(0);
@@ -190,10 +163,11 @@ onMounted(() => {
       </tbody>
     </table>
 
-    <span id="pagination">
+    <span id="pagination" class="pagination-container">
       <button @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
-      <button @click="maxPage ? console.log('Already max!') : refresh(currentPage + 1)"> Next </button>
-    </span>
+        <Pagination :current-page="currentPage" @go-to-page="refresh" :page-count="totalPages"/>
+      <button @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
+  </span>
   </div>
 </template>
 
@@ -242,5 +216,23 @@ span {
   background-color: var(--color-background-soft);
   padding: 2dvh;
   /* box-shadow: inset 0px 0px 40px 40px var(--color-background); */
+}
+.pagination-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+button {
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--color-background-soft);
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--color-background-mute);
 }
 </style>
