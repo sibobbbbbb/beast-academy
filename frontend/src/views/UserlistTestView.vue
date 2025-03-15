@@ -1,62 +1,4 @@
-<template>
-  <div class="content">
-     <button @click="() => {currentPage += 1}">Add</button>
-     <button @click="() => {currentPage += 1}">Add</button>
-      <span>
-        <h1>User List Test</h1>
-        <h3>Showing 
-          <select v-model="perPage">
-            <option :value="10">10</option>
-            <option :value="20">20</option>
-            <option :value="50">50</option>
-          </select>
-          per page</h3>
-      </span>
-      <div class="table-container">
-        <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
-        <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
-        <table>
-            <tr>
-                <td class="shead">
-                    <SortableHeader>ID</SortableHeader>
-                </td>
-                <td class="shead">
-                    <SortableHeader>Edit</SortableHeader>
-                </td>
-                <td class="shead">
-                    <SortableHeader>name</SortableHeader>
-                </td>
-                <td class="shead">
-                    <SortableHeader>joined</SortableHeader>
-                </td>
-                <td v-if="showDeleteColumn" class="shead">
-                    <SortableHeader>Delete</SortableHeader>
-                </td>
-            </tr>
-            <tr v-for="item in lastFetch" :key="item.id">
-                <td>{{ item.id }}</td>
-                <td>
-                    <button @click="editItem(item)">Edit</button>
-                </td>
-                <td>
-                    <span v-if="editingItem !== item.id">{{ item.name }}</span>
-                    <input v-else v-model="item.name" @blur="saveItem(item)" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
-                </td>
-                <td>{{ item.joinDate }}</td>
-                <td v-if="showDeleteColumn">
-                    <button @click="deleteMember(item.id)">Delete</button>
-                </td>
-            </tr>
-        </table>
-      </div>
-      <span id="pagination">
-        <button @click="() => { currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')}"> Prev </button>
-        <button @click="() => { maxPage ? console.log('Already max!') : refresh(currentPage + 1)}"> Next </button>
-      </span>
-  </div>
-</template>
-
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
 import { inject, ref , reactive, computed, onMounted, watch} from 'vue';
 import { dummyFetchUserData, deleteUserData, updateUserData, type dataItem, type filterItem } from '@/services/datafetch';
@@ -158,6 +100,189 @@ import { deleteMemberById } from '@/services/memberServices';
     })
 
 </script>
+
+<template>
+    <div class="content">
+       <button @click="() => {currentPage += 1}">Add</button>
+       <button @click="() => {currentPage += 1}">Add</button>
+        <span>
+          <h1>User List Test</h1>
+          <h3>Showing 
+            <select v-model="perPage">
+              <option :value="10">10</option>
+              <option :value="20">20</option>
+              <option :value="50">50</option>
+            </select>
+            per page</h3>
+        </span>
+        <table>
+            <tr>
+                <td class="shead">
+                    <SortableHeader>ID</SortableHeader>
+                </td>
+                <td class="shead">
+                    <SortableHeader>name</SortableHeader>
+                </td>
+                <td class="shead">
+                    <SortableHeader>joined</SortableHeader>
+                </td>
+            </tr>
+            <tr v-for="item in lastFetch">
+                <td>{{ item.id }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.joinDate }}</td>
+            </tr>
+        </table>
+        <span id="pagination">
+          <button @click="() => { currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')}"> Prev </button>
+          <button @click="() => { maxPage ? console.log('Already max!') : refresh(currentPage + 1)}"> Next </button>
+        </span>
+    </div>
+</template>
+  
+<style>
+@media (min-width: 1024px) {
+  .content {
+    min-height: 100vh;
+    display: block;
+    align-items: center;
+  }
+}
+
+.shead {
+  min-height: 2dvh;
+}
+
+span {
+  display: block;
+
+  * {
+    display: inline;
+  }
+
+  h1 {
+    margin-right: 1rem;
+  }
+}
+</style> -->
+
+
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+import SortableHeader from '@/components/SortableHeader.vue';
+import SearchBox from '@/components/SearchBox.vue';
+import FilterDropdown from '@/components/FilterDropdown.vue';
+import { fetchMembers, type Member } from '@/services/templateServices';
+
+// State utama
+const perPage = ref(3);
+const currentPage = ref(0);
+const lastFetch = ref<Member[]>([]);
+const maxPage = ref(false);
+const sortBy = ref("created_at"); // Default sorting
+const order = ref("asc"); // "asc" atau "desc"
+const searchQuery = ref("");
+const selectedRole = ref("");
+
+// Fungsi untuk mengambil data dari API
+const dataFetcher = async (page: number) => {
+  try {
+    const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
+    lastFetch.value = response.data;
+
+    // Cek apakah ini halaman terakhir
+    maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
+  } catch (error) {
+    console.error("Failed to fetch members:", error);
+  }
+};
+
+// Watch perubahan jumlah perPage → Fetch ulang data
+watch(perPage, async () => {
+  currentPage.value = 0;
+  await dataFetcher(0);
+});
+
+// Fungsi refresh data berdasarkan halaman & sorting
+const refresh = async (newPage?: number) => {
+  if (newPage !== undefined) {
+    currentPage.value = newPage;
+  }
+  await dataFetcher(currentPage.value);
+};
+
+// Fungsi untuk menangani sorting dari SortableHeader
+const handleSort = (column: string, reverse: boolean) => {
+  sortBy.value = column;
+  order.value = reverse ? "desc" : "asc";
+  refresh(0);
+};
+
+// Fungsi untuk menangani pencarian
+const handleSearch = (query: string) => {
+  searchQuery.value = query;
+  refresh(0);
+};
+
+// Fungsi untuk menangani filter role
+const handleFilter = (role: string) => {
+  selectedRole.value = role;
+  refresh(0);
+};
+
+
+onMounted(() => {
+  refresh(0);
+});
+</script>
+
+<template>
+  <div class="content">
+    <SearchBox @search="handleSearch" />
+    <FilterDropdown @filter="handleFilter" />
+
+    <span>
+      <h1>User List Test</h1>
+      <h3>Showing
+        <select v-model="perPage">
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
+        </select>
+        per page
+      </h3>
+    </span>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="shead">
+            <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
+          </th>
+          <th class="shead">
+            <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
+          </th>
+          <th class="shead">
+            <SortableHeader sortid="created_at" @sort="handleSort">Joined</SortableHeader>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr v-for="item in lastFetch" :key="item.id">
+          <td>{{ item.id }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.created_at }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <span id="pagination">
+      <button @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
+      <button @click="maxPage ? console.log('Already max!') : refresh(currentPage + 1)"> Next </button>
+    </span>
+  </div>
+</template>
 
 <style>
 @media (min-width: 1024px) {
