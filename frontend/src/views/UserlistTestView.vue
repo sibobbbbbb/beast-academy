@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
 import { inject, ref , reactive, computed, onMounted, watch} from 'vue';
-import { dummyFetchUserData, type dataItem, type filterItem } from '@/services/datafetch';
+import { dummyFetchUserData, dummyFetchUserPages, type dataItem, type filterItem } from '@/services/datafetch';
 import type { ComputedRefSymbol } from '@vue/reactivity';
+import Pagination from '@/components/Pagination.vue';
 
     //fetch data from link
     interface data {
@@ -20,8 +21,14 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
 
     const lastFetch = ref<dataItem[]>([]);
 
+    var pageCount = ref(0);
+
     async function dataFetcher(page : number) {
       return dummyFetchUserData(perPage.value, page)
+    }
+
+    async function dataMaxFetcher() {
+      return dummyFetchUserPages(perPage.value)
     }
 
     //On perpage change
@@ -29,12 +36,14 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
       // for the time being, fetch from 0
       let fetchValues : dataItem[] = await dataFetcher(0);
       lastFetch.value = fetchValues;
-      currentPage.value = 0
+      await refresh(0,true)
 
       // wait until new data is fetcheda
     })
 
-    async function refresh(newPage? : number) {
+    //I might need to make a filter watcher aswell ngl
+
+    async function refresh(newPage? : number, filterChanged? : boolean) {
       //
       if (newPage === undefined) {
         newPage = currentPage.value
@@ -52,13 +61,20 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
         maxPage = false
         console.log("Yup go on")
       }
+
       // here we reset pagination stuff
+      // Handle specifically amt-reducing actions to reset pagination numbers
+      if (filterChanged) {
+        pageCount.value = await dataMaxFetcher();
+
+        console.log("There are",pageCount.value,"pages lol")
+      }
     }
 
     onMounted(() => {
       // Get page information here from url/link if any
       perPage.value = 10
-      refresh(0);
+      refresh(0, true);
     })
 
 </script>
@@ -80,7 +96,7 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
         <table>
             <tr>
                 <td class="shead">
-                    <SortableHeader>ID</SortableHeader>
+                    <SortableHeader @sort="(var1 : string, var2 : boolean) => {}">ID</SortableHeader>
                 </td>
                 <td class="shead">
                     <SortableHeader>name</SortableHeader>
@@ -97,6 +113,7 @@ import type { ComputedRefSymbol } from '@vue/reactivity';
         </table>
         <span id="pagination">
           <button @click="() => { currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')}"> Prev </button>
+            <Pagination :current-page="currentPage" @go-to-page="(page) => {currentPage = page}" :page-count="pageCount"/>
           <button @click="() => { maxPage ? console.log('Already max!') : refresh(currentPage + 1)}"> Next </button>
         </span>
     </div>
