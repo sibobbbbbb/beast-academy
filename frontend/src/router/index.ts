@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import AddMembersView from '../components/AddMembersForm.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/template-api-fetch',
       name: 'template-api-fetch',
       component: () => import('../views/TemplateApiFetch.vue'),
+    },
+    {
+      path: '/add-member',
+      name: 'add-member',
+      component: AddMembersView,
     }
   ],
 })

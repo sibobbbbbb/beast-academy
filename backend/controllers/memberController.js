@@ -19,7 +19,9 @@ export const addMemberControllers = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, img_url, phone_no, email } = req.body;
+  const { name, img_url, phone, email } = req.body;
+
+  console.log(req.body);
 
   try {
     // Cek jika email atau nomor hp sudah ada
@@ -31,9 +33,9 @@ export const addMemberControllers = async (req, res) => {
       return res.status(409).json({ message: "Request Tidak Valid" });
     }
 
-    if (phone_no) {
+    if (phone) {
       const existingPhoneNo = await prisma.members.findUnique({
-        where: { phone_no },
+        where: { phone_no: phone },
       });
 
       if (existingPhoneNo) {
@@ -42,18 +44,18 @@ export const addMemberControllers = async (req, res) => {
     }
 
     // Buat user baru
-    const newUser = await prisma.members.create({
+    await prisma.members.create({
       data: {
         name,
         img_url,
-        phone_no : phone_no || null,
+        phone_no : phone || null,
         email,
       }
     });
 
     res
       .status(201)
-      .json({ message: "Member berhasil ditambahkan", data: newUser });
+      .json({ message: "Member berhasil ditambahkan" });
   } catch (error) {
     console.error(error);
     res
