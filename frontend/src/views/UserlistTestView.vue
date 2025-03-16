@@ -1,86 +1,138 @@
+<template>
+  <div class="content">
+    <SearchBox @search="handleSearch" />
+    <FilterDropdown @filter="handleFilter" />
+
+    <span>
+      <h1>User List Test</h1>
+      <h3>Showing
+        <select v-model="perPage">
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
+        </select>
+        per page
+      </h3>
+    </span>
+    <!-- <button @click="masukin fungsi add">Add Member</button> -->
+    <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
+    <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
+    <table>
+      <thead>
+        <tr>
+          <th class="shead">
+            <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
+          </th>
+          <th>Edit Button</th>
+          <th class="shead">
+            <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
+          </th>
+          <th class="shead">
+            <SortableHeader sortid="created_at" @sort="handleSort">Joined</SortableHeader>
+          </th>
+          <th class="contact">
+            <SortableHeader sortid="phone_no" @sort="handleSort">Contact</SortableHeader>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr v-for="item in lastFetch" :key="item.id">
+          <td>{{ item.id }}</td>
+          <td>
+            <button @click="editMember(item)">Edit</button>
+          </td>
+          <td>
+            <span v-if="editingMember !== item.id">{{ item.name }}</span>
+            <input v-else v-model="item.name" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
+          </td>
+          <td>{{ item.created_at }}</td>
+          <td>{{ item.phone_no }}</td>
+          <td v-if="showDeleteColumn">
+            <button @click="deleteMember(item.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <span id="pagination" class="pagination-container">
+      <button @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
+      <Pagination :current-page="currentPage" @go-to-page="refresh" :page-count="totalPages"/>
+      <button @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
+    </span>
+  </div>
+</template>
+
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
 import { inject, ref , reactive, computed, onMounted, watch} from 'vue';
-import { dummyFetchUserData, deleteUserData, updateUserData, type dataItem, type filterItem } from '@/services/datafetch';
+import { dummyFetchUserData, deleteUserData, type dataItem, type filterItem } from '@/services/datafetch';
 import type { ComputedRefSymbol } from '@vue/reactivity';
-import { deleteMemberById } from '@/services/memberServices';
+import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers, type Member } from '@/services/templateServices';
 import Pagination from '@/components/Pagination.vue';
 
+const perPage = ref(10);
+const currentPage = ref(0);
+const lastFetch = ref<Member[]>([]);
+const maxPage = ref(false);
+const sortBy = ref("id");
+const order = ref("asc");
+const searchQuery = ref("");
+const selectedRole = ref("");
+const totalPages = ref(1);
 
-    //fetch data from link
-    interface data {
-      id : string,
-      name : string,
-    }
+const editingMember = ref<string | null>(null);
+const originalName = ref<string | null>(null);
+const showDeleteColumn = ref(false);
 
-    // State utama
-  const perPage = ref(10);
-  const currentPage = ref(0);
-  const lastFetch = ref<Member[]>([]);
-  const maxPage = ref(false);
-  const sortBy = ref("created_at"); // Default sorting
-  const order = ref("asc"); // "asc" atau "desc"
-  const searchQuery = ref("");
-  const selectedRole = ref("");
-  const totalPages = ref(1);
+const deleteMember = async (id: string) => {
+  const confirmed = confirm('Are you sure you want to delete this member?');
+  if (confirmed) {
+    await deleteMemberById(id);
+    dataFetcher(0); // Refresh data after deletion
+  }
+  console.log('Delete member:', id);
+};
 
-    const editingItem = ref<string | null>(null);
-    const originalName = ref<string | null>(null);
+function editMember(item: dataItem) {
+  editingMember.value = item.id;
+  originalName.value = item.name;
+}
 
-    const showDeleteColumn = ref(false);
+async function saveItem(item: dataItem) {
+  editingMember.value = null;
+  originalName.value = null;
+  await updateUserData(item.id, item.name);
+  dataFetcher(0);
+  console.log('Save item:', item);
+}
 
+function cancelEdit(item: dataItem) {
+  item.name = originalName.value;
+  editingMember.value = null;
+  originalName.value = null;
+  console.log('Edit cancelled:', item);
+}
 
-    function editItem(item: dataItem) {
-      editingItem.value = item.id;
-      originalName.value = item.name;
-    }
+function toggleDeleteColumn() {
+  showDeleteColumn.value = !showDeleteColumn.value;
+}
 
-    async function saveItem(item: dataItem) {
-      editingItem.value = null;
-      originalName.value = null;
-      await updateUserData(item.id, item.name);
-      refresh();
-      console.log('Save item:', item);
-    }
+const dataFetcher = async (page: number) => {
+  try {
+    const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
+    lastFetch.value = response.data;
+    totalPages.value = response.pagination.totalPages; // 🔹 Pastikan backend mengembalikan total halaman
 
-    // function cancelEdit(item: dataItem) {
-    //   item.name = originalName.value;
-    //   editingItem.value = null;
-    //   originalName.value = null;
-    //   console.log('Edit cancelled:', item);
-    // }
-
-    const deleteMember = async (id: number) => {
-      const confirmed = confirm('Are you sure you want to delete this member?');
-      if (confirmed) {
-        await deleteMemberById(id);
-        refresh(currentPage.value)
-      }
-    };
-
-    function toggleDeleteColumn() {
-      showDeleteColumn.value = !showDeleteColumn.value;
-    }
-
-    
-
-    const dataFetcher = async (page: number) => {
-      try {
-        const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
-        
-        lastFetch.value = response.data;
-        totalPages.value = response.pagination.totalPages; // 🔹 Pastikan backend mengembalikan total halaman
-
-        // Cek apakah ini halaman terakhir
-        maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
-      } catch (error) {
-        console.error("Failed to fetch members:", error);
-      }
-    };
-
+    // Cek apakah ini halaman terakhir
+    maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
+  } catch (error) {
+    console.error("Failed to fetch members:", error);
+  }
+};
 
 //On perpage change
 watch(perPage, async () => {
@@ -107,9 +159,6 @@ const handleFilter = (role: string) => {
   refresh(0);
 };
 
-
-//I might need to make a filter watcher aswell ngl
-
 const refresh = async (newPage?: number) => {
   if (newPage !== undefined) {
     currentPage.value = newPage;
@@ -121,55 +170,6 @@ onMounted(() => {
   refresh(0);
 });
 </script>
-
-<template>
-  <div class="content">
-    <SearchBox @search="handleSearch" />
-    <FilterDropdown @filter="handleFilter" />
-
-    <span>
-      <h1>User List Test</h1>
-      <h3>Showing
-        <select v-model="perPage">
-          <option :value="10">10</option>
-          <option :value="20">20</option>
-          <option :value="50">50</option>
-        </select>
-        per page
-      </h3>
-    </span>
-
-    <table>
-      <thead>
-        <tr>
-          <th class="shead">
-            <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
-          </th>
-          <th class="shead">
-            <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
-          </th>
-          <th class="shead">
-            <SortableHeader sortid="created_at" @sort="handleSort">Joined</SortableHeader>
-          </th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr v-for="item in lastFetch" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.created_at }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <span id="pagination" class="pagination-container">
-      <button @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
-        <Pagination :current-page="currentPage" @go-to-page="refresh" :page-count="totalPages"/>
-      <button @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
-  </span>
-  </div>
-</template>
 
 <style>
 @media (min-width: 1024px) {

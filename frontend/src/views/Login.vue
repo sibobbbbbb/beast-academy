@@ -138,7 +138,7 @@ const handleLogin = async () => {
   try {
     const response = await api.post('/auth/login', { email: email.value, password: password.value });
     localStorage.setItem('token', response.data.token);
-    router.push('/home');
+    router.push('/userlisttest');
   } catch (error) {
     console.error('Login gagal', error);
     loginError.value = true;
