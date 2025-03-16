@@ -14,7 +14,7 @@
         per page
       </h3>
     </span>
-    <!-- <button @click="masukin fungsi add">Add Member</button> -->
+    <button @click="() => {router.push('/add-member'); console.log('BABIK')}">Add Member</button>
     <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
     <table>
@@ -47,7 +47,10 @@
             <input v-else v-model="item.name" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
           </td>
           <td>{{ item.created_at }}</td>
-          <td>{{ item.phone_no }}</td>
+          <td>
+            <span v-if="editingMember !== item.id">{{ item.phone_no }}</span>
+            <input v-else v-model="item.phone_no" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
+          </td>
           <td v-if="showDeleteColumn">
             <button @click="deleteMember(item.id)">Delete</button>
           </td>
@@ -73,6 +76,7 @@ import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers, type Member } from '@/services/templateServices';
 import Pagination from '@/components/Pagination.vue';
+import { useRouter } from 'vue-router';
 
 const perPage = ref(10);
 const currentPage = ref(0);
@@ -83,6 +87,7 @@ const order = ref("asc");
 const searchQuery = ref("");
 const selectedRole = ref("");
 const totalPages = ref(1);
+const router = useRouter();
 
 const editingMember = ref<string | null>(null);
 const originalName = ref<string | null>(null);
@@ -182,6 +187,7 @@ onMounted(() => {
 
 .shead {
   min-height: 2dvh;
+  margin-right: 5dvw;
 }
 
 span {
