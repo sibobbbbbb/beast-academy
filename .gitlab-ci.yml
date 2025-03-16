@@ -4,11 +4,13 @@ stages:
   - build
 
 lint:
+  tags:
+    - runner-beast
   image: node:20
   stage: lint
   before_script:
-    - cd frontend; if (-not $?) { exit 1 }  # Perbaikan syntax PowerShell
-    - npm install  # Ganti npm ci dengan npm install jika tidak ada package-lock.json
+    - cd frontend; if (-not $?) { exit 1 }
+    - npm install  
   script:
     - npm run lint
 
@@ -18,18 +20,20 @@ test:
   image: node:20
   stage: test
   before_script:
-    - cd backend; if (-not $?) { exit 1 }  # Perbaikan syntax PowerShell
-    - npm install  # Ganti npm ci dengan npm install jika tidak ada package-lock.json
+    - cd backend; if (-not $?) { exit 1 }  
+    - npm install  
     - npx prisma generate
   script:
     - npm run test
 
 build:
+  tags:
+    - runner-beast
   image: node:20
   stage: build
   before_script:
-    - cd frontend; if (-not $?) { exit 1 }  # Perbaikan syntax PowerShell
-    - npm install  # Ganti npm ci dengan npm install jika tidak ada package-lock.json
+    - cd frontend; if (-not $?) { exit 1 }  
+    - npm install 
   script:
     - npm run build
   artifacts:
