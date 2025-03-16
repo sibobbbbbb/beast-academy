@@ -1,18 +1,24 @@
 <template>
   <div
-    class="min-h-screen bg-red-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 w-full"
+    class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 w-full"
+    style="background: var(--color-background-mute);"
   >
     <div class="w-full pb-3 sm:mx-auto sm:max-w-md">
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-red-800">Add New Member</h2>
+      <h2 class="mt-6 text-center text-3xl font-extrabold" style="color: var(--color-heading);">
+        Add New Member
+      </h2>
     </div>
 
     <div class="mt-8 w-full sm:mx-auto sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-red-200">
-        <div v-if="formSubmitted" class="rounded-md bg-red-50 p-4 mb-6">
+      <div class="py-8 px-4 shadow sm:rounded-lg sm:px-10 border" 
+           style="background: var(--color-background); border-color: var(--color-border);">
+        <div v-if="formSubmitted" class="rounded-md p-4 mb-6" 
+             style="background: var(--color-background-soft);">
           <div class="flex">
             <div class="flex-shrink-0">
               <svg
-                class="h-5 w-5 text-red-400"
+                class="h-5 w-5"
+                style="color: #42b883;"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -25,7 +31,9 @@
               </svg>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-red-800">Member added successfully!</p>
+              <p class="text-sm font-medium" style="color: var(--color-text);">
+                Member added successfully!
+              </p>
             </div>
           </div>
         </div>
@@ -33,7 +41,9 @@
         <form class="space-y-6" @submit.prevent="submitForm">
           <!-- Name -->
           <div class="pb-2">
-            <label for="name" class="block text-sm font-medium text-gray-700"> Name </label>
+            <label for="name" class="block text-sm font-medium" style="color: var(--color-text);">
+              Name
+            </label>
             <div class="mt-1">
               <input
                 id="name"
@@ -41,16 +51,20 @@
                 name="name"
                 type="text"
                 autocomplete="name"
-                class="text-black appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.name }"
+                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
+                :style="errors.name ? 'border-color: #ff6666;' : ''"
               />
             </div>
-            <p v-if="errors.name" class="mt-2 text-sm text-red-600">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.name }}</p>
           </div>
 
           <!-- Email -->
           <div class="pb-2">
-            <label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
+            <label for="email" class="block text-sm font-medium" style="color: var(--color-text);">
+              Email
+            </label>
             <div class="mt-1">
               <input
                 id="email"
@@ -58,16 +72,20 @@
                 name="email"
                 type="email"
                 autocomplete="email"
-                class="text-black appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.email }"
-                />
+                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
+                :style="errors.email ? 'border-color: #ff6666;' : ''"
+              />
             </div>
-            <p v-if="errors.email" class="mt-2 text-sm text-red-600">{{ errors.email }}</p>
+            <p v-if="errors.email" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.email }}</p>
           </div>
 
           <!-- Image -->
           <div class="pb-2">
-            <label for="img_url" class="block text-sm font-medium text-gray-700"> Image URL </label>
+            <label for="img_url" class="block text-sm font-medium" style="color: var(--color-text);">
+              Image URL
+            </label>
             <div class="mt-1">
               <input
                 id="img_url"
@@ -75,17 +93,19 @@
                 name="img_url"
                 type="img_url"
                 autocomplete="new-img_url"
-                class="text-black appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.img_url }"
+                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
+                :style="errors.img_url ? 'border-color: #ff6666;' : ''"
               />
             </div>
-            <p v-if="errors.img_url" class="mt-2 text-sm text-red-600">{{ errors.img_url }}</p>
+            <p v-if="errors.img_url" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.img_url }}</p>
           </div>
 
           <!-- Phone -->
           <div class="pb-4">
-            <label for="phone" class="block text-sm font-medium text-gray-700">
-              Phone Number <span class="text-xs text-gray-500">(Optional)</span>
+            <label for="phone" class="block text-sm font-medium" style="color: var(--color-text);">
+              Phone Number <span class="text-xs opacity-70">(Optional)</span>
             </label>
             <div class="mt-1">
               <input
@@ -94,20 +114,23 @@
                 name="phone"
                 type="tel"
                 autocomplete="tel"
-                class="text-black appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.phone }"
+                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
+                :style="errors.phone ? 'border-color: #ff6666;' : ''"
                 placeholder="Optional"
               />
             </div>
-            <p v-if="errors.phone" class="mt-2 text-sm text-red-600">{{ errors.phone }}</p>
+            <p v-if="errors.phone" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.phone }}</p>
           </div>
 
           <!-- API Error message -->
-          <div v-if="apiError" class="rounded-md bg-red-50 p-4">
+          <div v-if="apiError" class="rounded-md p-4" style="background: var(--color-background-soft);">
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg
-                  class="h-5 w-5 text-red-400"
+                  class="h-5 w-5"
+                  style="color: #ff6666;"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -120,7 +143,7 @@
                 </svg>
               </div>
               <div class="ml-3">
-                <p class="text-sm font-medium text-red-800">
+                <p class="text-sm font-medium" style="color: var(--color-text);">
                   {{ apiError }}
                 </p>
               </div>
@@ -131,8 +154,9 @@
           <div>
             <button
               type="submit"
-              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2"
               :disabled="isSubmitting"
+              style="background-color: #42b883; border-color: #42b883;"
             >
               <svg
                 v-if="isSubmitting"
@@ -164,7 +188,6 @@
   </div>
 </template>
 
-// components/AddMemberForm.vue
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import { addNewMember } from '@/services/memberServices'
@@ -233,3 +256,14 @@ export default defineComponent({
   },
 })
 </script>
+
+<style scoped>
+input:focus {
+  border-color: #42b883 !important;
+  box-shadow: 0 0 0 1px #42b883 !important;
+}
+
+button:hover {
+  background-color: #33a06f !important;
+}
+</style>
