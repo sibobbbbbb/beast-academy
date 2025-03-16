@@ -21,8 +21,6 @@ export const addMemberControllers = async (req, res) => {
 
   const { name, img_url, phone, email } = req.body;
 
-  console.log(req.body);
-
   try {
     // Cek jika email atau nomor hp sudah ada
     const existingEmail = await prisma.members.findUnique({
