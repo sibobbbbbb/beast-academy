@@ -4,6 +4,6 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     // Ini hanya tes untuk CI
-    console.log("Testing CI/CD Pipeline");
+    console.log("Testing CI/CD pipelines JOBS");
     console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
 });
