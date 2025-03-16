@@ -1,6 +1,9 @@
+// jest.config.js
+import { defaults } from 'jest-config';
+
 /** @type {import('jest').Config} */
-module.exports = {
-    testEnvironment: 'node',
-    testMatch: ['**/tests/**/*.test.js']
-  }
-  
+export default {
+  testEnvironment: 'node',
+  testMatch: ['**/tests/**/*.test.js'],
+  transform: {}
+};
