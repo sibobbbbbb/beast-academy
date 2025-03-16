@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 export const getMembers = async (req, res) => {
   try {
-    const { search = "", sortBy = "created_at", order = "asc", page = "1", limit = "3", filterBy = "" } = req.query;
+    const { search = "", sortBy = "created_at", order = "asc", page = "1", limit = "10", filterBy = "" } = req.query;
 
     // Field yang valid untuk sorting
     const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name"];
