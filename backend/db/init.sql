@@ -15,7 +15,7 @@ CREATE TABLE members (
     name VARCHAR(100) NOT NULL,
     img_url TEXT NOT NULL DEFAULT '',
     phone_no VARCHAR(15) CHECK (phone_no ~ '^[0-9]+$') UNIQUE,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     stat1 INT CHECK (stat1 BETWEEN 1 AND 100),
@@ -33,6 +33,14 @@ CREATE TABLE member_user(
     PRIMARY KEY (u_id, m_id),
     FOREIGN KEY (u_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (m_id) REFERENCES members(id) ON DELETE CASCADE
+);
+
+CREATE TABLE events(
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(50) NOT NULL DEFAULT 'Event Title',
+    images TEXT NOT NULL DEFAULT '',
+    description VARCHAR(200) DEFAULT 'Description here',
+    posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -81,3 +89,14 @@ VALUES
 (3, 1),
 (4, 2),
 (5, 3);
+
+INSERT INTO events (title, images, description)
+VALUES
+('Tennis Grand Slam', 'https://example.com/images/example.jpg', 'Witness the best tennis players battle for glory.'),
+('Tennis Art Showcase', 'https://example.com/images/example.jpg', 'An exhibition of iconic tennis moments captured in art.'),
+('Tennis Tech Conference', 'https://example.com/images/example.jpg', 'Exploring the latest technology in tennis training and analytics.'),
+('Tennis Food Fair', 'https://example.com/images/example.jpg', 'Fuel up with athlete-focused nutrition and delicious dishes.'),
+('Tennis Book Launch', 'https://example.com/images/example.jpg', 'Launching the latest biography of a tennis legend.');
+
+
+INSERT INTO events DEFAULT VALUES;
