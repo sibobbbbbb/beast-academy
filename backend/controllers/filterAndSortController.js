@@ -7,7 +7,7 @@ export const getMembers = async (req, res) => {
     const { search = "", sortBy = "created_at", order = "asc", page = "1", limit = "10", filterBy = "" } = req.query;
 
     // Field yang valid untuk sorting
-    const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name"];
+    const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name", "id"];
     const validOrderValues = ["asc", "desc"];
 
     if (!validSortFields.includes(sortBy)) {

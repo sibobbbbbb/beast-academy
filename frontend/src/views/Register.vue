@@ -1,28 +1,28 @@
 <template>
-  <div class="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-green-800 to-green-600">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden relative mx-4">
+  <div class="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-[var(--vt-c-black-soft)] to-[var(--vt-c-black)]">
+    <div class="w-full max-w-md bg-[var(--color-background)] rounded-xl shadow-xl overflow-hidden relative mx-4">
       <!-- Tennis ball decoration -->
-      <div class="absolute -top-10 -right-10 w-16 h-16 rounded-full bg-yellow-400 opacity-50"></div>
+      <div class="absolute -top-10 -right-10 w-16 h-16 rounded-full bg-[var(--vt-c-divider-dark-1)] opacity-50"></div>
       
       <!-- Header with logo -->
       <div class="pt-5 pb-3 text-center">
         <div class="inline-flex items-center justify-center mb-2">
-          <div class="relative w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-            <div class="absolute w-12 h-12 rounded-full border-2 border-white"></div>
-            <div class="absolute w-10 h-10 rounded-full border-2 border-white"></div>
-            <div class="absolute w-full h-0.5 bg-white"></div>
-            <div class="absolute w-0.5 h-full bg-white"></div>
+          <div class="relative w-12 h-12 bg-[var(--vt-c-divider-dark-1)] rounded-full flex items-center justify-center">
+            <div class="absolute w-12 h-12 rounded-full border-2 border-[var(--color-text)]"></div>
+            <div class="absolute w-10 h-10 rounded-full border-2 border-[var(--color-text)]"></div>
+            <div class="absolute w-full h-0.5 bg-[var(--color-text)]"></div>
+            <div class="absolute w-0.5 h-full bg-[var(--color-text)]"></div>
           </div>
         </div>
-        <h1 class="text-xl font-bold text-gray-800 mb-1">Tennis Community</h1>
-        <p class="text-sm text-gray-500">Create your account</p>
+        <h1 class="text-xl font-bold text-[var(--color-heading)] mb-1">Tennis Community</h1>
+        <p class="text-sm text-[var(--color-text)]">Create your account</p>
       </div>
       
       <!-- Error Message -->
-      <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-md relative mx-6 mb-3">
+      <div v-if="errorMessage" class="bg-[var(--vt-c-black-mute)] border border-[var(--vt-c-divider-dark-2)] text-[var(--vt-c-text-dark-2)] px-4 py-2 rounded-md relative mx-6 mb-3">
         <div class="flex items-center justify-between">
           <p class="text-sm">{{ errorMessage }}</p>
-          <button @click="errorMessage = ''" class="text-red-500 hover:text-red-700 ml-2">
+          <button @click="errorMessage = ''" class="text-[var(--vt-c-text-dark-2)] hover:text-[var(--vt-c-text-dark-1)] ml-2">
             <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
@@ -32,76 +32,75 @@
       
       <!-- Register Form -->
       <div class="px-6 py-3 space-y-4">
-        <form @submit.prevent="handleRegister" class="space-y-4 text-black">
+        <form @submit.prevent="handleRegister" class="space-y-4 text-[var(--color-text)]">
           <div>
-            <label for="username" class="block text-sm font-medium text-gray-800 mb-1">Username</label>
+            <label for="username" class="block text-sm font-medium text-[var(--color-heading)] mb-1">Username</label>
             <input 
               type="text" 
               id="username" 
               v-model="username" 
-              class="w-full px-3 py-2 bg-blue-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)]"
               placeholder="Enter your username"
               required
             />
           </div>
           
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-800 mb-1">Email</label>
+            <label for="email" class="block text-sm font-medium text-[var(--color-heading)] mb-1">Email</label>
             <input 
               type="email" 
               id="email" 
               v-model="email" 
-              class="w-full px-3 py-2 bg-blue-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)]"
               placeholder="your@email.com"
               required
             />
           </div>
           
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-800 mb-1">Password</label>
+            <label for="password" class="block text-sm font-medium text-[var(--color-heading)] mb-1">Password</label>
             <input 
               type="password" 
               id="password" 
               v-model="password" 
-              class="w-full px-3 py-2 bg-blue-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)]"
               placeholder="••••••••"
               required
             />
           </div>
           
           <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-800 mb-1">Confirm Password</label>
+            <label for="confirmPassword" class="block text-sm font-medium text-[var(--color-heading)] mb-1">Confirm Password</label>
             <input 
               type="password" 
               id="confirmPassword" 
               v-model="confirmPassword" 
-              class="w-full px-3 py-2 bg-blue-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)]"
               placeholder="••••••••"
               required
             />
           </div>
           
           <div>
-            <label for="role" class="block text-sm font-medium text-gray-800 mb-1">Role</label>
+            <label for="role" class="block text-sm font-medium text-[var(--color-heading)] mb-1">Role</label>
             <select 
               id="role"
               v-model="role" 
-              class="w-full px-3 py-2 bg-blue-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none pr-8"
-              style="background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23333\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E'); background-repeat: no-repeat; background-size: 0.8rem; background-position: center right 0.8rem;"
+              class="w-full px-3 py-2 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)] appearance-none pr-8"
+              style="background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23CCC\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E'); background-repeat: no-repeat; background-size: 0.8rem; background-position: center right 0.8rem;"
             >
               <option value="member">Member</option>
-              <option value="admin">Admin</option>
               <option value="trainer">Trainer</option>
             </select>
           </div>
           
           <button 
             type="submit" 
-            class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors text-base font-medium"
+            class="w-full bg-[var(--vt-c-divider-dark-1)] text-[var(--vt-c-white)] py-2 px-4 rounded-md hover:bg-[var(--vt-c-divider-dark-2)] focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)] focus:ring-offset-2 transition-colors text-base font-medium"
             :disabled="isLoading"
           >
             <span v-if="isLoading" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-[var(--vt-c-white)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -112,15 +111,15 @@
         </form>
         
         <div class="mt-3 text-center">
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-[var(--color-text)]">
             Already have an account? 
-            <router-link to="/login" class="font-medium text-green-600 hover:text-green-800">Login</router-link>
+            <router-link to="/login" class="font-medium text-[var(--vt-c-divider-dark-1)] hover:text-[var(--vt-c-text-dark-1)]">Login</router-link>
           </p>
         </div>
       </div>
       
       <!-- Tennis court decoration at bottom -->
-      <div class="h-2 bg-green-600 mt-2"></div>
+      <div class="h-2 bg-[var(--vt-c-divider-dark-1)] mt-2"></div>
     </div>
   </div>
 </template>
