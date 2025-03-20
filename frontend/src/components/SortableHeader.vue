@@ -44,5 +44,6 @@ button {
     border: 1px rgb(8,8,8) solid;
     cursor: pointer;
     font-size: 0.8rem;
+    padding: 0.10rem 0.4rem;
 }
 </style>

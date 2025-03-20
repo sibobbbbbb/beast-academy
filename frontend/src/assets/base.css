@@ -1,4 +1,3 @@
-/* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8f8f8;
@@ -8,6 +7,14 @@
   --vt-c-black-soft: #222222;
   --vt-c-black-mute: #282828;
 
+  /* Adjusted Color Variables based on the logo */
+  --vt-c-primary-blue: #0072ce; /* Adjusted to the blue color from the logo */
+  --vt-c-secondary-green: #68b829; /* Adjusted to the green color from the logo */
+  --vt-c-text-light-1: var(--vt-c-primary-blue);
+  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
+  --vt-c-text-dark-1: var(--vt-c-white);
+  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+
   --vt-c-indigo: #2c3e50;
 
   --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
@@ -15,14 +22,6 @@
   --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
   --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
-
-/* semantic color variables for this project */
-:root {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
@@ -47,8 +46,13 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    /* Dark Mode Adjustments */
+    --vt-c-primary-blue: #0060b1; /* Slightly darker blue for dark mode */
+    --vt-c-secondary-green: #559b22; /* Slightly darker green for dark mode */
   }
 }
+
 
 *,
 *::before,

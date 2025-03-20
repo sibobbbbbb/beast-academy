@@ -25,7 +25,6 @@ const rightPages = computed(() => {
 </script>
 
 <template>
-    <div class="pagination-container">
         <ul class="pagination">
             <li v-for="l_id in leftPages" :key="l_id" @click="() => emits('goToPage', l_id - 1)">
                 {{ l_id }}
@@ -37,19 +36,20 @@ const rightPages = computed(() => {
                 {{ r_id }}
             </li>
         </ul>
-    </div>
 </template>
 
 <style>
     li {
-        padding: 1dvw;
         border-radius: 10dvw;
-        width: 2dvh;
-        margin: 0 2%;
+        width: 3rem;
+        margin: 0 1%;
         aspect-ratio: 1 / 1;
         background-color: var(--color-background-soft);
         cursor: pointer;
         border-color: var(--color-border);
+        padding: 0.5rem;
+        text-align: center;
+        justify-items: end;
     }
 
     li:hover {
@@ -61,6 +61,7 @@ const rightPages = computed(() => {
         font-weight: bold;
         text-decoration: underline;
     }
+
     .pagination-container {
         display: flex;
         align-items: center;
@@ -73,5 +74,6 @@ const rightPages = computed(() => {
         list-style: none;
         padding: 4px;
         margin: 0;
+        height: 100%;
     }
 </style>

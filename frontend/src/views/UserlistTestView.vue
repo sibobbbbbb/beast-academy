@@ -1,8 +1,15 @@
 <template>
+  <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
+    <img src="https://placehold.co/512x512" style="height: 8dvh; aspect-ratio: 1/1; display: inline-block; margin-right: 1%;">
+    <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
+  </header>
+  <hr>
   <div class="content">
-    <SearchBox @search="handleSearch" />
-    <FilterDropdown @filter="handleFilter" />
-
+    <span style="display: flex;">
+      <FilterDropdown @filter="handleFilter" />
+      <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
+      <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
+    </span>
     <span>
       <h1>User List Test</h1>
       <h3>Showing
@@ -20,7 +27,7 @@
     <table>
       <thead>
         <tr>
-          <th class="shead">
+          <th class="shead" style="width: 6rem;">
             <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
           </th>
           <th>Edit Button</th>
@@ -59,9 +66,9 @@
     </table>
 
     <span id="pagination" class="pagination-container">
-      <button @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
+      <button class="pageButton" @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
       <Pagination :current-page="currentPage" @go-to-page="refresh" :page-count="totalPages"/>
-      <button @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
+      <button class="pageButton" @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
     </span>
   </div>
 </template>
@@ -169,6 +176,8 @@ const refresh = async (newPage?: number) => {
     currentPage.value = newPage;
   }
   await dataFetcher(currentPage.value);
+
+  console.log(currentPage.value);
 };
 
 onMounted(() => {
@@ -183,6 +192,10 @@ onMounted(() => {
     display: block;
     align-items: center;
   }
+}
+
+.content {
+  padding: 1dvh 2dvw;
 }
 
 .shead {
@@ -241,4 +254,33 @@ button {
 button:hover {
     background-color: var(--color-background-mute);
 }
+
+table {
+  border: 4px solid var(--color-border);
+  padding: 2dvw 1dvw;
+  width: 100%;
+
+  thead {
+    border: 2px solid var(--color-border);
+
+    th {
+      border: 2px solid var(--color-border);
+      padding: 0.5%;
+    }
+  }
+
+  tbody td {
+    border: 2px solid var(--color-border);
+    padding: 0 1%;
+  }
+
+  tr.selected {
+    background-color: var(--color-background-mute);
+  }
+}
+
+.pageButton {
+
+}
+
 </style>
