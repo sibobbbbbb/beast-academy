@@ -13,6 +13,8 @@ lint:
     - npm install  
   script:
     - npm run lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 test:
   tags:
@@ -25,6 +27,8 @@ test:
     - npx prisma generate --schema=./db/prisma/schema.prisma
   script:
     - npm run test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 build:
   tags:
@@ -39,3 +43,5 @@ build:
   artifacts:
     paths:
       - frontend/dist
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
