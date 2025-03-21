@@ -11,14 +11,33 @@ export const register = async (req, res) => {
     try {
         const { role, username, email, password } = req.body;
 
+        // Validate input fields
+        if (!role || !username || !email || !password) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        }
+
+        // Check if the email is already in use
+        const existingUser = await prisma.users.findUnique({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Email is already in use' });
+        }
+
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Save the user to the database
         const user = await prisma.users.create({
             data: { role, username, email, password: hashedPassword },
         });
 
-        res.status(201).json({ message: 'User registered successfully' });
+        res.status(201).json({ message: 'User registered successfully', user });
     } catch (error) {
-        res.status(400).json({ error: 'Error registering user' });
+        console.error(error);
+        res.status(500).json({ error: 'An internal server error occurred' });
     }
 };
 

@@ -51,15 +51,30 @@
               <label for="password" class="block text-base font-medium text-[var(--color-heading)]">Password</label>
               <a href="#" class="text-sm text-[var(--vt-c-text-dark-2)] hover:text-[var(--vt-c-text-dark-1)]">Forgot password?</a>
             </div>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="password" 
-              class="w-full px-4 py-3 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)] text-[var(--color-text)]"
-              placeholder="••••••••"
-              autocomplete="off"
-              required
-            />
+            <div class="relative">
+              <input 
+                :type="showPassword ? 'text' : 'password'" 
+                id="password" 
+                v-model="password" 
+                class="w-full px-4 py-3 bg-[var(--color-background-soft)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--vt-c-divider-dark-1)] text-[var(--color-text)]"
+                placeholder="••••••••"
+                autocomplete="off"
+                required
+              />
+              <button 
+                type="button" 
+                @click="showPassword = !showPassword" 
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text)]"
+              >
+                <svg v-if="showPassword" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                </svg>
+                <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+              </button>
+            </div>
           </div>
           
           <div class="flex items-center space-x-3">
@@ -130,41 +145,73 @@ const router = useRouter();
 const isLoading = ref(false);
 const loginError = ref(false);
 const errorMessage = ref('Invalid email or password. Please try again.');
+const showPassword = ref(false);
 
 const handleLogin = async () => {
   loginError.value = false;
   isLoading.value = true;
   
   try {
-    const response = await api.post('/auth/login', { email: email.value, password: password.value });
-    localStorage.setItem('token', response.data.token);
+    // The backend sets httpOnly cookie automatically
+    const response = await api.post('/auth/login', { 
+      email: email.value, 
+      password: password.value 
+    }, {
+      withCredentials: true // Important for cookies to be sent/received
+    });
+    
+    console.log('Login successful:', response.data);
+    
+    // No need to store token in localStorage since it's in httpOnly cookie
+    // Instead, just redirect to the dashboard
     router.push('/userlisttest');
+    
+    // For testing: Get the user profile which includes role
+    await getUserProfile();
   } catch (error) {
-    console.error('Login gagal', error);
+    console.error('Login failed', error);
     loginError.value = true;
     
-    // Set specific error message based on error response
+    // Set specific error message based on error response in English
     if (error.response) {
       if (error.response.status === 401) {
-        errorMessage.value = 'Email atau password yang Anda masukkan salah.';
+        errorMessage.value = 'The email or password you entered is incorrect.';
       } else if (error.response.status === 404) {
-        errorMessage.value = 'Akun tidak ditemukan. Silahkan daftar terlebih dahulu.';
+        errorMessage.value = 'Account not found. Please register first.';
       } else if (error.response.status === 429) {
-        errorMessage.value = 'Terlalu banyak percobaan. Silahkan coba lagi nanti.';
+        errorMessage.value = 'Too many attempts. Please try again later.';
       } else if (error.response.data && error.response.data.message) {
         errorMessage.value = error.response.data.message;
       } else {
-        errorMessage.value = 'Terjadi kesalahan. Silahkan coba lagi.';
+        errorMessage.value = 'An error occurred. Please try again.';
       }
     } else if (error.request) {
-      errorMessage.value = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
+      errorMessage.value = 'Unable to connect to the server. Please check your connection.';
     } else {
-      errorMessage.value = 'Terjadi kesalahan. Silahkan coba lagi.';
+      errorMessage.value = 'An error occurred. Please try again.';
     }
   } finally {
     isLoading.value = false;
   }
 };
+
+const getUserProfile = async () => {
+  try {
+    const response = await api.get('/auth/me', {
+      withCredentials: true // Important for sending the cookie
+    });
+    
+    // Specifically log the role for testing
+    console.log('User role:', response.data.role);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get user profile:', error);
+    return null;
+  }
+};
+
+
 </script>
 
 <style scoped>
