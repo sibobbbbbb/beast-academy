@@ -145,7 +145,6 @@ const router = useRouter();
 const isLoading = ref(false);
 const loginError = ref(false);
 const errorMessage = ref('Invalid email or password. Please try again.');
-// Add this with your other refs
 const showPassword = ref(false);
 
 const handleLogin = async () => {
@@ -153,35 +152,66 @@ const handleLogin = async () => {
   isLoading.value = true;
   
   try {
-    const response = await api.post('/auth/login', { email: email.value, password: password.value });
-    localStorage.setItem('token', response.data.token);
+    // The backend sets httpOnly cookie automatically
+    const response = await api.post('/auth/login', { 
+      email: email.value, 
+      password: password.value 
+    }, {
+      withCredentials: true // Important for cookies to be sent/received
+    });
+    
+    console.log('Login successful:', response.data);
+    
+    // No need to store token in localStorage since it's in httpOnly cookie
+    // Instead, just redirect to the dashboard
     router.push('/userlisttest');
+    
+    // For testing: Get the user profile which includes role
+    await getUserProfile();
   } catch (error) {
-    console.error('Login gagal', error);
+    console.error('Login failed', error);
     loginError.value = true;
     
-    // Set specific error message based on error response
+    // Set specific error message based on error response in English
     if (error.response) {
       if (error.response.status === 401) {
-        errorMessage.value = 'Email atau password yang Anda masukkan salah.';
+        errorMessage.value = 'The email or password you entered is incorrect.';
       } else if (error.response.status === 404) {
-        errorMessage.value = 'Akun tidak ditemukan. Silahkan daftar terlebih dahulu.';
+        errorMessage.value = 'Account not found. Please register first.';
       } else if (error.response.status === 429) {
-        errorMessage.value = 'Terlalu banyak percobaan. Silahkan coba lagi nanti.';
+        errorMessage.value = 'Too many attempts. Please try again later.';
       } else if (error.response.data && error.response.data.message) {
         errorMessage.value = error.response.data.message;
       } else {
-        errorMessage.value = 'Terjadi kesalahan. Silahkan coba lagi.';
+        errorMessage.value = 'An error occurred. Please try again.';
       }
     } else if (error.request) {
-      errorMessage.value = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
+      errorMessage.value = 'Unable to connect to the server. Please check your connection.';
     } else {
-      errorMessage.value = 'Terjadi kesalahan. Silahkan coba lagi.';
+      errorMessage.value = 'An error occurred. Please try again.';
     }
   } finally {
     isLoading.value = false;
   }
 };
+
+const getUserProfile = async () => {
+  try {
+    const response = await api.get('/auth/me', {
+      withCredentials: true // Important for sending the cookie
+    });
+    
+    // Specifically log the role for testing
+    console.log('User role:', response.data.role);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get user profile:', error);
+    return null;
+  }
+};
+
+
 </script>
 
 <style scoped>
