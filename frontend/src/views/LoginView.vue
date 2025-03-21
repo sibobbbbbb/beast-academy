@@ -138,6 +138,20 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
+import { AxiosError } from 'axios';
+
+interface ErrorResponse {
+  error?: string;
+  message?: string;
+}
+
+interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  // Add other fields your user profile might have
+}
 
 const email = ref('');
 const password = ref('');
@@ -169,23 +183,24 @@ const handleLogin = async () => {
     // For testing: Get the user profile which includes role
     await getUserProfile();
   } catch (error) {
-    console.error('Login failed', error);
+    const axiosError = error as AxiosError<ErrorResponse>;
+    console.error('Login failed', axiosError);
     loginError.value = true;
     
     // Set specific error message based on error response in English
-    if (error.response) {
-      if (error.response.status === 401) {
+    if (axiosError.response) {
+      if (axiosError.response.status === 401) {
         errorMessage.value = 'The email or password you entered is incorrect.';
-      } else if (error.response.status === 404) {
+      } else if (axiosError.response.status === 404) {
         errorMessage.value = 'Account not found. Please register first.';
-      } else if (error.response.status === 429) {
+      } else if (axiosError.response.status === 429) {
         errorMessage.value = 'Too many attempts. Please try again later.';
-      } else if (error.response.data && error.response.data.message) {
-        errorMessage.value = error.response.data.message;
+      } else if (axiosError.response.data?.message) {
+        errorMessage.value = axiosError.response.data.message;
       } else {
         errorMessage.value = 'An error occurred. Please try again.';
       }
-    } else if (error.request) {
+    } else if (axiosError.request) {
       errorMessage.value = 'Unable to connect to the server. Please check your connection.';
     } else {
       errorMessage.value = 'An error occurred. Please try again.';
@@ -195,9 +210,9 @@ const handleLogin = async () => {
   }
 };
 
-const getUserProfile = async () => {
+const getUserProfile = async (): Promise<UserProfile | null> => {
   try {
-    const response = await api.get('/auth/me', {
+    const response = await api.get<UserProfile>('/auth/me', {
       withCredentials: true // Important for sending the cookie
     });
     
@@ -206,12 +221,11 @@ const getUserProfile = async () => {
     
     return response.data;
   } catch (error) {
-    console.error('Failed to get user profile:', error);
+    const axiosError = error as AxiosError;
+    console.error('Failed to get user profile:', axiosError);
     return null;
   }
 };
-
-
 </script>
 
 <style scoped>
