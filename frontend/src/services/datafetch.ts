@@ -10,7 +10,7 @@ export interface filterItem {
     reference : string | number
 }
 
-let dummy: dataItem[] = [
+const dummy: dataItem[] = [
     { id: "100", name: "Samuel", joinDate: "2022-01-15" },
     { id: "101", name: "Jackson", joinDate: "2021-11-22" },
     { id: "102", name: "Emma", joinDate: "2023-03-10" },

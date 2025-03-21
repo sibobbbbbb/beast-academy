@@ -158,6 +158,12 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
+import { AxiosError } from 'axios';
+
+interface ErrorResponse {
+  error?: string;
+  message?: string;
+}
 
 const router = useRouter();
 const username = ref('');
@@ -198,13 +204,13 @@ const handleRegister = async () => {
     console.log('Register Success:', response.data);
     router.push('/login');
   } catch (error) {
-    console.error('Register Error:', (error as any).response?.data || (error as any).message);
-    const err = error as any;
+    const axiosError = error as AxiosError<ErrorResponse>;
+    console.error('Register Error:', axiosError.response?.data || axiosError.message);
 
     // Display appropriate backend error messages
-    if (err.response?.status === 400) {
-      errorMessage.value = err.response.data.error || 'Invalid input';
-    } else if (err.response?.status === 409) {
+    if (axiosError.response?.status === 400) {
+      errorMessage.value = axiosError.response.data?.error || 'Invalid input';
+    } else if (axiosError.response?.status === 409) {
       errorMessage.value = 'Email is already in use';
     } else {
       errorMessage.value = 'Registration failed. Please try again.';
