@@ -45,14 +45,35 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        
+        // Check if email exists
         const user = await prisma.users.findUnique({ where: { email } });
-
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                error: 'Account not found. Please register first.' 
+            });
+        }
+        
+        // Check if password is correct
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ 
+                error: 'The email or password you entered is incorrect.' 
+            });
         }
 
-        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        // Generate token with user ID and role
+        const token = jwt.sign(
+            { 
+                userId: user.id, 
+                role: user.role 
+            }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '1d' }
+        );
 
+        // Set HTTP-only cookie
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -60,9 +81,21 @@ export const login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000,
         });
 
-        res.json({ message: 'Login successful' });
+        // Return success message
+        res.json({ 
+            message: 'Login successful',
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            error: 'An error occurred. Please try again.' 
+        });
     }
 };
 
