@@ -128,6 +128,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
+import type { AxiosError } from 'axios';
 
 const router = useRouter();
 const username = ref('');
@@ -166,8 +167,8 @@ const handleRegister = async () => {
     console.log('Register Success:', response.data);
     router.push('/login');
   } catch (error) {
-    console.error('Register Error:', (error as any).response?.data || (error as any).message);
-    const err = error as any;
+    const err = error as AxiosError<{ message?: string }>;
+    console.error('Register Error:', err.response?.data || err.message);
     errorMessage.value = err.response?.data?.message || 'Registration failed. Please try again.';
   } finally {
     isLoading.value = false;

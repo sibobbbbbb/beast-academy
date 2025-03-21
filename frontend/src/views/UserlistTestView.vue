@@ -68,14 +68,12 @@
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { inject, ref , reactive, computed, onMounted, watch} from 'vue';
-import { dummyFetchUserData, deleteUserData, type dataItem, type filterItem } from '@/services/datafetch';
-import type { ComputedRefSymbol } from '@vue/reactivity';
+import { ref, onMounted, watch} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers, type Member } from '@/services/templateServices';
-import Pagination from '@/components/Pagination.vue';
+import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
 
 const perPage = ref(10);
