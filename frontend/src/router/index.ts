@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
-import Home from '../views/Home.vue'
-import Register from '../views/Register.vue'
+import Login from '../views/LoginView.vue'
+import Home from '../views/HomeView.vue'
+import Register from '../views/RegisterView.vue'
 import AddMembersView from '../components/AddMembersForm.vue'
 
 const router = createRouter({
