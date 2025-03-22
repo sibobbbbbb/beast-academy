@@ -12,13 +12,13 @@
 
     <!-- Posts List -->
     <div class="posts">
-      <div v-for="post in displayedPosts" :key="post.id" class="post">
+      <button v-for="post in displayedPosts" :key="post.id" class="post" @click="goToPost(post.id)">
         <div class="post-header">
           <h3>{{ post.author }}</h3>
           <span>{{ post.timestamp }}</span>
         </div>
         <p>{{ post.content }}</p>
-      </div>
+      </button>
       <div ref="loadMoreTrigger" class="load-more-trigger"></div>
     </div>
   </div>
@@ -26,6 +26,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 const newPostContent = ref('');
 const searchQuery = ref('');
@@ -33,6 +34,7 @@ const posts = ref([]);
 const displayedPosts = ref([]);
 const postsPerPage = 20;
 const currentPage = ref(1);
+const router = useRouter();
 
 // Generate 100 dummy posts
 for (let i = 1; i <= 100; i++) {
@@ -62,6 +64,10 @@ const filteredPosts = computed(() => {
 
 const searchPosts = () => {
   // This function is intentionally left blank as the filtering is handled reactively by the computed property
+};
+
+const goToPost = (id) => {
+  router.push(`/eventDetails/${id}`);
 };
 
 onMounted(() => {
@@ -170,6 +176,10 @@ onMounted(() => {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--vt-c-primary-blue);
   animation: slideInRight 0.5s ease-out;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  border: none;
 }
 
 .post-header {
