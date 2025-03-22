@@ -48,6 +48,14 @@ model users {
   member_user member_user[]
 }
 
+model events {
+  id          Int       @id @default(autoincrement())
+  title       String    @default("Event Title") @db.VarChar(50)
+  images      String    @default("")
+  description String?   @default("Description here") @db.VarChar(200)
+  posted_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
 enum user_role {
   admin
   trainer
