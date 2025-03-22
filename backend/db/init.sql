@@ -4,9 +4,13 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     role user_role NOT NULL,
     username VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL
-
+    password VARCHAR(255),  -- Make password nullable for social logins
+    email VARCHAR(100) UNIQUE NOT NULL,
+    provider VARCHAR(20),    -- 'google', 'facebook', etc.
+    provider_id VARCHAR(100),-- ID from the provider
+    avatar TEXT,             -- Profile picture URL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -23,7 +27,6 @@ CREATE TABLE members (
     stat3 INT CHECK (stat3 BETWEEN 1 AND 100),
     stat4 INT CHECK (stat4 BETWEEN 1 AND 100),
     stat5 INT CHECK (stat5 BETWEEN 1 AND 100)
-
 );
 
 CREATE TABLE member_user(
@@ -44,6 +47,11 @@ VALUES
 ('member', 'member1', 'hashedpassword3', 'member1@example.com'),
 ('member', 'member2', 'hashedpassword4', 'member2@example.com'),
 ('member', 'member3', 'hashedpassword5', 'member3@example.com');
+
+-- Insert a dummy social login user
+INSERT INTO users (role, username, password, email, provider, provider_id, avatar)
+VALUES 
+('member', 'Google User', NULL, 'google.user@example.com', 'google', '123456789', 'https://example.com/images/google-avatar.jpg');
 
 -- Insert dummy members
 INSERT INTO members (name, img_url, phone_no, email, stat1, stat2, stat3, stat4, stat5)
@@ -73,11 +81,11 @@ VALUES
 ('Wendy', 'https://example.com/images/wendy.jpg', '3344556679', 'wendy@example.com', 75, 85, 80, 70, 95),
 ('Xander', 'https://example.com/images/xander.jpg', '4455667780', 'xander@example.com', 90, 95, 85, 80, 75),
 ('Yasmine', 'https://example.com/images/yasmine.jpg', '5566778891', 'yasmine@example.com', 65, 75, 85, 90, 70);
-
 -- Insert dummy member_user relationships
 -- Let's assume users with 'member' role are linked to members
 INSERT INTO member_user (u_id, m_id)
 VALUES
 (3, 1),
 (4, 2),
-(5, 3);
+(5, 3),
+(6, 4); -- Link the social login user to a member
