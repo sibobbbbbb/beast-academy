@@ -73,6 +73,20 @@ export const getMemberControllers = async (req, res) => {
   }
 };
 
+// Get member by id
+export const getMemberByIdControllers = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const member = await prisma.members.findUnique({
+      where: { id: parseInt(id) },
+    });
+    res.status(200).json(member);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan saat mengambil data member" });
+  }
+};
+
 // Delete a member
 export const deleteMemberControllers = async (req, res) => {
   const { id } = req.params;
