@@ -1,3 +1,4 @@
+
 <template>
   <div class="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-[var(--vt-c-black-soft)] to-[var(--vt-c-black)]">
     <div class="w-full max-w-md bg-[var(--color-background)] rounded-xl shadow-xl overflow-hidden relative mx-4">
@@ -97,7 +98,7 @@
         
         <div class="mt-6 text-center">
           <p class="text-[var(--color-text)]">
-            Belum punya akun? <router-link to="/register" class="font-medium text-[var(--vt-c-divider-dark-1)] hover:text-[var(--vt-c-text-dark-1)]">Daftar</router-link>
+            Don't have an account? <router-link to="/register" class="font-medium text-[var(--vt-c-divider-dark-1)] hover:text-[var(--vt-c-text-dark-1)]">Register</router-link>
           </p>
         </div>
         
@@ -111,29 +112,19 @@
             </div>
           </div>
           
-          <div class="mt-6 grid grid-cols-2 gap-4">
-            <button 
-              type="button" 
-              @click="signInWithFacebook"
-              class="flex justify-center items-center py-3 px-4 border border-[var(--color-border)] rounded-md shadow-sm bg-[var(--color-background-soft)] text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-mute)]"
-              :disabled="isLoading"
-            >
-              <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.0003 2C6.47731 2 2.00031 6.477 2.00031 12C2.00031 16.991 5.65731 21.128 10.4383 21.879V14.89H7.89831V12H10.4383V9.797C10.4383 7.291 11.9323 5.907 14.2153 5.907C15.3103 5.907 16.4543 6.102 16.4543 6.102V8.562H15.1923C13.9503 8.562 13.5623 9.333 13.5623 10.124V12H16.3363L15.8933 14.89H13.5623V21.879C18.3433 21.129 22.0003 16.99 22.0003 12C22.0003 6.477 17.5233 2 12.0003 2Z" />
-              </svg>
-              Facebook
-            </button>
+          <!-- Single button for Google Sign-In with increased spacing -->
+          <div class="mt-6">
             <button 
               type="button" 
               @click="signInWithGoogle"
               id="googleSignInButton"
-              class="flex justify-center items-center py-3 px-4 border border-[var(--color-border)] rounded-md shadow-sm bg-[var(--color-background-soft)] text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-mute)]"
+              class="w-full flex justify-center items-center py-3 px-4 border border-[var(--color-border)] rounded-md shadow-sm bg-[var(--color-background-soft)] text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-mute)]"
               :disabled="isLoading"
             >
-              <svg class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="h-5 w-5 mr-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814C17.503 2.988 15.139 2 12.545 2 7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-0.013z"/>
               </svg>
-              Google
+              Sign in with Google
             </button>
           </div>
         </div>
@@ -145,16 +136,14 @@
   </div>
 </template>
 
-//Fixed LoginView.vue - TypeScript errors
 
-// Only showing the script section where we need to fix TypeScript errors
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
 import { AxiosError } from 'axios';
 
-// Declare global Google and Facebook SDK variables with proper interfaces
+// Declare global Google SDK variables with proper interfaces
 declare global {
   interface Window {
     google?: {
@@ -166,16 +155,10 @@ declare global {
         }
       }
     };
-    FB?: {
-      init: (config: FacebookInitConfig) => void;
-      login: (callback: (response: FacebookLoginResponse) => void, options: FacebookLoginOptions) => void;
-      getLoginStatus: (callback: (response: FacebookLoginResponse) => void) => void;
-      api: (endpoint: string, callback: (response: Record<string, unknown>) => void) => void;
-    };
   }
 }
 
-// Define interfaces for Google and Facebook SDK
+// Define interfaces for Google SDK
 interface GoogleInitializeConfig {
   client_id: string;
   callback: (response: GoogleCredentialResponse) => void;
@@ -202,27 +185,6 @@ interface GoogleErrorResponse {
   message: string;
 }
 
-interface FacebookInitConfig {
-  appId: string;
-  cookie: boolean;
-  xfbml: boolean;
-  version: string;
-}
-
-interface FacebookLoginResponse {
-  authResponse?: {
-    accessToken: string;
-    expiresIn: string;
-    signedRequest: string;
-    userID: string;
-  };
-  status?: string;
-}
-
-interface FacebookLoginOptions {
-  scope: string;
-}
-
 interface ErrorResponse {
   error?: string;
   message?: string;
@@ -235,6 +197,9 @@ interface UserProfile {
   role: string;
 }
 
+// Define OnErrorEventHandler type for script loading
+type OnErrorEventHandler = ((event: Event | string) => void) | null;
+
 const email = ref('');
 const password = ref('');
 const router = useRouter();
@@ -243,16 +208,13 @@ const loginError = ref(false);
 const errorMessage = ref('Invalid email or password. Please try again.');
 const showPassword = ref(false);
 
-// Configure social login
+// Configure Google login
 onMounted(() => {
   // Debug environment variables
   console.log("VITE_GOOGLE_CLIENT_ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
   
   // Load Google SDK
   loadGoogleScript();
-  
-  // Load Facebook SDK
-  loadFacebookScript();
 });
 
 // Load the Google Sign-In SDK with better error handling
@@ -388,66 +350,6 @@ const signInWithGoogle = () => {
   
   console.log("Redirecting to Google OAuth URL:", authUrl);
   window.location.href = authUrl;
-};
-
-// Load the Facebook SDK
-const loadFacebookScript = () => {
-  const script = document.createElement('script');
-  script.src = 'https://connect.facebook.net/en_US/sdk.js';
-  script.async = true;
-  script.defer = true;
-  script.onload = initializeFacebookSDK;
-  document.head.appendChild(script);
-};
-
-// Initialize Facebook SDK
-const initializeFacebookSDK = () => {
-  if (window.FB) {
-    window.FB.init({
-      appId: import.meta.env.VITE_FACEBOOK_APP_ID,
-      cookie: true,
-      xfbml: true,
-      version: 'v16.0' // Use the latest version
-    });
-  }
-};
-
-// Handle Facebook Sign-In
-const signInWithFacebook = () => {
-  if (!window.FB) {
-    console.error('Facebook SDK is not initialized yet');
-    errorMessage.value = 'Facebook login is not available. Please try again later.';
-    loginError.value = true;
-    return;
-  }
-  
-  isLoading.value = true;
-  
-  window.FB.login(async (response: FacebookLoginResponse) => {
-    if (response.authResponse) {
-      try {
-        const result = await api.post('/auth/facebook', {
-          accessToken: response.authResponse.accessToken
-        }, {
-          withCredentials: true
-        });
-        
-        console.log('Facebook login successful:', result.data);
-        router.push('/userlisttest');
-        await getUserProfile();
-      } catch (error) {
-        const axiosError = error as AxiosError<ErrorResponse>;
-        console.error('Facebook login failed:', axiosError);
-        loginError.value = true;
-        errorMessage.value = axiosError.response?.data?.error || 'Facebook login failed. Please try again.';
-      }
-    } else {
-      console.log('User cancelled Facebook login or did not fully authorize.');
-      loginError.value = true;
-      errorMessage.value = 'Facebook login was cancelled or failed. Please try again.';
-    }
-    isLoading.value = false;
-  }, { scope: 'email,public_profile' });
 };
 
 // Regular email/password login
