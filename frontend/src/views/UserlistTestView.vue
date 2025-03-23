@@ -14,7 +14,7 @@
         per page
       </h3>
     </span>
-    <button @click="() => {router.push('/add-member'); console.log('BABIK')}">Add Member</button>
+    <button @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
     <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
     <table>
@@ -87,11 +87,12 @@ const selectedRole = ref("");
 const totalPages = ref(1);
 const router = useRouter();
 
-const editingMember = ref<string | null>(null);
+const editingMember = ref<number | null>(null);
 const originalName = ref<string | null>(null);
+const originalPhone = ref<string | null>(null);
 const showDeleteColumn = ref(false);
 
-const deleteMember = async (id: string) => {
+const deleteMember = async (id: number) => {
   const confirmed = confirm('Are you sure you want to delete this member?');
   if (confirmed) {
     await deleteMemberById(id);
@@ -100,23 +101,27 @@ const deleteMember = async (id: string) => {
   console.log('Delete member:', id);
 };
 
-function editMember(item: dataItem) {
+function editMember(item: Member) {
   editingMember.value = item.id;
   originalName.value = item.name;
+  originalPhone.value = item.phone_no;
 }
 
-async function saveItem(item: dataItem) {
+async function saveItem(item: Member) {
   editingMember.value = null;
   originalName.value = null;
-  await updateUserData(item.id, item.name);
+  originalPhone.value = null;
+  await updateUserData(item.id, item.name, item.phone_no);
   dataFetcher(0);
   console.log('Save item:', item);
 }
 
-function cancelEdit(item: dataItem) {
-  item.name = originalName.value;
+function cancelEdit(item: Member) {
+  item.name = originalName.value ?? '';
+  item.phone_no = originalPhone.value ?? '';
   editingMember.value = null;
   originalName.value = null;
+  originalPhone.value = null; 
   console.log('Edit cancelled:', item);
 }
 
