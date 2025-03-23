@@ -117,8 +117,8 @@ async function saveItem(item: Member) {
 }
 
 function cancelEdit(item: Member) {
-  item.name = originalName.value;
-  item.phone_no = originalPhone.value;
+  item.name = originalName.value ?? '';
+  item.phone_no = originalPhone.value ?? '';
   editingMember.value = null;
   originalName.value = null;
   originalPhone.value = null; 
