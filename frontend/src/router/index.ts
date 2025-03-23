@@ -21,11 +21,6 @@ const router = createRouter({
       component: () => import('../views/UserlistTestView.vue'),
     },
     {
-      path: '/userlist',
-      name: 'userlist',
-      component: () => import('../views/MemberView.vue'),
-    },
-    {
       path: '/auth/google/callback',
       name: 'GoogleCallback',
       component: () => import('../views/GoogleView.vue'),
