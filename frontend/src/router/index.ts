@@ -30,7 +30,7 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
-    }
+    },
     {
       path: '/auth/google/callback',
       name: 'GoogleCallback',
