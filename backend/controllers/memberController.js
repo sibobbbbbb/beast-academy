@@ -103,13 +103,25 @@ export const deleteMemberControllers = async (req, res) => {
 
 export const updateMemberControllers = async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, phone_no } = req.body;
 
   try {
+    // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
+    if (phone_no) {
+      const existingPhoneNo = await prisma.members.findUnique({
+        where: { phone_no },
+      });
+
+      if (existingPhoneNo && existingPhoneNo.id !== parseInt(id)) {
+        return res.status(409).json({ message: "Nomor telepon sudah digunakan oleh member lain" });
+      }
+    }
+
     await prisma.members.update({
       where: { id: parseInt(id) },
       data: {
-        name
+        name,
+        phone_no
       },
     });
     res.status(200).json({ message: "Member berhasil diupdate" });
