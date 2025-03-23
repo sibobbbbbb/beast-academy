@@ -43,21 +43,29 @@ onMounted(async () => {
   try {
     // Send code to backend for verification
     console.log('Sending code to backend for verification');
-    const response = await api.post('/auth/google/callback', { code }, {
+    await api.post('/auth/google/callback', { code }, {
       withCredentials: true
     });
     
     console.log('Google auth successful');
     router.push('/userlisttest');
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Google auth error:', err);
     
     // Log the error response data to see what the backend is saying
-    if (err.response) {
-      console.error('Backend error response:', err.response.data);
+    if (err && typeof err === 'object' && 'response' in err) {
+      const errorObj = err as { response?: { data?: { error?: string } } };
+      console.error('Backend error response:', errorObj.response?.data);
     }
     
-    error.value = err.response?.data?.error || 'Authentication failed. Please try again.';
+    // Type guard for error with response property
+    const isAxiosError = (err: unknown): err is { response?: { data?: { error?: string } } } => {
+      return typeof err === 'object' && err !== null && 'response' in err;
+    };
+    
+    error.value = isAxiosError(err) 
+      ? err.response?.data?.error || 'Authentication failed. Please try again.'
+      : 'Authentication failed. Please try again.';
     loading.value = false;
   }
 });

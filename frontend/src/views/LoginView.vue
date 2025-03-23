@@ -145,31 +145,82 @@
   </div>
 </template>
 
+//Fixed LoginView.vue - TypeScript errors
+
+// Only showing the script section where we need to fix TypeScript errors
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
 import { AxiosError } from 'axios';
 
-// Declare global Google and Facebook SDK variables
+// Declare global Google and Facebook SDK variables with proper interfaces
 declare global {
   interface Window {
     google?: {
       accounts: {
         id: {
-          initialize: (config: any) => void;
-          renderButton: (element: HTMLElement, config: any) => void;
+          initialize: (config: GoogleInitializeConfig) => void;
+          renderButton: (element: HTMLElement, config: GoogleButtonConfig) => void;
           prompt: () => void;
         }
       }
     };
     FB?: {
-      init: (config: any) => void;
-      login: (callback: (response: any) => void, options: any) => void;
-      getLoginStatus: (callback: (response: any) => void) => void;
-      api: (endpoint: string, callback: (response: any) => void) => void;
+      init: (config: FacebookInitConfig) => void;
+      login: (callback: (response: FacebookLoginResponse) => void, options: FacebookLoginOptions) => void;
+      getLoginStatus: (callback: (response: FacebookLoginResponse) => void) => void;
+      api: (endpoint: string, callback: (response: Record<string, unknown>) => void) => void;
     };
   }
+}
+
+// Define interfaces for Google and Facebook SDK
+interface GoogleInitializeConfig {
+  client_id: string;
+  callback: (response: GoogleCredentialResponse) => void;
+  auto_select?: boolean;
+  cancel_on_tap_outside?: boolean;
+  context?: string;
+  error_callback?: (error: GoogleErrorResponse) => void;
+}
+
+interface GoogleButtonConfig {
+  theme?: string;
+  size?: string;
+  width?: string;
+}
+
+interface GoogleCredentialResponse {
+  credential: string;
+  client_id?: string;
+  select_by?: string;
+}
+
+interface GoogleErrorResponse {
+  type: string;
+  message: string;
+}
+
+interface FacebookInitConfig {
+  appId: string;
+  cookie: boolean;
+  xfbml: boolean;
+  version: string;
+}
+
+interface FacebookLoginResponse {
+  authResponse?: {
+    accessToken: string;
+    expiresIn: string;
+    signedRequest: string;
+    userID: string;
+  };
+  status?: string;
+}
+
+interface FacebookLoginOptions {
+  scope: string;
 }
 
 interface ErrorResponse {
@@ -222,11 +273,11 @@ const loadGoogleScript = () => {
     console.log("Google SDK script loaded successfully");
     initializeGoogleSignIn();
   };
-  script.onerror = (error) => {
+  script.onerror = ((error: Event | string) => {
     console.error("Error loading Google SDK script:", error);
     loginError.value = true;
     errorMessage.value = 'Failed to load Google Sign-In. Please try again later.';
-  };
+  }) as OnErrorEventHandler;
   document.head.appendChild(script);
 };
 
@@ -266,7 +317,7 @@ const initializeGoogleSignIn = () => {
       cancel_on_tap_outside: true,
       context: 'signin',
       // Add error handler
-      error_callback: (error: any) => {
+      error_callback: (error: GoogleErrorResponse) => {
         console.error("Google Sign-In initialization error:", error);
         loginError.value = true;
         errorMessage.value = 'An error occurred with Google Sign-In. Please try again.';
@@ -274,14 +325,6 @@ const initializeGoogleSignIn = () => {
     });
     
     console.log("Google Sign-In initialized successfully");
-    
-    // Optionally render the button directly
-    // if (document.getElementById('googleSignInButton')) {
-    //   window.google.accounts.id.renderButton(
-    //     document.getElementById('googleSignInButton')!,
-    //     { theme: 'outline', size: 'large', width: '100%' }
-    //   );
-    // }
   } catch (error) {
     console.error("Error in Google Sign-In initialization:", error);
     loginError.value = true;
@@ -290,7 +333,7 @@ const initializeGoogleSignIn = () => {
 };
 
 // Handle Google Sign-In response with better error handling
-const handleGoogleSignIn = async (response: any) => {
+const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
   console.log("Google Sign-In response received:", response);
   isLoading.value = true;
   loginError.value = false;
@@ -332,7 +375,6 @@ const handleGoogleSignIn = async (response: any) => {
 };
 
 // Handle Google Sign-In button click with better fallback
-// Replace your signInWithGoogle function with this:
 const signInWithGoogle = () => {
   console.log("Google Sign-In button clicked");
   loginError.value = false;
@@ -347,10 +389,6 @@ const signInWithGoogle = () => {
   console.log("Redirecting to Google OAuth URL:", authUrl);
   window.location.href = authUrl;
 };
-
-
-// Rest of your code remains the same...
-// Facebook login, regular login, etc.
 
 // Load the Facebook SDK
 const loadFacebookScript = () => {
@@ -385,7 +423,7 @@ const signInWithFacebook = () => {
   
   isLoading.value = true;
   
-  window.FB.login(async (response) => {
+  window.FB.login(async (response: FacebookLoginResponse) => {
     if (response.authResponse) {
       try {
         const result = await api.post('/auth/facebook', {
