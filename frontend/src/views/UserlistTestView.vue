@@ -40,7 +40,7 @@
           <td>
             <input 
               type="checkbox" 
-              @change="($event) => $event.target.checked ? selectMember(item) : deselectMember(item)"
+                @change="($event) => ($event.target as HTMLInputElement).checked ? selectMember(item) : deselectMember(item)"
               :checked="selectedMembersMap.has(item.id)"
     />
           </td>
@@ -299,9 +299,11 @@ table {
   }
 }
 
+/*
 .pageButton {
 
 }
+*/
 
 select {
   background-color: var(--color-background-mute);
