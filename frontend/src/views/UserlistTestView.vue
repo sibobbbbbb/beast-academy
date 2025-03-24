@@ -13,6 +13,7 @@
     <button @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
     <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
+    <button @click="(_) => {exportToFile()}"> Export </button>
     <table>
       <thead>
         <tr>
@@ -91,7 +92,7 @@ import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers } from '@/services/templateServices';
 import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
-import { selectedMembersMap, selectMember, deselectMember, clearSelectedMembers, selectMembers, isEmpty, selectedCount } from '@/utils/memberSelection';
+import { selectedMembersMap, selectMember, deselectMember, clearSelectedMembers, selectMembers, isEmpty, selectedCount , exportToFile} from '@/utils/memberSelection';
 import { type Member } from '@/types/member';
 
 const perPage = ref(10);
@@ -198,6 +199,7 @@ const refresh = async (newPage?: number) => {
 onMounted(() => {
   refresh(0);
 });
+
 </script>
 
 <style>
