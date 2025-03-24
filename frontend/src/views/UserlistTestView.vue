@@ -10,7 +10,7 @@
       <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
       <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
-    <button @click="() => {router.push('/add-member'); console.log('BABIK')}">Add Member</button>
+    <button @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
     <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
     <table>
@@ -80,14 +80,12 @@
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { inject, ref , reactive, computed, onMounted, watch, vModelCheckbox} from 'vue';
-import { dummyFetchUserData, deleteUserData, type dataItem, type filterItem } from '@/services/datafetch';
-import type { ComputedRefSymbol } from '@vue/reactivity';
+import { ref, onMounted, watch} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers, type Member } from '@/services/templateServices';
-import Pagination from '@/components/Pagination.vue';
+import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
 
 const perPage = ref(10);
@@ -101,11 +99,12 @@ const selectedRole = ref("");
 const totalPages = ref(1);
 const router = useRouter();
 
-const editingMember = ref<string | null>(null);
+const editingMember = ref<number | null>(null);
 const originalName = ref<string | null>(null);
+const originalPhone = ref<string | null>(null);
 const showDeleteColumn = ref(false);
 
-const deleteMember = async (id: string) => {
+const deleteMember = async (id: number) => {
   const confirmed = confirm('Are you sure you want to delete this member?');
   if (confirmed) {
     await deleteMemberById(id);
@@ -114,23 +113,27 @@ const deleteMember = async (id: string) => {
   console.log('Delete member:', id);
 };
 
-function editMember(item: dataItem) {
+function editMember(item: Member) {
   editingMember.value = item.id;
   originalName.value = item.name;
+  originalPhone.value = item.phone_no;
 }
 
-async function saveItem(item: dataItem) {
+async function saveItem(item: Member) {
   editingMember.value = null;
   originalName.value = null;
-  await updateUserData(item.id, item.name);
+  originalPhone.value = null;
+  await updateUserData(item.id, item.name, item.phone_no);
   dataFetcher(0);
   console.log('Save item:', item);
 }
 
-function cancelEdit(item: dataItem) {
-  item.name = originalName.value;
+function cancelEdit(item: Member) {
+  item.name = originalName.value ?? '';
+  item.phone_no = originalPhone.value ?? '';
   editingMember.value = null;
   originalName.value = null;
+  originalPhone.value = null; 
   console.log('Edit cancelled:', item);
 }
 

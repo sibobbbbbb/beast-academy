@@ -14,12 +14,12 @@ const emits = defineEmits<{
 }>();
 
 const leftPages = computed(() => {
-    let leftMost = Math.max(1, props.currentPage - props.maxPageDistance + 1);
+    const leftMost = Math.max(1, props.currentPage - props.maxPageDistance + 1);
     return Array.from({ length: Math.max(0, props.currentPage - leftMost + 1) }, (_, index) => leftMost + index);
 });
 
 const rightPages = computed(() => {
-    let rightMost = Math.min(props.pageCount, props.currentPage + props.maxPageDistance + 1);
+    const rightMost = Math.min(props.pageCount, props.currentPage + props.maxPageDistance + 1);
     return Array.from({ length: Math.max(0, rightMost - props.currentPage - 1) }, (_, index) => props.currentPage + 2 + index);
 });
 </script>
