@@ -10,23 +10,15 @@
       <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
       <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
-    <span>
-      <h1>User List Test</h1>
-      <h3>Showing
-        <select v-model="perPage">
-          <option :value="10">10</option>
-          <option :value="20">20</option>
-          <option :value="50">50</option>
-        </select>
-        per page
-      </h3>
-    </span>
     <button @click="() => {router.push('/add-member'); console.log('BABIK')}">Add Member</button>
     <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
     <table>
       <thead>
         <tr>
+          <th>
+            <svg style="width: 2rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path style=" color: white" d="M64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16L64 80zM0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM200 344l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"/></svg>
+          </th>
           <th class="shead" style="width: 6rem;">
             <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
           </th>
@@ -45,6 +37,9 @@
 
       <tbody>
         <tr v-for="item in lastFetch" :key="item.id">
+          <td>
+            <button></button>
+          </td>
           <td>{{ item.id }}</td>
           <td>
             <button @click="editMember(item)">Edit</button>
@@ -64,6 +59,16 @@
         </tr>
       </tbody>
     </table>
+    <span style="float: right; margin-top: 1%;">
+      <h3>Showing
+        <select v-model="perPage">
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
+        </select>
+        per page
+      </h3>
+    </span>
 
     <span id="pagination" class="pagination-container">
       <button class="pageButton" @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
@@ -75,7 +80,7 @@
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { inject, ref , reactive, computed, onMounted, watch} from 'vue';
+import { inject, ref , reactive, computed, onMounted, watch, vModelCheckbox} from 'vue';
 import { dummyFetchUserData, deleteUserData, type dataItem, type filterItem } from '@/services/datafetch';
 import type { ComputedRefSymbol } from '@vue/reactivity';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
@@ -256,22 +261,27 @@ button:hover {
 }
 
 table {
-  border: 4px solid var(--color-border);
+  
   padding: 2dvw 1dvw;
   width: 100%;
+  border: 4px solid var(--color-border);
 
   thead {
-    border: 2px solid var(--color-border);
+    
 
     th {
-      border: 2px solid var(--color-border);
+      
       padding: 0.5%;
     }
   }
 
   tbody td {
-    border: 2px solid var(--color-border);
+    border-top : 1px solid var(--color-border);
     padding: 0 1%;
+  }
+
+  tr {
+    height: 1rem;
   }
 
   tr.selected {
@@ -281,6 +291,11 @@ table {
 
 .pageButton {
 
+}
+
+select {
+  background-color: var(--color-background-mute);
+  padding: 0.25rem;
 }
 
 </style>
