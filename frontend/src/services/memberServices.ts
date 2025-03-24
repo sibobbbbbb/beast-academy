@@ -92,3 +92,18 @@ export const updateUserData = async (id: number, name: string, phone_no: string)
     return null;
   }
 };
+
+export const getProfileUsers = async () => {
+  try {
+    const response = await fetch(API_BASE_URL + '/auth/me', {
+      credentials: 'include'
+    });
+    if (!response.ok) {
+      throw new Error('Gagal mengambil data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return null;
+  }
+}
