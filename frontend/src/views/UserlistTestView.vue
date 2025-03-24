@@ -36,9 +36,13 @@
       </thead>
 
       <tbody>
-        <tr v-for="item in lastFetch" :key="item.id">
+        <tr v-for="item in lastFetch" :key="item.id" :class="{ selected : selectedMembersMap.has(item.id) }">
           <td>
-            <button></button>
+            <input 
+              type="checkbox" 
+              @change="($event) => $event.target.checked ? selectMember(item) : deselectMember(item)"
+              :checked="selectedMembersMap.has(item.id)"
+    />
           </td>
           <td>{{ item.id }}</td>
           <td>
@@ -80,13 +84,15 @@
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { ref, onMounted, watch} from 'vue';
+import { ref, onMounted, watch, toValue} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
-import { fetchMembers, type Member } from '@/services/templateServices';
+import { fetchMembers } from '@/services/templateServices';
 import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
+import { selectedMembersMap, selectMember, deselectMember, clearSelectedMembers, selectMembers, isEmpty, selectedCount } from '@/utils/memberSelection';
+import { type Member } from '@/types/member';
 
 const perPage = ref(10);
 const currentPage = ref(0);
@@ -180,6 +186,7 @@ const handleFilter = (role: string) => {
 };
 
 const refresh = async (newPage?: number) => {
+  console.log('Refreshing data...',newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }

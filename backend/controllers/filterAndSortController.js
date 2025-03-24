@@ -45,6 +45,7 @@ export const getMembers = async (req, res) => {
     }
 
     // Query untuk mendapatkan daftar members
+    // console.log(pageNumber, limitNumber, offset, "GET METRICS");
     const members = await prisma.members.findMany({
       where: whereCondition,
       orderBy: { [sortBy]: order },
