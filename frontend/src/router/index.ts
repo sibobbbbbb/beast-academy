@@ -30,7 +30,12 @@ const router = createRouter({
       path: '/auth/google/callback',
       name: 'GoogleCallback',
       component: () => import('../views/GoogleView.vue'),
-    }
+    },
+    {
+      path: '/edit-profile',
+      name: 'edit-profile',
+      component: () => import('../views/EditProfileView.vue'),
+    },
   ],
 })
 

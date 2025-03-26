@@ -95,7 +95,7 @@ export const updateUserData = async (id: number, name: string, phone_no: string)
 
 export const getProfileUsers = async () => {
   try {
-    const response = await fetch(API_BASE_URL + '/auth/me', {
+    const response = await fetch(API_BASE_URL + '/profile', {
       credentials: 'include'
     });
     if (!response.ok) {
@@ -104,6 +104,46 @@ export const getProfileUsers = async () => {
     return await response.json();
   } catch (error) {
     console.error('Error fetching data:', error);
+    return null;
+  }
+}
+
+export const updateProfile = async (name: string, img_url: string, phone_no: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/update-profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, phone_no, img_url }),
+      credentials: 'include'
+    });
+    if (!response.ok) {
+      throw new Error('Gagal mengupdate profile');
+    }
+    return;
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    return null;
+  }
+}
+
+export const checkPhoneNumber = async (phone_no: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/check-phone`,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ phone_no }),
+    });
+    if (response.status >= 500) {
+      throw new Error('Gagal mengecek nomor telepon');
+    }
+    const data = await response.json();
+    return data.isUsed;
+  } catch (error) {
+    console.error('Error checking phone number:', error);
     return null;
   }
 }

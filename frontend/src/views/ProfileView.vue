@@ -77,8 +77,9 @@
           <div class="pt-8">
             <button
               class="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-medium transition-all duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              @click="editProfile"
             >
-              Contact Member
+              Edit Profile
             </button>
           </div>
         </div>
@@ -90,14 +91,9 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
 import { getProfileUsers } from '@/services/memberServices'
-
-interface Member {
-  name: string
-  profilePhoto: string
-  email: string
-  phoneNumber: string
-  joinDate: Date
-}
+import { useRouter } from 'vue-router';
+import type { Member } from '@/types/member'
+import { useMemberStore } from '@/stores/member'
 
 export default defineComponent({
   name: 'MemberProfileCard',
@@ -105,15 +101,22 @@ export default defineComponent({
     const member = ref<Member | null>(null)
     const isLoading = ref(true)
     const error = ref<string | null>(null)
+    const router = useRouter()
+    const store = useMemberStore()
+
+    const editProfile = () => {
+      store.setMember(member.value as Member)
+      router.push('/edit-profile')
+    }
 
     onMounted(async () => {
       try {
         const response = await getProfileUsers()
         member.value = {
-          name: response.username,
-          profilePhoto: response.avatar,
+          name: response.name,
+          profilePhoto: response.img_url,
           email: response.email,
-          phoneNumber: '081242323230 (masih dummy)',
+          phoneNumber: response.phone_no || '-',
           joinDate: new Date(response.created_at)
         }
       } catch (err) {
@@ -133,7 +136,7 @@ export default defineComponent({
       }).format(date)
     }
 
-    return { member, isLoading, error, formatDate }
+    return { member, isLoading, error, formatDate, editProfile }
   }
 })
 </script>
