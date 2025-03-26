@@ -15,6 +15,11 @@ export interface ApiResponse<T> {
   // Add any other properties your API might return
 }
 
+interface DeleteEventResponse {
+  success: boolean;
+  message: string;
+}
+
 export const fetchEvents = async (page = 1): Promise<ApiResponse<EventData[]>> => {
   try {
     const response = await fetch(`${API_BASE_URL}/events?page=${page}`, {
@@ -36,7 +41,7 @@ export const fetchEvents = async (page = 1): Promise<ApiResponse<EventData[]>> =
   }
 }
 
-export const deleteEvents = async (id: string): Promise<ApiResponse<any>> => {
+export const deleteEvents = async (id: string): Promise<ApiResponse<DeleteEventResponse>> => {
   try {
     const response = await fetch(`${API_BASE_URL}/events/${id}`, {
       method: "DELETE",
@@ -49,7 +54,7 @@ export const deleteEvents = async (id: string): Promise<ApiResponse<any>> => {
       throw new Error(`Error deleting event: ${response.statusText}`)
     }
 
-    const data: ApiResponse<any> = await response.json()
+    const data: ApiResponse<DeleteEventResponse> = await response.json()
     return data
   } catch (error) {
     console.error(`Failed to delete event with id ${id}:`, error)

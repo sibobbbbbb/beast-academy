@@ -16,7 +16,7 @@ const emit = defineEmits(['edit', 'delete']);
 const formattedDate = computed(() => {
   try {
     return formatDistanceToNow(new Date(props.event.posted_at), { addSuffix: true });
-  } catch (error) {
+  } catch () {
     return props.event.posted_at || 'Unknown date';
   }
 });

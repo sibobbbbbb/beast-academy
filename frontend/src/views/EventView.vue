@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted} from 'vue';
 import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData} from '@/services/eventServices.ts';
 import EventCard from '../components/EventCard.vue';
 import EventForm from '../components/EventFrom.vue';
@@ -102,7 +102,6 @@ const currentEvent = ref<EventData>({
   posted_at: ''
 });
 const error = ref<string | null>(null);
-const openDropdownId = ref(null);
 
 // Load initial events
 onMounted(async () => {
