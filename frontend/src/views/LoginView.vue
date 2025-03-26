@@ -7,15 +7,15 @@
       
       <!-- Header with logo -->
       <div class="pt-8 pb-6 text-center">
-        <div class="inline-flex items-center justify-center mb-4">
-          <div class="relative w-16 h-16 rounded-full flex items-center justify-center" :style="{ background: 'var(--primary-green)' }">
-            <div class="absolute w-16 h-16 rounded-full border-2 border-[var(--neutral-800)]"></div>
-            <div class="absolute w-14 h-14 rounded-full border-2 border-[var(--neutral-800)]"></div>
-            <div class="absolute w-full h-0.5 bg-[var(--neutral-800)]"></div>
-            <div class="absolute w-0.5 h-full bg-[var(--neutral-800)]"></div>
-          </div>
+        <div class="inline-flex items-center justify-center">
+          <!-- Logo PNG baru disini -->
+          <img 
+            :src="logoImage" 
+            alt="Tennis Community Logo" 
+            class="w-24 h-auto object-contain" 
+          />
         </div>
-        <h1 class="text-2xl font-bold mb-1" :style="{ color: 'var(--primary-blue)' }">Tennis Community</h1>
+        <h1 class="text-2xl font-bold mb-1" :style="{ color: 'var(--primary-blue)' }">BEAST</h1>
         <p class="text-[var(--neutral-800)]">Sign in to your account</p>
       </div>
       
@@ -155,6 +155,7 @@
 
 
 <script setup lang="ts">
+import logoImage from '@/assets/beastLogo.png';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
