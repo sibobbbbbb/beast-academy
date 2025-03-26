@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col" :style="{background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%)' }">
     <!-- Header -->
-    <header class="w-full py-4 !px-6 md:!px-12 flex items-center justify-between">
+    <header class="w-full py-4 !px-6 md:!px-12 flex items-center justify-between ">
       <div class="flex items-center">
         <img :src="logoImage" alt="Tennis Community Logo" class="w-20 h-auto object-contain" />
         <h1 class="text-xl !font-bold !ml-2 text-white">BEAST</h1>
@@ -455,7 +455,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import logoImage from '@/assets/beastLogo.png';
 
 
@@ -466,10 +466,6 @@ const subscribeNewsletter = () => {
   console.log('Newsletter subscription submitted');
 };
 
-// Placeholder function for Google sign-in
-const signInWithGoogle = () => {
-  // Implement Google sign-in logic
-  console.log('Sign in with Google clicked');
-};
+
 </script>
 
