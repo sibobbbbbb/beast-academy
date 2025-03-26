@@ -1,7 +1,8 @@
 :root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+  /* Primary colors */
+  --primary-white: #FFFFFF;
+  --primary-blue: #0084C5;
+  --primary-green: #7FB32A;
 
   --vt-c-black: #181818;
   --vt-c-black-soft: #222222;
@@ -26,11 +27,22 @@
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
 
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
+  --color-border: var(--neutral-400);
+  --color-border-hover: var(--primary-blue);
 
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
+  --color-heading: var(--primary-blue);
+  --color-text: var(--neutral-800);
+  --color-text-light: var(--neutral-600);
+  
+  --color-primary: var(--primary-blue);
+  --color-primary-light: var(--blue-light);
+  --color-primary-lighter: var(--blue-lighter);
+  --color-primary-dark: var(--blue-dark);
+  
+  --color-secondary: var(--primary-green);
+  --color-secondary-light: var(--green-light);
+  --color-secondary-lighter: var(--green-lighter);
+  --color-secondary-dark: var(--green-dark);
 
   --section-gap: 160px;
 }
@@ -86,4 +98,6 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
 }
