@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/LoginView.vue'
 import Home from '../views/HomeView.vue'
 import Register from '../views/RegisterView.vue'
-import AddMembersView from '../components/AddMembersForm.vue'
+import AddMembersView from '@/views/AddMembersView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,10 +22,20 @@ const router = createRouter({
       component: () => import('../views/UserlistTestView.vue'),
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+    },
+    {
       path: '/auth/google/callback',
       name: 'GoogleCallback',
       component: () => import('../views/GoogleView.vue'),
-    }
+    },
+    {
+      path: '/edit-profile',
+      name: 'edit-profile',
+      component: () => import('../views/EditProfileView.vue'),
+    },
   ],
 })
 
