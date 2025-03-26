@@ -1,42 +1,48 @@
 <template>
-  <div class="events-container max-w-2xl mx-auto p-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Events</h1>
+  <div class="events-container mx-auto p-6 bg-gray-50">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-[#0099cc]">Events</h1>
       <button 
         @click="openCreateForm" 
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
+        class="bg-[#0099cc] hover:bg-[#007aa3] text-white px-5 py-2.5 rounded-lg flex items-center font-medium transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 011-1z" clip-rule="evenodd" />
         </svg>
         Create Event
       </button>
     </div>
     
     <!-- Error alert -->
-    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
       {{ error }}
     </div>
     
     <!-- Events list -->
-    <div v-if="events.length > 0" class="space-y-6">
-      <EventCard 
-        v-for="event in events" 
-        :key="event.id" 
-        :event="event"
-        @edit="openEditForm"
-        @delete="openDeleteConfirm"
-      />
+    <div v-if="events.length > 0" class="flex flex-col items-center space-y-6 w-full">
+      <div v-for="event in events" :key="event.id" class="w-full max-w-[70%]">
+        <EventCard 
+          :event="event"
+          @edit="openEditForm"
+          @delete="openDeleteConfirm"
+        />
+      </div>
     </div>
     
     <!-- Empty state -->
-    <div v-else-if="!loading" class="text-center py-10">
-      <p class="text-gray-500">No events found. Create your first event!</p>
+    <div v-else-if="!loading" class="text-center py-16 bg-white rounded-lg shadow-sm">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#e6f5fa] mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#0099cc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">No events found</h3>
+      <p class="text-gray-600">Create your first event to get started!</p>
     </div>
     
     <!-- Loading indicator -->
-    <div v-if="loading" class="flex justify-center py-4">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    <div v-if="loading" class="flex justify-center py-8">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0099cc]"></div>
     </div>
     
     <!-- Sentinel element for infinite scrolling -->
@@ -76,9 +82,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData} from '@/services/eventServices.ts';
-import EventCard from '@/components/EventCard.vue';
-import EventForm from '@/components/EventFrom.vue';
-import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import EventCard from '../components/EventCard.vue';
+import EventForm from '../components/EventFrom.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 
 // State management
 const events = ref<EventData[]>([]);
@@ -88,8 +94,15 @@ const hasMore = ref(true);
 const showCreateForm = ref(false);
 const showEditForm = ref(false);
 const showDeleteConfirm = ref(false);
-const currentEvent = ref<EventData | null>(null);
+const currentEvent = ref<EventData>({
+  id: '',
+  title: '',
+  images: '',
+  description: '',
+  posted_at: ''
+});
 const error = ref<string | null>(null);
+const openDropdownId = ref(null);
 
 // Load initial events
 onMounted(async () => {
@@ -170,16 +183,26 @@ function openDeleteConfirm(event: EventData) {
 }
 
 // Handle create event
-async function handleCreateEvent(eventData: EventData) {
+async function handleCreateEvent(event: EventData) {
   try {
     loading.value = true;
     error.value = null;
     
-    await createEvents(eventData);
+    const response = await createEvents(event);
     showCreateForm.value = false;
     
-    // Reload events to show the new one
-    await loadEvents(true);
+    // Get the created event with its ID from the response
+    const createdEvent = response.data as EventData || response as EventData;
+    
+    // Add the new event to the beginning of the events array
+    // If the API doesn't return a posted_at field, add the current date
+    if (!createdEvent.posted_at) {
+      createdEvent.posted_at = new Date().toISOString();
+    }
+    
+    // Add the new event to the beginning of the array so it appears at the top
+    events.value = [createdEvent, ...events.value];
+    
   } catch (err) {
     error.value = 'Failed to create event. Please try again.';
     console.error(err);

@@ -85,33 +85,33 @@ function handleImageChange(event: Event) {
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="fixed inset-0 bg-[#0099cc] bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
       <div class="p-6">
-        <h2 class="text-xl font-bold mb-4">{{ title }}</h2>
+        <h2 class="text-xl font-bold mb-6 text-[#0099cc]">{{ title }}</h2>
         
         <form @submit.prevent="handleSubmit">
           <!-- Title input -->
-          <div class="mb-4">
+          <div class="mb-5">
             <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input
               id="title"
               v-model="formData.title"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:border-transparent"
               placeholder="Event title"
             />
             <p v-if="errors.title" class="mt-1 text-sm text-red-600">{{ errors.title }}</p>
           </div>
           
           <!-- Description input -->
-          <div class="mb-4">
+          <div class="mb-5">
             <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               id="description"
               v-model="formData.description"
               rows="4"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:border-transparent"
               placeholder="Event description"
             ></textarea>
             <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
@@ -120,27 +120,29 @@ function handleImageChange(event: Event) {
           <!-- Image input -->
           <div class="mb-6">
             <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-            <input
-              id="image"
-              type="file"
-              accept="image/*"
-              @change="handleImageChange"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            
-            <!-- Image preview -->
-            <div v-if="formData.images" class="mt-2">
-              <img :src="formData.images" alt="Preview" class="h-40 object-cover rounded-md" />
+            <div class="border border-gray-300 border-dashed rounded-lg p-4 bg-gray-50">
+              <input
+                id="image"
+                type="file"
+                accept="image/*"
+                @change="handleImageChange"
+                class="w-full"
+              />
+              
+              <!-- Image preview -->
+              <div v-if="formData.images" class="mt-3">
+                <img :src="formData.images" alt="Preview" class="h-40 object-cover rounded-md mx-auto" />
+              </div>
             </div>
             
             <!-- Image URL input -->
-            <div class="mt-2">
+            <div class="mt-3">
               <label for="imageUrl" class="block text-sm font-medium text-gray-700 mb-1">Or enter image URL</label>
               <input
                 id="imageUrl"
                 v-model="formData.images"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:border-transparent"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
@@ -151,13 +153,13 @@ function handleImageChange(event: Event) {
             <button
               type="button"
               @click="handleCancel"
-              class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="px-5 py-2.5 bg-[#0099cc] text-white rounded-lg hover:bg-[#007aa3] focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:ring-offset-2 font-medium transition-colors"
             >
               Save
             </button>
