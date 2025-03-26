@@ -1,6 +1,14 @@
 import { prisma } from "../db/prisma/prisma.js";
 import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
+import cloudinary from "cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Add a new member
 export const addMemberControllers = async (req, res) => {
@@ -41,11 +49,30 @@ export const addMemberControllers = async (req, res) => {
       }
     }
 
+    if (!img_url) {
+      return res.status(400).json({ message: "Request Tidak Valid" });
+    }
+
+    // Upload image to Cloudinary
+    let cloudinaryUrl = null;
+    try {
+      const uploadResult = await cloudinary.v2.uploader.upload(img_url, {
+        folder: 'members',
+        transformation: [,
+          { quality: "auto", fetch_format: "auto" },
+        ]
+      });
+      cloudinaryUrl = uploadResult.secure_url;
+    } catch (uploadError) {
+      console.error('Cloudinary Upload Error:', uploadError);
+      return res.status(400).json({ message: "Gagal mengunggah gambar" });
+    }
+
     // Buat user baru
     await prisma.members.create({
       data: {
         name,
-        img_url,
+        img_url : cloudinaryUrl,
         phone_no : phone || null,
         email,
       }
