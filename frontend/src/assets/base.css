@@ -1,53 +1,71 @@
-/* color palette from <https://github.com/vuejs/theme> */
+/* Tennis App Color Palette */
 :root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+  /* Primary colors */
+  --primary-white: #FFFFFF;
+  --primary-blue: #0084C5;
+  --primary-green: #7FB32A;
 
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
+  /* Shades and tints of blue */
+  --blue-light: #33a0d1;
+  --blue-lighter: #66bcdd;
+  --blue-dark: #0067a3;
+  
+  /* Shades and tints of green */
+  --green-light: #95c251;
+  --green-lighter: #abd178;
+  --green-dark: #6a9623;
 
-  --vt-c-indigo: #2c3e50;
+  /* Neutral colors */
+  --neutral-100: #FFFFFF;
+  --neutral-200: #f8f8f8;
+  --neutral-300: #f2f2f2;
+  --neutral-400: #e0e0e0;
+  --neutral-500: #c0c0c0;
+  --neutral-600: #a0a0a0;
+  --neutral-700: #707070;
+  --neutral-800: #404040;
+  --neutral-900: #202020;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+  /* Legacy variables - remapped to our new palette */
+  --vt-c-white: var(--primary-white);
+  --vt-c-white-soft: var(--neutral-200);
+  --vt-c-white-mute: var(--neutral-300);
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+  --vt-c-black: var(--neutral-900);
+  --vt-c-black-soft: var(--neutral-800);
+  --vt-c-black-mute: var(--neutral-700);
+
+  --vt-c-indigo: var(--primary-blue);
+
+  --vt-c-divider-light-1: rgba(0, 132, 197, 0.29);
+  --vt-c-divider-light-2: rgba(0, 132, 197, 0.12);
+  --vt-c-divider-dark-1: var(--primary-blue);
+  --vt-c-divider-dark-2: rgba(0, 132, 197, 0.7);
 }
-
 /* semantic color variables for this project */
 :root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
+  --color-background: var(--primary-white);
+  --color-background-soft: var(--neutral-200);
+  --color-background-mute: var(--neutral-300);
 
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
+  --color-border: var(--neutral-400);
+  --color-border-hover: var(--primary-blue);
 
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
+  --color-heading: var(--primary-blue);
+  --color-text: var(--neutral-800);
+  --color-text-light: var(--neutral-600);
+  
+  --color-primary: var(--primary-blue);
+  --color-primary-light: var(--blue-light);
+  --color-primary-lighter: var(--blue-lighter);
+  --color-primary-dark: var(--blue-dark);
+  
+  --color-secondary: var(--primary-green);
+  --color-secondary-light: var(--green-light);
+  --color-secondary-lighter: var(--green-lighter);
+  --color-secondary-dark: var(--green-dark);
 
   --section-gap: 160px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: var(--vt-c-black);
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
-
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
-
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
-  }
 }
 
 *,
@@ -84,3 +102,4 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
