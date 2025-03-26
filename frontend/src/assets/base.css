@@ -41,7 +41,7 @@
   --vt-c-divider-light-2: rgba(0, 132, 197, 0.12);
   --vt-c-divider-dark-1: var(--primary-blue);
   --vt-c-divider-dark-2: rgba(0, 132, 197, 0.7);
-
+}
 /* semantic color variables for this project */
 :root {
   --color-background: var(--primary-white);
@@ -103,4 +103,3 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-}
