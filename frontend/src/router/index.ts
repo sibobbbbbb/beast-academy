@@ -42,16 +42,6 @@ const router = createRouter({
       name: 'events',
       component: EventView,
     }
-    {
-      path: '/event',
-      name: 'event',  
-      component: () => import('../views/EventView.vue'),
-    },
-    {
-      path: '/eventdetail/:id',
-      name: 'eventdetail',
-      component: () => import('../views/EventDetails.vue'),
-    },
   ],
 })
 
