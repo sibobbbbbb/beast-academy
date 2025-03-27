@@ -11,6 +11,6 @@ router.delete('/delete-member/:id', deleteMemberControllers);
 router.put('/update-member/:id', updateMemberControllers);
 router.get('/profile',authMiddleware ,getProfileControllers);
 router.put('/update-profile',authMiddleware ,updateProfileControllers);
-router.post('/check-phone', checkPhoneNumberController);
+router.post('/check-phone',authMiddleware ,checkPhoneNumberController);
 
 export default router;
