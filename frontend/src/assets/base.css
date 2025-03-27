@@ -18,14 +18,16 @@
 
   --vt-c-indigo: #2c3e50;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
-
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
+  --vt-c-divider-light-1: rgba(0, 132, 197, 0.29);
+  --vt-c-divider-light-2: rgba(0, 132, 197, 0.12);
+  --vt-c-divider-dark-1: var(--primary-blue);
+  --vt-c-divider-dark-2: rgba(0, 132, 197, 0.7);
+}
+/* semantic color variables for this project */
+:root {
+  --color-background: var(--primary-white);
+  --color-background-soft: var(--neutral-200);
+  --color-background-mute: var(--neutral-300);
 
   --color-border: var(--neutral-400);
   --color-border-hover: var(--primary-blue);
@@ -100,4 +102,3 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-}
