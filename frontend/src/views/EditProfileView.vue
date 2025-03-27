@@ -6,7 +6,42 @@
       <div class="p-6">
         <h1 class="text-2xl font-bold text-gray-800 text-center mb-4">Edit Profile</h1>
 
+        <!-- Image Preview -->
+        <div class="pt-4 mb-4 flex justify-center">
+          <img
+            :src="profilePhoto"
+            alt="Profile Preview"
+            class="w-32 h-32 rounded-full object-cover"
+          />
+        </div>
+
         <form @submit.prevent="submitForm" class="space-y-4">
+          <!-- Profile Photo Field -->
+          <div class="pb-2">
+            <label class="block text-sm font-medium" style="color: var(--color-text);">
+              Profile Image
+            </label>
+            <div class="mt-1 flex items-center">
+              <input
+                id="img_upload"
+                type="file" 
+                accept="image/*"
+                @change="handleImageUpload"
+                class="hidden"
+                ref="imageUploadRef"
+              />
+              <button 
+                type="button" 
+                @click="triggerFileInput"
+                class="text-black w-full py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none hover:bg-indigo-500"
+                style="border-color: var(--color-border);"
+              >
+                {{ 'Change Image' }}
+              </button>
+            </div>
+          </div>
+
+
           <!-- Name Field -->
           <div>
             <label class="block text-sm font-medium text-gray-700">Name</label>
@@ -24,16 +59,6 @@
             <input
               v-model="phoneNumber"
               type="text"
-              class="text-black w-full p-3 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-          </div>
-
-          <!-- Profile Photo Field -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Profile Photo URL</label>
-            <input
-              v-model="profilePhoto"
-              type="url"
               class="text-black w-full p-3 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
@@ -64,6 +89,7 @@ export default defineComponent({
     const router = useRouter()
     const store = useMemberStore()
     const memberData = ref(store.member)
+    let isImageChange = false
 
     if (!memberData.value) {
       router.push('/profile')
@@ -75,8 +101,57 @@ export default defineComponent({
     )
     const profilePhoto = ref(memberData.value?.profilePhoto)
 
+
+    const imageUploadRef = ref<HTMLInputElement | null>(null)
+
+    // Trigger file input click
+    const triggerFileInput = () => {
+      imageUploadRef.value?.click()
+    }
+
+    const handleImageUpload = (event: Event) => {
+      const target = event.target as HTMLInputElement
+      const file = target.files?.[0]
+      if (file) {
+        // Validate file type and size
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif']
+        const maxSize = 5 * 1024 * 1024 // 5MB
+
+        if (!validTypes.includes(file.type)) {
+          alert('Invalid file type. Please upload JPEG, PNG, or GIF.')
+          return
+        }
+
+        if (file.size > maxSize) {
+          ('File size exceeds 5MB limit.')
+          return
+        }
+
+        // Convert file to base64
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          profilePhoto.value = reader.result as string
+          isImageChange = true
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+
+    const isMemberDataChange = () => {
+      if (name.value !== memberData.value?.name) return true
+      if (phoneNumber.value !== memberData.value?.phoneNumber) return true
+      if (profilePhoto.value !== memberData.value?.profilePhoto) return true
+      return false
+    }
+
     const submitForm = async () => {
       try {
+        if (!isMemberDataChange()) {
+          alert('Profile Not Changed')
+          router.push('/profile')
+          return
+        }
+
         // Validasi input data
         if (!name.value || !profilePhoto.value) {
           alert('Please fill in all fields.')
@@ -102,8 +177,8 @@ export default defineComponent({
           }
         }
 
-        if (profilePhoto.value.length > 2048 || !/^https?:\/\/.+\..+/.test(profilePhoto.value)) {
-          alert('Invalid profile photo URL.')
+        if (profilePhoto.value.length > 5 * 1024 * 1024) {
+          alert('Profile photo size exceeds 5MB limit.')
           return
         }
 
@@ -115,8 +190,8 @@ export default defineComponent({
             return
           }
         }
-
-        await updateProfile(name.value, profilePhoto.value, phoneNumber.value || '')
+        if (isImageChange) {await updateProfile(name.value, profilePhoto.value, phoneNumber.value || '')}
+        else {await updateProfile(name.value, '', phoneNumber.value || '')}
         alert('Profile successfully updated!')
         router.push('/profile')
       } catch (error) {
@@ -125,7 +200,7 @@ export default defineComponent({
       }
     }
 
-    return { name, phoneNumber, profilePhoto, submitForm }
+    return { name, phoneNumber, profilePhoto, submitForm, handleImageUpload,triggerFileInput, imageUploadRef }
   },
 })
 </script>

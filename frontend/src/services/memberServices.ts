@@ -136,6 +136,7 @@ export const checkPhoneNumber = async (phone_no: string) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ phone_no }),
+      credentials: 'include'
     });
     if (response.status >= 500) {
       throw new Error('Gagal mengecek nomor telepon');
