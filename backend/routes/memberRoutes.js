@@ -1,6 +1,7 @@
 import express from 'express';
-import { upload, addMemberControllers, getMemberControllers, getMemberByIdControllers ,deleteMemberControllers, updateMemberControllers, getProfileControllers, updateProfileControllers, checkPhoneNumberController } from '../controllers/memberController.js';
+import { addMemberControllers, getMemberControllers, getMemberByIdControllers ,deleteMemberControllers, updateMemberControllers, getProfileControllers, updateProfileControllers, checkPhoneNumberController } from '../controllers/memberController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import { upload } from '../middlewares/multerMiddleware.js';
 
 const router = express.Router();
 

@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { OAuth2Client } from 'google-auth-library';
 import fetch from 'node-fetch';
+import { body, validationResult } from 'express-validator';
+import cloudinary from 'cloudinary'; 
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -11,13 +13,28 @@ const prisma = new PrismaClient();
 // Google OAuth client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 // Registrasi User
 export const register = async (req, res) => {
+  await Promise.all([
+    body("email").isEmail().withMessage("Format email tidak valid").run(req),
+  ]);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
       const { role, username, email, password } = req.body;
+      const img_file = req.file;
 
       // Validate input fields
-      if (!role || !username || !email || !password) {
+      if (!role || !username || !email || !password || !img_file) {
           return res.status(400).json({ error: 'All fields are required' });
       }
 
@@ -29,6 +46,30 @@ export const register = async (req, res) => {
       const existingUser = await prisma.users.findUnique({ where: { email } });
       if (existingUser) {
           return res.status(400).json({ error: 'Email is already in use' });
+      }
+
+      // Upload image to Cloudinary
+      let cloudinaryUrl = null;
+      try {
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.v2.uploader.upload_stream(
+            { 
+              folder: 'members', 
+              transformation: [
+                { quality: "auto", fetch_format: "auto" }
+              ]
+            }, 
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          ).end(img_file.buffer);
+        });
+
+        cloudinaryUrl = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error('Cloudinary Upload Error:', uploadError);
+        return res.status(400).json({ message: "Gagal mengunggah gambar" });
       }
 
       // Hash the password
@@ -49,8 +90,8 @@ export const register = async (req, res) => {
                   data: {
                       name: username,
                       email: email,
-                      img_url: '',  // Default empty string as per schema
-                      stat1: 50,    // Default values for stats
+                      img_url: cloudinaryUrl, 
+                      stat1: 50,   
                       stat2: 50,
                       stat3: 50,
                       stat4: 50,

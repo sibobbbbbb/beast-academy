@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen flex items-center justify-center" :style="{ background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%)' }">
+  <div class="min-h-screen min-w-screen flex items-center justify-center pt-4 pb-4" :style="{ background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%)' }">
     <div class="w-full max-w-md bg-[var(--primary-white)] rounded-xl shadow-xl overflow-hidden relative mx-4">
       <!-- Tennis ball decoration -->
       <div class="absolute -top-10 -right-10 w-20 h-20 rounded-full" :style="{ background: 'var(--primary-green)', opacity: 0.5 }"></div>
@@ -33,6 +33,42 @@
       <!-- Register Form -->
       <div class="px-8 py-6 space-y-6">
         <form @submit.prevent="handleRegister" class="space-y-6 text-[var(--neutral-800)]">
+          <!-- Image Preview -->
+          <div v-if="imagePreviewUrl" class="mb-4 flex justify-center">
+            <img 
+              :src="imagePreviewUrl" 
+              alt="Profile Preview" 
+              class="w-32 h-32 rounded-full object-cover"
+            />
+          </div>
+
+          <!-- Image Upload -->
+          <div class="pb-2">
+            <label class="block text-base font-medium mb-2" :style="{ color: 'var(--primary-blue)' }">
+              Profile Image
+            </label>
+            <div class="mt-1 flex items-center">
+              <input
+                id="img_upload"
+                type="file" 
+                accept="image/*"
+                @change="handleImageUpload"
+                class="hidden"
+                ref="imageUploadRef"
+              />
+              <button 
+                type="button" 
+                @click="triggerFileInput"
+                class="w-full py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none bg-[var(--color-background-soft)] border-[var(--color-border)] hover:bg-[var(--primary-blue)]"
+              >
+                {{ imagePreviewUrl ? 'Change Image' : 'Upload Image' }}
+              </button>
+            </div>
+            <p v-if="errorImage" class="mt-2 text-sm text-red-500">
+              {{ errorImage }}
+            </p>
+          </div>
+          
           <div class="!mb-2">
             <label for="username" class="block text-base font-medium mb-2" :style="{ color: 'var(--primary-blue)' }">Username</label>
             <input 
@@ -168,15 +204,53 @@ interface ErrorResponse {
 }
 
 const router = useRouter();
+const img_file = ref<File | null>(null);
 const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
-const role = ref('member'); // Default role
+const role = ref('member');
 const errorMessage = ref('');
 const isLoading = ref(false);
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
+const imageUploadRef = ref<HTMLInputElement | null>(null)
+const imagePreviewUrl = ref<string | null>(null)
+const errorImage = ref<string | null>(null)
+
+// Trigger file input click
+const triggerFileInput = () => {
+  imageUploadRef.value?.click()
+}
+
+// Handle image upload
+const handleImageUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (file) {
+    // Validate file type and size
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif']
+    const maxSize = 5 * 1024 * 1024 // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      errorImage.value = 'Invalid file type. Please upload JPEG, PNG, or GIF.'
+      return
+    }
+
+    if (file.size > maxSize) {
+      errorImage.value = 'File size exceeds 5MB limit.'
+      return
+    }
+
+    // Clear previous errors
+    errorImage.value = null
+
+    // Set file and create preview
+    img_file.value = file
+    imagePreviewUrl.value = URL.createObjectURL(file)
+  }
+}
 
 const handleRegister = async () => {
   errorMessage.value = '';
@@ -193,15 +267,24 @@ const handleRegister = async () => {
     return;
   }
 
+  if (!img_file.value)
+  {
+    errorImage.value = 'Please upload a profile image';
+    return;
+  }
+
   isLoading.value = true;
 
   try {
-    const response = await api.post('/auth/register', { 
-      username: username.value, 
-      email: email.value, 
-      password: password.value, 
-      role: role.value
-    });
+    const formData = new FormData();
+    formData.append('username', username.value);
+    formData.append('email', email.value);
+    formData.append('password', password.value);
+    formData.append('role', role.value);
+    formData.append('img_file', img_file.value);
+
+
+    const response = await api.post('/auth/register', formData);
 
     console.log('Register Success:', response.data);
     router.push('/login');
