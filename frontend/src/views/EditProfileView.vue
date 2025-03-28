@@ -18,29 +18,28 @@
         <form @submit.prevent="submitForm" class="space-y-4">
           <!-- Profile Photo Field -->
           <div class="pb-2">
-            <label class="block text-sm font-medium" style="color: var(--color-text);">
+            <label class="block text-sm font-medium" style="color: var(--color-text)">
               Profile Image
             </label>
             <div class="mt-1 flex items-center">
               <input
                 id="img_upload"
-                type="file" 
+                type="file"
                 accept="image/*"
                 @change="handleImageUpload"
                 class="hidden"
                 ref="imageUploadRef"
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 @click="triggerFileInput"
                 class="text-black w-full py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none hover:bg-indigo-500"
-                style="border-color: var(--color-border);"
+                style="border-color: var(--color-border)"
               >
                 {{ 'Change Image' }}
               </button>
             </div>
           </div>
-
 
           <!-- Name Field -->
           <div>
@@ -66,9 +65,27 @@
           <div class="pt-4">
             <button
               type="submit"
-              class="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-medium transition-all duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              class="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-medium transition-all duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex justify-center items-center"
+              :disabled="isLoading"
             >
-              Save Changes
+              <svg
+                v-if="isLoading"
+                class="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              {{ isLoading ? 'Saving...' : 'Save Changes' }}
             </button>
           </div>
         </form>
@@ -90,6 +107,7 @@ export default defineComponent({
     const store = useMemberStore()
     const memberData = ref(store.member)
     let isImageChange = false
+    const isLoading = ref(false)
 
     if (!memberData.value) {
       router.push('/profile')
@@ -123,7 +141,7 @@ export default defineComponent({
         }
 
         if (file.size > maxSize) {
-          ('File size exceeds 5MB limit.')
+          ;('File size exceeds 5MB limit.')
           return
         }
 
@@ -152,6 +170,8 @@ export default defineComponent({
           router.push('/profile')
           return
         }
+
+        isLoading.value = true
 
         // Validasi input data
         if (!name.value || !profilePhoto.value) {
@@ -191,17 +211,31 @@ export default defineComponent({
             return
           }
         }
-        if (isImageChange) {await updateProfile(name.value, img_file, phoneNumber.value || '')}
-        else {await updateProfile(name.value, null, phoneNumber.value || '')}
+        if (isImageChange) {
+          await updateProfile(name.value, img_file, phoneNumber.value || '')
+        } else {
+          await updateProfile(name.value, null, phoneNumber.value || '')
+        }
         alert('Profile successfully updated!')
         router.push('/profile')
       } catch (error) {
         console.error('Error updating profile:', error)
         alert('Failed to update profile. Please try again later.')
+      } finally {
+        isLoading.value = false
       }
     }
 
-    return { name, phoneNumber, profilePhoto, submitForm, handleImageUpload,triggerFileInput, imageUploadRef }
+    return {
+      name,
+      phoneNumber,
+      profilePhoto,
+      submitForm,
+      handleImageUpload,
+      triggerFileInput,
+      imageUploadRef,
+      isLoading,
+    }
   },
 })
 </script>
