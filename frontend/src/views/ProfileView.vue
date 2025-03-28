@@ -135,7 +135,6 @@ export default defineComponent({
         day: 'numeric',
       }).format(date)
     }
-
     return { member, isLoading, error, formatDate, editProfile }
   }
 })

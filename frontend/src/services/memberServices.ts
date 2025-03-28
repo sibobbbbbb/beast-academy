@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-import type { FormData, FormErrors } from '@/types/MemberForm'
+import type { FormDataMember, FormErrors } from '@/types/MemberForm'
 
 export const getMember = async () => {
   try {
@@ -30,19 +30,26 @@ export const deleteMemberById = async (id: number) => {
 };
 
 export const addNewMember = async (
-  form: FormData,
+  formData: FormDataMember,
   errors: FormErrors,
   apiError: { value: string | null },
   isSubmitting: { value: boolean },
   formSubmitted: { value: boolean }
 ) => {
   try {
+    const form = new FormData()
+    form.append('name', formData.name)
+    form.append('email', formData.email)
+    if (formData.img_file) {
+      form.append('img_file', formData.img_file);
+    }
+    if (formData.phone) {
+      form.append('phone', formData.phone);
+    }
+
     const response = await fetch(`${API_BASE_URL}/add-member`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(form),
+      body: form,
     })
 
     const data = await response.json()
@@ -61,10 +68,10 @@ export const addNewMember = async (
       }
     } else {
       formSubmitted.value = true
-      form.name = ''
-      form.img_url = ''
-      form.email = ''
-      form.phone = ''
+      formData.name = ''
+      formData.img_file = null
+      formData.email = ''
+      formData.phone = ''
     }
   } catch (error) {
     apiError.value = 'Network error. Please check your connection and try again.'
@@ -108,18 +115,22 @@ export const getProfileUsers = async () => {
   }
 }
 
-export const updateProfile = async (name: string, img_url: string, phone_no: string) => {
+export const updateProfile = async (name: string, img_file: File | null, phone_no: string) => {
   try {
+    const formData = new FormData();
+    formData.append('name', name);
+    if (img_file) {
+      formData.append('img_file', img_file);
+    }
+    formData.append('phone_no', phone_no);
+    
     const response = await fetch(`${API_BASE_URL}/update-profile`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, phone_no, img_url }),
+      body: formData,
       credentials: 'include'
     });
     if (!response.ok) {
-      throw new Error('Gagal mengupdate profile');
+      throw new Error(response.statusText);
     }
     return;
   } catch (error) {
@@ -136,6 +147,7 @@ export const checkPhoneNumber = async (phone_no: string) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ phone_no }),
+      credentials: 'include'
     });
     if (response.status >= 500) {
       throw new Error('Gagal mengecek nomor telepon');

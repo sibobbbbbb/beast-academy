@@ -12,34 +12,46 @@
     <div class="mt-8 w-full sm:mx-auto sm:max-w-md">
       <div class="py-8 px-4 shadow sm:rounded-lg sm:px-10 border" 
            style="background: var(--color-background); border-color: var(--color-border);">
-        <div v-if="formSubmitted" class="rounded-md p-4 mb-6" 
-             style="background: var(--color-background-soft);">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg
-                class="h-5 w-5"
-                style="color: #42b883;"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium" style="color: var(--color-text);">
-                Member added successfully!
-              </p>
-            </div>
-          </div>
+        
+        <!-- Image Preview -->
+        <div v-if="imagePreviewUrl" class="mb-4 flex justify-center">
+          <img 
+            :src="imagePreviewUrl" 
+            alt="Profile Preview" 
+            class="w-32 h-32 rounded-full object-cover"
+          />
         </div>
 
         <form class="space-y-6" @submit.prevent="submitForm">
-          <!-- Name -->
+          <!-- Image Upload -->
+          <div class="pb-2">
+            <label class="block text-sm font-medium" style="color: var(--color-text);">
+              Profile Image
+            </label>
+            <div class="mt-1 flex items-center">
+              <input
+                id="img_upload"
+                type="file" 
+                accept="image/*"
+                @change="handleImageUpload"
+                class="hidden"
+                ref="imageUploadRef"
+              />
+              <button 
+                type="button" 
+                @click="triggerFileInput"
+                class="w-full py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none"
+                style="background-color: var(--color-background-soft); border-color: var(--color-border);"
+              >
+                {{ imagePreviewUrl ? 'Change Image' : 'Upload Image' }}
+              </button>
+            </div>
+            <p v-if="errors.img_file" class="mt-2 text-sm text-red-500">
+              {{ errors.img_file }}
+            </p>
+          </div>
+
+          <!-- Name Input -->
           <div class="pb-2">
             <label for="name" class="block text-sm font-medium" style="color: var(--color-text);">
               Name
@@ -54,13 +66,14 @@
                 class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.name }"
                 style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
-                :style="errors.name ? 'border-color: #ff6666;' : ''"
               />
             </div>
-            <p v-if="errors.name" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-2 text-sm text-red-500">
+              {{ errors.name }}
+            </p>
           </div>
 
-          <!-- Email -->
+          <!-- Email Input -->
           <div class="pb-2">
             <label for="email" class="block text-sm font-medium" style="color: var(--color-text);">
               Email
@@ -75,35 +88,15 @@
                 class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.email }"
                 style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
-                :style="errors.email ? 'border-color: #ff6666;' : ''"
               />
             </div>
-            <p v-if="errors.email" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.email }}</p>
+            <p v-if="errors.email" class="mt-2 text-sm text-red-500">
+              {{ errors.email }}
+            </p>
           </div>
 
-          <!-- Image -->
+          <!-- Phone Input -->
           <div class="pb-2">
-            <label for="img_url" class="block text-sm font-medium" style="color: var(--color-text);">
-              Image URL
-            </label>
-            <div class="mt-1">
-              <input
-                id="img_url"
-                v-model="form.img_url"
-                name="img_url"
-                type="img_url"
-                autocomplete="new-img_url"
-                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
-                :class="{ 'border-red-500': errors.img_url }"
-                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
-                :style="errors.img_url ? 'border-color: #ff6666;' : ''"
-              />
-            </div>
-            <p v-if="errors.img_url" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.img_url }}</p>
-          </div>
-
-          <!-- Phone -->
-          <div class="pb-4">
             <label for="phone" class="block text-sm font-medium" style="color: var(--color-text);">
               Phone Number <span class="text-xs opacity-70">(Optional)</span>
             </label>
@@ -117,11 +110,12 @@
                 class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
                 :class="{ 'border-red-500': errors.phone }"
                 style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
-                :style="errors.phone ? 'border-color: #ff6666;' : ''"
                 placeholder="Optional"
               />
             </div>
-            <p v-if="errors.phone" class="mt-2 text-sm" style="color: #ff6666;">{{ errors.phone }}</p>
+            <p v-if="errors.phone" class="mt-2 text-sm text-red-500">
+              {{ errors.phone }}
+            </p>
           </div>
 
           <!-- API Error message -->
@@ -129,8 +123,7 @@
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg
-                  class="h-5 w-5"
-                  style="color: #ff6666;"
+                  class="h-5 w-5 text-red-500"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -191,33 +184,75 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import { addNewMember } from '@/services/memberServices'
-import type { FormData, FormErrors } from '@/types/MemberForm'
+import type { FormDataMember, FormErrors } from '@/types/MemberForm'
 
 export default defineComponent({
   name: 'AddMemberForm',
   setup() {
-    const form = reactive<FormData>({
+    // Form data reactive object
+    const form = reactive<FormDataMember>({
       name: '',
-      img_url: '',
+      img_file: null as File | null,
       email: '',
       phone: '',
     })
 
+    // Refs for form state and validation
     const errors = reactive<FormErrors>({})
     const apiError = ref<string | null>(null)
     const isSubmitting = ref(false)
     const formSubmitted = ref(false)
+    const imageUploadRef = ref<HTMLInputElement | null>(null)
+    const imagePreviewUrl = ref<string | null>(null)
 
+    // Trigger file input click
+    const triggerFileInput = () => {
+      imageUploadRef.value?.click()
+    }
+
+    // Handle image upload
+    const handleImageUpload = (event: Event) => {
+      const target = event.target as HTMLInputElement
+      const file = target.files?.[0]
+
+      if (file) {
+        // Validate file type and size
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif']
+        const maxSize = 5 * 1024 * 1024 // 5MB
+
+        if (!validTypes.includes(file.type)) {
+          errors.img_file = 'Invalid file type. Please upload JPEG, PNG, or GIF.'
+          return
+        }
+
+        if (file.size > maxSize) {
+          errors.img_file = 'File size exceeds 5MB limit.'
+          return
+        }
+
+        // Clear previous errors
+        delete errors.img_file
+
+        // Set file and create preview
+        form.img_file = file
+        imagePreviewUrl.value = URL.createObjectURL(file)
+      }
+    }
+
+    // Form validation
     const validateForm = (): boolean => {
+      // Clear previous errors
       Object.keys(errors).forEach((key) => delete errors[key as keyof FormErrors])
       apiError.value = null
       let isValid = true
 
+      // Name validation
       if (!form.name) {
         errors.name = 'Name is required'
         isValid = false
       }
 
+      // Email validation
       if (!form.email) {
         errors.email = 'Email is required'
         isValid = false
@@ -226,11 +261,13 @@ export default defineComponent({
         isValid = false
       }
 
-      if (!form.img_url) {
-        errors.img_url = 'Image Url is required'
+      // Image validation
+      if (!form.img_file) {
+        errors.img_file = 'Profile image is required'
         isValid = false
       }
 
+      // Phone validation (optional)
       if (form.phone && !/^\d{10,15}$/.test(form.phone.replace(/\s+/g, ''))) {
         errors.phone = 'Please enter a valid phone number'
         isValid = false
@@ -239,10 +276,23 @@ export default defineComponent({
       return isValid
     }
 
+    // Form submission
     const submitForm = async () => {
+      // Validate form
       if (!validateForm()) return
+
+      // Set submitting state
       isSubmitting.value = true
-      await addNewMember(form, errors, apiError, isSubmitting, formSubmitted)
+
+      try {
+        // Call service to add member
+        await addNewMember(form, errors, apiError, isSubmitting, formSubmitted)
+      } catch (error) {
+        console.error('Member addition failed', error)
+        apiError.value = 'Failed to add member. Please try again.'
+      } finally {
+        isSubmitting.value = false
+      }
     }
 
     return {
@@ -251,7 +301,11 @@ export default defineComponent({
       apiError,
       isSubmitting,
       formSubmitted,
+      imageUploadRef,
+      imagePreviewUrl,
+      triggerFileInput,
       submitForm,
+      handleImageUpload
     }
   },
 })
