@@ -14,9 +14,9 @@
            style="background: var(--color-background); border-color: var(--color-border);">
         
         <!-- Image Preview -->
-        <div v-if="form.img_url" class="mb-4 flex justify-center">
+        <div v-if="imagePreviewUrl" class="mb-4 flex justify-center">
           <img 
-            :src="form.img_url" 
+            :src="imagePreviewUrl" 
             alt="Profile Preview" 
             class="w-32 h-32 rounded-full object-cover"
           />
@@ -43,11 +43,11 @@
                 class="w-full py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none"
                 style="background-color: var(--color-background-soft); border-color: var(--color-border);"
               >
-                {{ form.img_url ? 'Change Image' : 'Upload Image' }}
+                {{ imagePreviewUrl ? 'Change Image' : 'Upload Image' }}
               </button>
             </div>
-            <p v-if="errors.img_url" class="mt-2 text-sm text-red-500">
-              {{ errors.img_url }}
+            <p v-if="errors.img_file" class="mt-2 text-sm text-red-500">
+              {{ errors.img_file }}
             </p>
           </div>
 
@@ -184,15 +184,15 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import { addNewMember } from '@/services/memberServices'
-import type { FormData, FormErrors } from '@/types/MemberForm'
+import type { FormDataMember, FormErrors } from '@/types/MemberForm'
 
 export default defineComponent({
   name: 'AddMemberForm',
   setup() {
     // Form data reactive object
-    const form = reactive<FormData>({
+    const form = reactive<FormDataMember>({
       name: '',
-      img_url: '',
+      img_file: null as File | null,
       email: '',
       phone: '',
     })
@@ -203,6 +203,7 @@ export default defineComponent({
     const isSubmitting = ref(false)
     const formSubmitted = ref(false)
     const imageUploadRef = ref<HTMLInputElement | null>(null)
+    const imagePreviewUrl = ref<string | null>(null)
 
     // Trigger file input click
     const triggerFileInput = () => {
@@ -220,24 +221,21 @@ export default defineComponent({
         const maxSize = 5 * 1024 * 1024 // 5MB
 
         if (!validTypes.includes(file.type)) {
-          errors.img_url = 'Invalid file type. Please upload JPEG, PNG, or GIF.'
+          errors.img_file = 'Invalid file type. Please upload JPEG, PNG, or GIF.'
           return
         }
 
         if (file.size > maxSize) {
-          errors.img_url = 'File size exceeds 5MB limit.'
+          errors.img_file = 'File size exceeds 5MB limit.'
           return
         }
 
         // Clear previous errors
-        delete errors.img_url
+        delete errors.img_file
 
-        // Convert file to base64
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          form.img_url = reader.result as string
-        }
-        reader.readAsDataURL(file)
+        // Set file and create preview
+        form.img_file = file
+        imagePreviewUrl.value = URL.createObjectURL(file)
       }
     }
 
@@ -264,8 +262,8 @@ export default defineComponent({
       }
 
       // Image validation
-      if (!form.img_url) {
-        errors.img_url = 'Profile image is required'
+      if (!form.img_file) {
+        errors.img_file = 'Profile image is required'
         isValid = false
       }
 
@@ -304,6 +302,7 @@ export default defineComponent({
       isSubmitting,
       formSubmitted,
       imageUploadRef,
+      imagePreviewUrl,
       triggerFileInput,
       submitForm,
       handleImageUpload
