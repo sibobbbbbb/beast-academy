@@ -12,7 +12,7 @@ cloudinary.config({
 });
 
 // Multer configuration for file upload
-const upload = multer({
+export const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB file size limit
@@ -24,12 +24,12 @@ const upload = multer({
       cb(new Error("Not an image! Please upload an image."), false);
     }
   },
-});
+}).single('img_file');;
 
 // Add a new member
 export const addMemberControllers = [
   // Multer middleware for file upload
-  upload.single("img_file"),
+  upload,
 
   async (req, res) => {
     // Validasi data masuk
@@ -237,7 +237,8 @@ export const updateProfileControllers = async (req, res) => {
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  const { name, phone_no, img_url } = req.body;
+  const { name, phone_no } = req.body;
+  const img_file = req.file;
 
   try {
     const m_id = await prisma.member_user.findFirst({
@@ -272,7 +273,7 @@ export const updateProfileControllers = async (req, res) => {
       return res.status(400).json({ message: "Request Tidak Valid" });
     }
 
-    if (!img_url) {
+    if (!img_file) {
       await prisma.members.update({
         where: { id: m_id.m_id },
         data: {
@@ -287,31 +288,40 @@ export const updateProfileControllers = async (req, res) => {
       });
 
       const lastImgUrl = lastMemberData.img_url;
-
-      try {
-        const publicId = lastImgUrl.split("/").pop().split(".")[0];
-        await cloudinary.v2.uploader.destroy(`members/${publicId}`);
-      } catch (deleteError) {
-        console.warn("Failed to delete old image:", deleteError);
+      if (!lastImgUrl || !lastImgUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/v1743012173/members/'))
+      {
+        try {
+          const publicId = lastImgUrl.split("/").pop().split(".")[0];
+          await cloudinary.v2.uploader.destroy(`members/${publicId}`);
+        } catch (deleteError) {
+          console.error("Failed to delete old image:", deleteError);
+        }
       }
-
+        
       // Upload image to Cloudinary
       let cloudinaryUrl = null;
       try {
-        const uploadResult = await cloudinary.v2.uploader.upload(img_url, {
-          folder: "members",
-          transformation: [, { quality: "auto", fetch_format: "auto" }],
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.v2.uploader.upload_stream(
+            { 
+              folder: 'members', 
+              transformation: [
+                { quality: "auto", fetch_format: "auto" }
+              ]
+            }, 
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          ).end(img_file.buffer);
         });
+
         cloudinaryUrl = uploadResult.secure_url;
       } catch (uploadError) {
-        console.error("Cloudinary Upload Error:", uploadError);
+        console.error('Cloudinary Upload Error:', uploadError);
         return res.status(400).json({ message: "Gagal mengunggah gambar" });
       }
-
-      const m_id = await prisma.member_user.findFirst({
-        where: { u_id: decoded.userId },
-      });
-
+      
       await prisma.members.update({
         where: { id: m_id.m_id },
         data: {

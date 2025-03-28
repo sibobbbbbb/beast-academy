@@ -100,7 +100,7 @@ export default defineComponent({
       memberData.value?.phoneNumber === '-' ? '' : memberData.value?.phoneNumber,
     )
     const profilePhoto = ref(memberData.value?.profilePhoto)
-
+    let img_file: File | null = null
 
     const imageUploadRef = ref<HTMLInputElement | null>(null)
 
@@ -134,13 +134,14 @@ export default defineComponent({
           isImageChange = true
         }
         reader.readAsDataURL(file)
+        img_file = file
       }
     }
 
     const isMemberDataChange = () => {
       if (name.value !== memberData.value?.name) return true
       if (phoneNumber.value !== memberData.value?.phoneNumber) return true
-      if (profilePhoto.value !== memberData.value?.profilePhoto) return true
+      if (isImageChange) return true
       return false
     }
 
@@ -190,8 +191,8 @@ export default defineComponent({
             return
           }
         }
-        if (isImageChange) {await updateProfile(name.value, profilePhoto.value, phoneNumber.value || '')}
-        else {await updateProfile(name.value, '', phoneNumber.value || '')}
+        if (isImageChange) {await updateProfile(name.value, img_file, phoneNumber.value || '')}
+        else {await updateProfile(name.value, null, phoneNumber.value || '')}
         alert('Profile successfully updated!')
         router.push('/profile')
       } catch (error) {

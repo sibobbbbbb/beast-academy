@@ -115,18 +115,22 @@ export const getProfileUsers = async () => {
   }
 }
 
-export const updateProfile = async (name: string, img_url: string, phone_no: string) => {
+export const updateProfile = async (name: string, img_file: File | null, phone_no: string) => {
   try {
+    const formData = new FormData();
+    formData.append('name', name);
+    if (img_file) {
+      formData.append('img_file', img_file);
+    }
+    formData.append('phone_no', phone_no);
+    
     const response = await fetch(`${API_BASE_URL}/update-profile`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, phone_no, img_url }),
+      body: formData,
       credentials: 'include'
     });
     if (!response.ok) {
-      throw new Error('Gagal mengupdate profile');
+      throw new Error(response.statusText);
     }
     return;
   } catch (error) {
