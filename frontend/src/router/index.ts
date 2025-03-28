@@ -4,6 +4,7 @@ import Home from '../views/HomeView.vue'
 import Register from '../views/RegisterView.vue'
 import AddMembersView from '@/views/AddMembersView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import EventView from '@/views/EventView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,11 @@ const router = createRouter({
       name: 'edit-profile',
       component: () => import('../views/EditProfileView.vue'),
     },
+    {
+      path: '/events',
+      name: 'events',
+      component: EventView,
+    }
   ],
 })
 
