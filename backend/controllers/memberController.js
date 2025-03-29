@@ -314,6 +314,13 @@ export const updateProfileControllers = async (req, res) => {
           phone_no: phone_no === "" ? null : phone_no,
         },
       });
+
+      await prisma.users.update({
+        where: { id: decoded.userId },
+        data: {
+          avatar: cloudinaryUrl,
+        },
+      });
     }
     res.status(200).json({ message: "Profile berhasil diupdate" });
   } catch (error) {
