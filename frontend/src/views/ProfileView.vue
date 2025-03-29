@@ -1,11 +1,12 @@
 <template>
+  <Navbar />
   <div class="flex justify-center items-center min-h-screen bg-gray-100 p-4">
     <div
       class="w-full max-w-md bg-white overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 rounded-lg"
     >
       <!-- Loading Spinner -->
       <div v-if="isLoading" class="flex justify-center items-center h-96">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500 border-solid"></div>
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-[var(--primary-blue)] border-solid"></div>
       </div>
 
       <!-- Error Message -->
@@ -16,12 +17,12 @@
       <!-- Profile Content -->
       <template v-else>
         <!-- Photo Sections -->
-        <div class="relative bg-gradient-to-r from-blue-500 to-indigo-600 h-40 md:h-48">
+        <div class="relative bg-[var(--primary-blue)] h-40 md:h-48">
           <div class="absolute -bottom-14 left-1/2 transform -translate-x-1/2">
             <img
               :src="member?.profilePhoto"
               :alt="`${member?.name}`"
-              class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white object-cover transition-transform duration-300 hover:scale-105"
+              class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white object-cover "
               referrerpolicy="no-referrer"
             />
           </div>
@@ -30,7 +31,7 @@
         <div class="pt-16 pb-8 px-6">
           <div class="text-center">
             <h1
-              class="text-2xl cursor-default font-bold text-gray-800 mb-2 transition-colors duration-300 hover:text-indigo-600"
+              class="text-2xl cursor-default font-bold text-gray-800 mb-2 transition-colors duration-300 hover:text-[var(--primary-blue)]"
             >
               {{ member?.name }}
             </h1>
@@ -43,7 +44,7 @@
             <div
               class="flex items-center transition-all duration-300 hover:bg-gray-50 p-3 rounded-md"
             >
-              <div class="flex-shrink-0 text-indigo-500">
+              <div class="flex-shrink-0 text-[var(--primary-blue)]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
@@ -59,7 +60,7 @@
             <div
               class="flex items-center transition-all duration-300 hover:bg-gray-50 p-3 rounded-md"
             >
-              <div class="flex-shrink-0 text-indigo-500">
+              <div class="flex-shrink-0 text-[var(--primary-blue)]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                   <path
                     d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"
@@ -76,7 +77,7 @@
 
           <div class="pt-8">
             <button
-              class="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-medium transition-all duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              class="w-full bg-[var(--primary-blue)] text-white py-3 px-6 rounded-md font-medium transition-all duration-300 hover:bg-[var(--blue-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-dark)] focus:ring-offset-2 cursor-pointer"
               @click="editProfile"
             >
               Edit Profile
@@ -94,9 +95,13 @@ import { getProfileUsers } from '@/services/memberServices'
 import { useRouter } from 'vue-router';
 import type { Member } from '@/types/member'
 import { useMemberStore } from '@/stores/member'
+import Navbar from '@/components/Navbar.vue'
 
 export default defineComponent({
   name: 'MemberProfileCard',
+  components: {
+    Navbar
+  },
   setup() {
     const member = ref<Member | null>(null)
     const isLoading = ref(true)
