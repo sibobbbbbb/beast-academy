@@ -335,7 +335,7 @@ const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
     });
     
     console.log('Google login successful:', result.data);
-    router.push('/userlisttest');
+    router.push('/');
     await getUserProfile();
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
@@ -388,7 +388,7 @@ const handleLogin = async () => {
     
     // No need to store token in localStorage since it's in httpOnly cookie
     // Instead, just redirect to the dashboard
-    router.push('/userlisttest');
+    router.push('/');
     
     // For testing: Get the user profile which includes role
     await getUserProfile();

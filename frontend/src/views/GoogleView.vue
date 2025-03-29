@@ -48,7 +48,7 @@ onMounted(async () => {
     });
     
     console.log('Google auth successful');
-    router.push('/userlisttest');
+    router.push('/');
   } catch (err: unknown) {
     console.error('Google auth error:', err);
     

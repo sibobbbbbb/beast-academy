@@ -14,7 +14,8 @@
         <a href="#contact" class="text-white hover:text-[var(--primary-green)] transition-colors">Contact</a>
       </nav>
       
-      <div class="flex items-center !space-x-4">
+      <!-- Auth Buttons - Show only when NOT logged in -->
+      <div v-if="!isLoggedIn" class="flex items-center !space-x-4">
         <router-link to="/login" class="text-white hover:text-[var(--primary-green)] transition-colors">Login</router-link>
         <router-link 
           to="/register" 
@@ -23,6 +24,33 @@
           Register
         </router-link>
       </div>
+
+    <!-- User Profile - Show only when logged in -->
+    <div v-else class="flex items-center">
+      <div class="relative group">
+        <button class="flex items-center !space-x-2 text-white hover:text-[var(--primary-green)] transition-colors focus:outline-none cursor-pointer">
+          <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-white">
+            <img v-if="userAvatar" :src="userAvatar" alt="Profile" class="w-full h-full object-cover" />
+            <div v-else class="w-full h-full flex items-center justify-center bg-[var(--primary-green)] text-white font-medium">
+              {{ userInitials }}
+            </div>
+          </div>
+          <span class="hidden md:inline-block">{{ userName }}</span>
+          <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': isProfileMenuOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- Dropdown menu -->
+        <div class="absolute right-0 !mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 transition-all duration-200 origin-top-right transform scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100">
+          <div class="py-1">
+            <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</router-link>
+            <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</router-link>
+            <button @click="handleLogout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
       
       <!-- Mobile menu button -->
       <button class="md:hidden text-white">
@@ -45,13 +73,19 @@
         <p class="text-xl text-white/90 !mb-8 max-w-lg mx-auto md:mx-0">
           Join the largest tennis community platform. Find matches, improve your skills, and connect with players at your level.
         </p>
+        <!-- Hero Section tombol untuk user yang sudah login -->
+        <!-- Hero Section tombol untuk user yang sudah login -->
         <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start !space-y-4 sm:!space-y-0 sm:!space-x-4">
+          <!-- Tombol Join Now hanya tampil untuk user yang belum login -->
           <router-link 
+            v-if="!isLoggedIn"
             to="/register" 
             class="w-full sm:w-auto bg-[var(--primary-green)] hover:bg-[var(--green-light)] text-white border border-white/30 !px-8 !py-3 rounded-md !font-medium transition-colors"
           >
             Join Now
           </router-link>
+          
+          <!-- Tombol Learn More selalu tampil -->
           <a 
             href="#features" 
             class="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/30 !px-8 !py-3 rounded-md !font-medium transition-colors"
@@ -321,30 +355,41 @@
         </div>
       </div>
     </section>
-    
+
     <!-- CTA Section -->
     <section id="contact" class="!py-16 md:!py-24" :style="{ background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%)' }">
       <div class="container !mx-auto !px-6 md:!px-12">
         <div class="max-w-4xl !mx-auto text-center">
-          <h2 class="text-3xl md:text-4xl !font-bold !mb-6 text-white">Ready to Join Our Tennis Community?</h2>
-          <p class="text-white/90 !mb-8 text-lg">
-            Sign up today and start connecting with tennis players in your area. Find matches, improve your skills, and become part of our growing community.
-          </p>
+          <!-- Show CTA heading and buttons only for non-logged in users -->
+          <template v-if="!isLoggedIn">
+            <h2 class="text-3xl md:text-4xl !font-bold !mb-6 text-white">Ready to Join Our Tennis Community?</h2>
+            <p class="text-white/90 !mb-8 text-lg">
+              Sign up today and start connecting with tennis players in your area. Find matches, improve your skills, and become part of our growing community.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center !space-y-4 sm:!space-y-0 sm:!space-x-4">
+              <router-link 
+                to="/register" 
+                class="bg-white text-[var(--primary-blue)] hover:bg-[var(--neutral-200)] !px-8 !py-3 rounded-md !font-medium transition-colors"
+              >
+                Create Account
+              </router-link>
+              <router-link 
+                to="/login" 
+                class="bg-transparent border border-white text-white hover:bg-white/10 !px-8 !py-3 rounded-md !font-medium transition-colors"
+              >
+                Sign In
+              </router-link>
+            </div>
+          </template>
           
-          <div class="flex flex-col sm:flex-row justify-center !space-y-4 sm:!space-y-0 sm:!space-x-4">
-            <router-link 
-              to="/register" 
-              class="bg-white text-[var(--primary-blue)] hover:bg-[var(--neutral-200)] !px-8 !py-3 rounded-md !font-medium transition-colors"
-            >
-              Create Account
-            </router-link>
-            <router-link 
-              to="/login" 
-              class="bg-transparent border border-white text-white hover:bg-white/10 !px-8 !py-3 rounded-md !font-medium transition-colors"
-            >
-              Sign In
-            </router-link>
-          </div>
+          <!-- For logged in users, show different heading -->
+          <template v-else>
+            <h2 class="text-3xl md:text-4xl !font-bold !mb-6 text-white">Welcome to Our Tennis Community!</h2>
+            <p class="text-white/90 !mb-8 text-lg">
+              Thanks for being part of our growing tennis community. Stay connected and discover new opportunities to improve your game.
+            </p>
+          </template>
           
           <!-- Tennis ball decoration -->
           <div class="relative !mt-16">
@@ -371,7 +416,7 @@
         </div>
       </div>
     </section>
-    
+        
     <!-- Footer -->
     <footer class="bg-white !py-12">
       <div class="container !mx-auto !px-6 md:!px-12">
@@ -457,15 +502,56 @@
 
 <script setup lang="ts">
 import logoImage from '@/assets/beastLogo.png';
+import { ref, onMounted, computed } from 'vue';
+import api from '@/utils/axios';
 
+// Authentication state
+const isLoggedIn = ref(false);
+const userName = ref('');
+const userAvatar = ref('');
+const isProfileMenuOpen = ref(false);
 
+// Compute user initials for avatar fallback
+const userInitials = computed(() => {
+  if (!userName.value) return '';
+  return userName.value.charAt(0).toUpperCase();
+});
+
+const handleLogout = async () => {
+  try {
+    await api.post('/auth/logout', {}, {
+      withCredentials: true
+    });
+    isLoggedIn.value = false;
+    // Redirect to home or login page if needed
+    window.location.reload(); // atau gunakan router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+};
+
+// Check if user is logged in on component mount
+onMounted(async () => {
+  try {
+    const response = await api.get('/auth/me', {
+      withCredentials: true // Important for sending the auth cookie
+    });
+    if (response.data) {
+      isLoggedIn.value = true;
+      userName.value = response.data.username;
+      userAvatar.value = response.data.avatar || '';
+    }
+  } catch (error) {
+    console.log('User not logged in');
+    isLoggedIn.value = false;
+  }
+});
 
 // Placeholder function for newsletter subscription
 const subscribeNewsletter = () => {
   // Implement newsletter subscription logic
   console.log('Newsletter subscription submitted');
 };
-
-
 </script>
+
 
