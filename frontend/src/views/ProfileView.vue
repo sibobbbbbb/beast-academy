@@ -148,7 +148,6 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
 import { getProfileUsers, updateProfile, checkPhoneNumber } from '@/services/memberServices'
 import Navbar from '@/components/Navbar.vue'
 
@@ -158,7 +157,6 @@ export default defineComponent({
     Navbar
   },
   setup() {
-    const router = useRouter()
     
     // Form data
     const name = ref('')
