@@ -1,102 +1,206 @@
 <template>
-  <div class="events-container mx-auto p-6 bg-gray-50">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold text-[#0099cc]">Events</h1>
-      <button 
-        @click="openCreateForm" 
-        class="bg-[#0099cc] hover:bg-[#007aa3] text-white px-5 py-2.5 rounded-lg flex items-center font-medium transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 011-1z" clip-rule="evenodd" />
-        </svg>
-        Create Event
-      </button>
-    </div>
+  <div class="min-h-screen bg-[#f8f8f8]">
+    <!-- Navbar placeholder - will use the existing Navbar component -->
+    <Navbar />
+    
+    <div class="container !mx-auto !px-6 md:!px-12 !pt-24 !pb-16">
+      <!-- Header with tennis ball decoration -->
+      <div class="relative !mb-8">
+        <div class="absolute -top-6 -right-6 w-16 h-16 rounded-full hidden md:block" style="background: #7FB32A; opacity: 0.2"></div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center !mb-8">
+          <div>
+            <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: #0084C5">Tennis Events</h1>
+            <p class="text-[#707070] max-w-xl">Find and join tennis tournaments, clinics, and social events in your area</p>
+          </div>
+          
+          <button 
+            @click="openCreateForm" 
+            class="mt-4 md:mt-0 bg-[#0084C5] hover:bg-[#0067a3] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Create Event
+          </button>
+        </div>
+      </div>
 
-    <!-- Search Bar -->
-    <div class="search-bar">
-      <input
-        v-model="searchQuery"
-        @input="handleSearch"
-        type="text"
-        placeholder="Search events..."
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc]"
+      <!-- Search and Filter Bar -->
+      <div class="bg-white rounded-xl shadow-sm !p-4 !mb-8">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 flex items-center !pl-3 pointer-events-none">
+                <svg class="w-5 h-5 text-[#a0a0a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <input
+                v-model="searchQuery"
+                @input="handleSearch"
+                type="text"
+                placeholder="Search events..."
+                class="w-full !pl-10 !py-3 !px-4 bg-[#f8f8f8] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0084C5]"
+              />
+            </div>
+          </div>
+          
+          <!-- Filter buttons could be added here -->
+        </div>
+      </div>
+
+      <!-- Error alert -->
+      <div v-if="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 !p-4 rounded-lg !mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="!ml-3">
+            <p class="text-sm">{{ error }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events list -->
+      <div v-if="filteredEvents.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 !gap-6">
+        <div v-for="event in filteredEvents" :key="event.id" class="w-full">
+          <div 
+            class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg hover:scale-[1.02] hover: border border-transparent transition-all duration-300 cursor-pointer"
+            @click="viewEventDetails(event)"
+          >
+            <!-- Event image -->
+            <div class="relative h-48 bg-[#f2f2f2] overflow-hidden">
+              <img 
+                :src="event.images || ''" 
+                :alt="event.title"
+                class="w-full h-full object-cover"
+                @error="handleImageError"
+              />
+              <!-- Tennis ball decoration -->
+              <div class="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center" style="background: #7FB32A">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            
+            <!-- Event content -->
+            <div class="!p-5">
+              <h3 class="text-xl !font-bold !mb-2 text-[#404040] line-clamp-1">{{ event.title }}</h3>
+              
+              <p class="text-sm text-[#a0a0a0] !mb-3">
+                {{ formatDate(event.posted_at) }}
+              </p>
+              
+              <p class="text-[#707070] !mb-4 line-clamp-2">{{ event.description }}</p>
+              
+              <!-- Action buttons -->
+              <div class="flex justify-end items-center">
+                <div class="flex space-x-2">
+                  <button 
+                    @click.stop="openEditForm(event)" 
+                    class="p-2 text-[#a0a0a0] hover:text-[#0084C5] rounded-full hover:bg-[#f8f8f8] z-10 cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  
+                  <button 
+                    @click.stop="openDeleteConfirm(event)" 
+                    class="p-2 text-[#a0a0a0] hover:text-red-500 rounded-full hover:bg-[#f8f8f8] z-10 cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="!loading" class="bg-white rounded-xl shadow-sm !p-12 text-center">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#f2f2f2] !mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#0084C5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 class="text-2xl !font-bold text-[#404040] !mb-3">No events found</h3>
+        <p class="text-[#a0a0a0] !mb-6 max-w-md mx-auto">
+          There are no tennis events available right now. Create your first event to get started!
+        </p>
+        <button 
+          @click="openCreateForm" 
+          class="bg-[#0084C5] hover:bg-[#0067a3] text-white !px-6 !py-3 rounded-lg inline-flex items-center !font-medium transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          Create New Event
+        </button>
+      </div>
+
+      <!-- Loading indicator -->
+      <div v-if="loading" class="flex justify-center !py-12">
+        <div class="relative">
+          <!-- Tennis ball loading spinner -->
+          <div class="w-16 h-16 rounded-full animate-ping absolute" style="background: #7FB32A; opacity: 0.3"></div>
+          <div class="w-16 h-16 rounded-full animate-pulse" style="background: #7FB32A; opacity: 0.6"></div>
+          <div class="w-16 h-16 rounded-full border-4 border-[#0084C5] border-t-transparent animate-spin"></div>
+        </div>
+      </div>
+
+      <!-- Sentinel element for infinite scrolling -->
+      <div id="sentinel" class="h-4 w-full"></div>
+
+      <!-- Create Event Modal -->
+      <EventForm
+        v-if="showCreateForm"
+        :event="currentEvent"
+        title="Create New Event"
+        @save="handleCreateEvent"
+        @cancel="showCreateForm = false"
+      />
+      
+      <!-- Edit Event Modal -->
+      <EventForm
+        v-if="showEditForm"
+        :event="currentEvent"
+        title="Edit Event"
+        @save="handleEditEvent"
+        @cancel="showEditForm = false"
+      />
+      
+      <!-- Delete Confirmation Modal -->
+      <ConfirmDialog
+        v-if="showDeleteConfirm"
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+        confirm-text="Delete"
+        cancel-text="Cancel"
+        @confirm="handleDeleteEvent"
+        @cancel="showDeleteConfirm = false"
       />
     </div>
-
-    <!-- Error alert -->
-    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-      {{ error }}
-    </div>
-
-    <!-- Events list -->
-    <div v-if="filteredEvents.length > 0" class="event-card-container flex flex-col items-center w-full">
-      <div v-for="event in filteredEvents" :key="event.id" class="w-full max-w-[70%]">
-        <EventCard 
-          :event="event"
-          @edit="openEditForm"
-          @delete="openDeleteConfirm"
-        />
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-else-if="!loading" class="text-center py-16 bg-white rounded-lg shadow-sm">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#e6f5fa] mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#0099cc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <h3 class="text-xl font-semibold text-gray-800 mb-2">No events found</h3>
-      <p class="text-gray-600">Create your first event to get started!</p>
-    </div>
-
-    <!-- Loading indicator -->
-    <div v-if="loading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0099cc]"></div>
-    </div>
-
-    <!-- Sentinel element for infinite scrolling -->
-    <div id="sentinel" class="h-4 w-full"></div>
-
-    <!-- Create Event Modal -->
-    <EventForm
-      v-if="showCreateForm"
-      :event="currentEvent"
-      title="Create New Event"
-      @save="handleCreateEvent"
-      @cancel="showCreateForm = false"
-    />
     
-    <!-- Edit Event Modal -->
-    <EventForm
-      v-if="showEditForm"
-      :event="currentEvent"
-      title="Edit Event"
-      @save="handleEditEvent"
-      @cancel="showEditForm = false"
-    />
-    
-    <!-- Delete Confirmation Modal -->
-    <ConfirmDialog
-      v-if="showDeleteConfirm"
-      title="Delete Event"
-      message="Are you sure you want to delete this event? This action cannot be undone."
-      confirm-text="Delete"
-      cancel-text="Cancel"
-      @confirm="handleDeleteEvent"
-      @cancel="showDeleteConfirm = false"
-    />
+    <!-- Tennis court decoration at bottom -->
+    <div class="h-2" style="background: linear-gradient(90deg, #7FB32A 0%, #95c251 100%)"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData } from '@/services/eventServices.ts';
-import EventCard from '../components/EventCard.vue';
 import EventForm from '../components/EventFrom.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
+import Navbar from '@/components/Navbar.vue';
 
 // State management
 const events = ref<EventData[]>([]);
@@ -180,6 +284,32 @@ function handleIntersect(entries: IntersectionObserverEntry[]) {
 function handleSearch() {
   // This function is triggered on every input change in the search bar
 }
+
+// Format date
+function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// Handle image error
+function handleImageError(e: Event) {
+  const target = e.target as HTMLImageElement;
+  target.src = ''; // You can set a default image here
+  target.classList.add('bg-[#f2f2f2]');
+}
+const router = useRouter();
+
+function viewEventDetails(event: EventData) {
+  // Navigate to the event details page
+  router.push(`/event-details/${event.id}`);
+}
+
 
 // Open create form
 function openCreateForm() {
@@ -281,20 +411,20 @@ async function handleDeleteEvent() {
 </script>
 
 <style scoped>
-.events-container {
-  min-height: 100vh;
+/* Component-specific styles */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.search-bar input {
-  color: black; 
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-
-.search-bar {
-  margin: 10px;
-}
-
-.event-card-container > div {
-  margin-bottom: 8px; /* Tambahkan margin bawah 8px */
-}
-
 </style>
