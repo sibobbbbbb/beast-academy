@@ -51,12 +51,6 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
-      path: '/edit-profile',
-      name: 'edit-profile',
-      component: () => import('../views/EditProfileView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/events',
       name: 'events',
       component: EventView,
