@@ -1,67 +1,10 @@
 <template>
-  <div class="min-h-screen flex flex-col" :style="{background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%)' }">
+  <div class="min-h-screen flex flex-col pt-20" :style="{background: 'var(--primary-blue)'}">
     <!-- Header -->
-    <header class="w-full py-4 !px-6 md:!px-12 flex items-center justify-between ">
-      <div class="flex items-center">
-        <img :src="logoImage" alt="Tennis Community Logo" class="w-20 h-auto object-contain" />
-        <h1 class="text-xl !font-bold !ml-2 text-white">BEAST</h1>
-      </div>
-      
-      <nav class="hidden md:flex items-center !space-x-15">
-        <a href="#features" class="text-white hover:text-[var(--primary-green)] transition-colors">Features</a>
-        <a href="#about" class="text-white hover:text-[var(--primary-green)] transition-colors">About</a>
-        <a href="#community" class="text-white hover:text-[var(--primary-green)] transition-colors">Community</a>
-        <a href="#contact" class="text-white hover:text-[var(--primary-green)] transition-colors">Contact</a>
-      </nav>
-      
-      <!-- Auth Buttons - Show only when NOT logged in -->
-      <div v-if="!isLoggedIn" class="flex items-center !space-x-4">
-        <router-link to="/login" class="text-white hover:text-[var(--primary-green)] transition-colors">Login</router-link>
-        <router-link 
-          to="/register" 
-          class="bg-white text-[var(--primary-blue)] !px-4 !py-2 rounded-md hover:bg-[var(--neutral-200)] transition-colors !font-medium"
-        >
-          Register
-        </router-link>
-      </div>
-
-    <!-- User Profile - Show only when logged in -->
-    <div v-else class="flex items-center">
-      <div class="relative group">
-        <button class="flex items-center !space-x-2 text-white hover:text-[var(--primary-green)] transition-colors focus:outline-none cursor-pointer">
-          <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-white">
-            <img v-if="userAvatar" :src="userAvatar" alt="Profile" class="w-full h-full object-cover" />
-            <div v-else class="w-full h-full flex items-center justify-center bg-[var(--primary-green)] text-white font-medium">
-              {{ userInitials }}
-            </div>
-          </div>
-          <span class="hidden md:inline-block">{{ userName }}</span>
-          <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': isProfileMenuOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        
-        <!-- Dropdown menu -->
-        <div class="absolute right-0 !mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 transition-all duration-200 origin-top-right transform scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100">
-          <div class="py-1">
-            <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</router-link>
-            <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</router-link>
-            <button @click="handleLogout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">Sign out</button>
-          </div>
-        </div>
-      </div>
-    </div>
-      
-      <!-- Mobile menu button -->
-      <button class="md:hidden text-white">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-      </button>
-    </header>
+    <Navbar />
     
     <!-- Hero Section -->
-    <section class="relative flex-1 flex flex-col md:flex-row items-center justify-center !px-6 md:!px-12 !py-16 md:!py-24">
+    <section class="relative flex-1 flex flex-col md:flex-row items-center justify-center !px-6 md:!px-12 !py-16 md:!py-24 ">
       <!-- Tennis ball decoration -->
       <div class="absolute top-10 right-10 w-32 h-32 rounded-full" :style="{ background: 'var(--primary-green)', opacity: 0.2 }"></div>
       <div class="absolute bottom-20 left-10 w-24 h-24 rounded-full" :style="{ background: 'var(--primary-green)', opacity: 0.15 }"></div>
@@ -357,7 +300,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section id="contact" class="!py-16 md:!py-24" :style="{ background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%)' }">
+    <section id="contact" class="!py-16 md:!py-24" :style="{ background: 'var(--primary-blue)' }">
       <div class="container !mx-auto !px-6 md:!px-12">
         <div class="max-w-4xl !mx-auto text-center">
           <!-- Show CTA heading and buttons only for non-logged in users -->
@@ -502,33 +445,16 @@
 
 <script setup lang="ts">
 import logoImage from '@/assets/beastLogo.png';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted} from 'vue';
 import api from '@/utils/axios';
+import Navbar from '@/components/Navbar.vue';
 
 // Authentication state
 const isLoggedIn = ref(false);
 const userName = ref('');
 const userAvatar = ref('');
-const isProfileMenuOpen = ref(false);
 
-// Compute user initials for avatar fallback
-const userInitials = computed(() => {
-  if (!userName.value) return '';
-  return userName.value.charAt(0).toUpperCase();
-});
 
-const handleLogout = async () => {
-  try {
-    await api.post('/auth/logout', {}, {
-      withCredentials: true
-    });
-    isLoggedIn.value = false;
-    // Redirect to home or login page if needed
-    window.location.reload(); // atau gunakan router.push('/login')
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
-};
 
 // Check if user is logged in on component mount
 onMounted(async () => {
