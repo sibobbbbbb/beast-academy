@@ -20,8 +20,8 @@
       </a>
     </nav>
     
-    <!-- Auth Buttons - Show only when NOT logged in -->
-    <div v-if="!authStore.isLoggedIn" class="flex items-center !space-x-4">
+    <!-- Auth Buttons - Show only when NOT logged in AND on desktop -->
+    <div v-if="!authStore.isLoggedIn" class="hidden md:flex items-center !space-x-4">
       <router-link to="/login" class="text-white !font-medium hover:text-[var(--primary-green)] transition-colors">Login</router-link>
       <router-link 
         to="/register" 
@@ -31,8 +31,8 @@
       </router-link>
     </div>
     
-    <!-- User Profile Dropdown - Show only when logged in -->
-    <div v-else class="flex items-center">
+    <!-- User Profile Dropdown - Show only when logged in AND on desktop -->
+    <div v-else class="hidden md:flex items-center">
       <div class="relative group">
         <button class="flex items-center !space-x-2 text-white hover:text-[var(--primary-green)] transition-colors focus:outline-none cursor-pointer">
           <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-white">
@@ -47,7 +47,7 @@
           </svg>
         </button>
         
-        <!-- Dropdown menu -->
+        <!-- Dropdown menu - only for desktop -->
         <div class="absolute right-0 !mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 transition-all duration-200 origin-top-right transform scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100">
           <div class="py-1">
             <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</router-link>
@@ -72,46 +72,54 @@
   </header>
   
   <!-- Mobile Menu -->
-  <div 
-    v-show="mobileMenuOpen" 
-    class="md:hidden bg-[var(--primary-blue)] pb-4 px-6 z-10"
-  >
-    <nav class="flex flex-col space-y-2">
-      <a 
-        v-for="item in navigationItems" 
-        :key="item.path"
-        :href="item.path"
-        class="py-2 text-white hover:text-[var(--primary-green)] transition-colors"
-        @click="closeMobileMenu"
-      >
-        {{ item.name }}
-      </a>
-    </nav>
-    
-    <div v-if="authStore.isLoggedIn" class="mt-4 pt-4 border-t border-white/20">
-      <router-link to="/profile" class="block py-2 text-white hover:text-[var(--primary-green)]" @click="closeMobileMenu">My Profile</router-link>
-      <router-link to="/edit-profile" class="block py-2 text-white hover:text-[var(--primary-green)]" @click="closeMobileMenu">Edit Profile</router-link>
-      <button @click="handleLogout" class="w-full text-left py-2 text-white hover:text-red-300">Sign out</button>
+<div 
+  v-show="mobileMenuOpen" 
+  class="fixed top-[48px] left-0 right-0 md:hidden bg-[var(--primary-blue)] pb-4 px-6 z-40 shadow-lg"
+>
+  <nav class="flex flex-col !space-y-2 pt-8">
+    <a 
+      v-for="item in navigationItems" 
+      :key="item.path"
+      :href="item.path"
+      class="py-3 text-white hover:text-[var(--primary-green)] transition-colors !font-medium text-base border-b border-white/10"
+      @click="closeMobileMenu"
+    >
+      {{ item.name }}
+    </a>
+  </nav>
+  
+  <div v-if="authStore.isLoggedIn" class="!mt-4 pt-4 border-t border-white/20">
+    <div class="flex items-center !mb-4">
+      <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white !mr-3">
+        <img v-if="authStore.userAvatar" :src="authStore.userAvatar" alt="Profile" class="w-full h-full object-cover" />
+        <div v-else class="w-full h-full flex items-center justify-center bg-[var(--primary-green)] text-white !font-medium">
+          {{ authStore.userInitials }}
+        </div>
+      </div>
+      <span class="text-white !font-medium">{{ authStore.userName }}</span>
     </div>
-    
-    <div v-else class="mt-4 pt-4 border-t border-white/20 flex flex-col space-y-2">
-      <router-link 
-        to="/login" 
-        class="py-2 text-white hover:text-[var(--primary-green)]"
-        @click="closeMobileMenu"
-      >
-        Login
-      </router-link>
-      <router-link 
-        to="/register" 
-        class="py-2 text-white hover:text-[var(--primary-green)]"
-        @click="closeMobileMenu"
-      >
-        Register
-      </router-link>
-    </div>
-    
+    <router-link to="/profile" class="block py-3 text-white hover:text-[var(--primary-green)] border-b border-white/10" @click="closeMobileMenu">My Profile</router-link>
+    <router-link to="/settings" class="block py-3 text-white hover:text-[var(--primary-green)] border-b border-white/10" @click="closeMobileMenu">Settings</router-link>
+    <button @click="handleLogout" class="w-full text-left py-3 text-white hover:text-red-300 !font-medium !mt-2">Sign out</button>
   </div>
+  
+  <div v-else class="!mt-4 pt-4 border-t border-white/20 flex flex-col !space-y-2">
+    <router-link 
+      to="/login" 
+      class="py-3 text-white hover:text-[var(--primary-green)] !font-medium border-b border-white/10"
+      @click="closeMobileMenu"
+    >
+      Login
+    </router-link>
+    <router-link 
+      to="/register" 
+      class="py-3 text-white hover:text-[var(--primary-green)] !font-medium"
+      @click="closeMobileMenu"
+    >
+      Register
+    </router-link>
+  </div>
+</div>
   
 </template>
 
@@ -138,9 +146,6 @@ const toggleMobileMenu = () => {
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false;
 };
-
-// Dropdown state
-const isDropdownOpen = ref(false);
 
 // Navigation items
 const navigationItems = [
@@ -170,12 +175,10 @@ onBeforeUnmount(() => {
 });
 
 // Logout handler
-// Logout handler
 const handleLogout = async () => {
   const success = await authStore.logout();
   if (success) {
     mobileMenuOpen.value = false;
-    isDropdownOpen.value = false;
     
     // Redirect ke halaman home dan reload halaman
     router.push('/').then(() => {

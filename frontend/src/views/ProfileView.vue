@@ -30,7 +30,7 @@
         </div>
 
         <form @submit.prevent="submitForm" class="pt-16 pb-5 px-6">
-          <div class="text-center mb-6">
+          <div class="text-center !mb-6">
             <input 
               type="file" 
               ref="imageUploadRef" 
@@ -42,32 +42,32 @@
             <button
               type="button"
               @click="triggerFileInput"
-              class="text-sm text-[var(--primary-blue)] hover:underline focus:outline-none"
+              class="text-sm text-[var(--primary-blue)] hover:underline focus:outline-none cursor-pointer"
             >
               Change photo
             </button>
-            <p v-if="errors.img" class="mt-1 text-sm text-red-500">{{ errors.img }}</p>
-            <p class="text-sm cursor-default text-gray-500 font-medium mt-2">
+            <p v-if="errors.img" class="!mt-1 text-sm text-red-500">{{ errors.img }}</p>
+            <p class="text-sm cursor-default text-gray-500 font-medium !mt-2">
               Member since {{ formatDate(joinDate) }}
             </p>
           </div>
 
-          <div class="mt-6 space-y-4">
+          <div class="!mt-6 !space-y-4">
             <!-- Name Field -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Name <span class="text-red-600"> * </span></label>
+              <label class="block text-sm font-medium text-gray-700 !mb-1">Name <span class="text-red-600"> * </span></label>
               <input
                 v-model="name"
                 type="text"
                 class="w-full p-3 border rounded-md focus:ring-2 focus:ring-[var(--primary-blue)] focus:outline-none text-gray-800"
                 required
               />
-              <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>
+              <p v-if="errors.name" class="!mt-1 text-sm text-red-500">{{ errors.name }}</p>
             </div>
 
             <!-- Email Field (Read-only) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label class="block text-sm font-medium text-gray-700 !mb-1">Email</label>
               <div class="flex items-center p-3 border rounded-md bg-gray-50">
                 <div class="flex-shrink-0 text-[var(--primary-blue)]">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -83,7 +83,7 @@
 
             <!-- Phone Number Field -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <label class="block text-sm font-medium text-gray-700 !mb-1">Phone Number</label>
               <div class="flex items-center p-3 border rounded-md">
                 <div class="flex-shrink-0 text-[var(--primary-blue)]">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -101,7 +101,7 @@
                   />
                 </div>
               </div>
-              <p v-if="errors.phone" class="mt-1 text-sm text-red-500">{{ errors.phone }}</p>
+              <p v-if="errors.phone" class="!mt-1 text-sm text-red-500">{{ errors.phone }}</p>
             </div>
           </div>
 
@@ -331,10 +331,10 @@ export default defineComponent({
         notification.message = 'Profile updated successfully!'
         notification.type = 'success'
         
-        // Clear notification after 3 seconds
+        // Refresh halaman setelah 1 detik
         setTimeout(() => {
-          notification.message = ''
-        }, 3000)
+          window.location.reload();
+        }, 1000)
       } catch (error) {
         console.error('Error updating profile:', error)
         notification.message = 'Failed to update profile. Please try again later.'

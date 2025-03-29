@@ -16,7 +16,7 @@
           
           <button 
             @click="openCreateForm" 
-            class="mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
+            class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
