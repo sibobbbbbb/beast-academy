@@ -70,7 +70,7 @@ const goBack = () => {
 };
 
 onMounted(() => {
-  const eventId = route.params.id;
+  const eventId = route.params.id as string;
   fetchEventDetails(eventId);
 });
 </script>
