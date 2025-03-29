@@ -26,12 +26,20 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+interface Event {
+  id: number;
+  title: string;
+  images: string;
+  description: string;
+  posted_at: string;
+}
+
 const route = useRoute();
 const router = useRouter();
-const event = ref(null);
-const error = ref(null);
+const event = ref<Event | null>(null);
+const error = ref<string | null>(null);
 
-const fetchEventDetails = async (id) => {
+const fetchEventDetails = async (id: string) => {
   try {
     const response = await fetch(`http://localhost:3000/api/eventDetails/${id}`, {
       method: 'GET',
