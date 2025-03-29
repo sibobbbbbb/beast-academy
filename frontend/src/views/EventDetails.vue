@@ -13,7 +13,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 class="text-2xl md:text-3xl font-bold" style="color: var(--primary-blue)">Event Details</h1>
+        <h1 class="text-2xl md:text-3xl !font-bold" style="color: var(--primary-blue)">Event Details</h1>
       </div>
       
       <!-- Loading state -->
@@ -72,12 +72,12 @@
           
           <div class="relative">
             <div class="flex items-center !mb-4">
-              <div class="bg-[var(--primary-blue)]/10 text-[var(--primary-blue)] px-3 py-1 rounded-full text-sm font-medium">
+              <div class="bg-[var(--primary-blue)]/10 text-[var(--primary-blue)] px-3 py-1 rounded-full text-sm !font-medium">
                 {{ formatDate(event.posted_at) }}
               </div>
             </div>
             
-            <h2 class="text-2xl md:text-3xl font-bold !mb-4 text-[var(--neutral-800)]">{{ event.title }}</h2>
+            <h2 class="text-2xl md:text-3xl !font-bold !mb-4 text-[var(--neutral-800)]">{{ event.title }}</h2>
             
             <div class="prose max-w-none text-[var(--neutral-700)]">
               <p class="whitespace-pre-line">{{ event.description }}</p>
@@ -87,7 +87,7 @@
             <div class="mt-8 flex flex-wrap gap-4">
               
               <button 
-                class="px-6 py-3 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white rounded-lg font-medium transition-colors flex items-center cursor-pointer"
+                class="px-6 py-3 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white rounded-lg !font-medium transition-colors flex items-center cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -96,7 +96,7 @@
               </button>
               
               <button 
-                class="px-6 py-3 bg-white border border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5 rounded-lg font-medium transition-colors flex items-center cursor-pointer"
+                class="px-6 py-3 bg-white border border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5 rounded-lg !font-medium transition-colors flex items-center cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />

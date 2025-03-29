@@ -70,12 +70,38 @@ function handleCancel() {
   emit('cancel');
 }
 
+// Handle backdrop click
+function handleBackdropClick(event: MouseEvent) {
+  // Only close if the clicked element is the backdrop itself
+  if (event.target === event.currentTarget) {
+    emit('cancel');
+  }
+}
+
 // Handle image preview
 function handleImageChange(event: Event) {
   const target = event.target as HTMLInputElement;
   if (target && target.files && target.files[0]) {
     const file = target.files[0];
     if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should not exceed 5MB');
+        return;
+      }
+
+      // Update file name display
+      const fileNameElement = document.getElementById('file-name');
+      if (fileNameElement) {
+        fileNameElement.textContent = file.name;
+      }
+
       // In a real app, you would upload this file to a server
       // For now, we'll just create a local URL for preview
       formData.value.images = URL.createObjectURL(file);
@@ -85,86 +111,114 @@ function handleImageChange(event: Event) {
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-[#0099cc] bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-      <div class="p-6">
-        <h2 class="text-xl font-bold mb-6 text-[#0099cc]">{{ title }}</h2>
-        
-        <form @submit.prevent="handleSubmit">
+  <div 
+    class="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-3"
+    @click="handleBackdropClick"
+  >
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="p-4 flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-[var(--primary-blue)]">{{ title }}</h2>
+      </div>
+      
+      <!-- Scrollable Form Content -->
+      <div class="p-4 overflow-y-auto">
+        <form @submit.prevent="handleSubmit" class="!space-y-3">
           <!-- Title input -->
-          <div class="mb-5">
-            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 !mb-1">Title</label>
             <input
               id="title"
               v-model="formData.title"
               type="text"
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:border-transparent"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
               placeholder="Event title"
             />
-            <p v-if="errors.title" class="mt-1 text-sm text-red-600">{{ errors.title }}</p>
+            <p v-if="errors.title" class="!mt-1 text-xs text-red-600">{{ errors.title }}</p>
           </div>
           
           <!-- Description input -->
-          <div class="mb-5">
-            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 !mb-1">Description</label>
             <textarea
               id="description"
               v-model="formData.description"
-              rows="4"
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:border-transparent"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
               placeholder="Event description"
             ></textarea>
-            <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
+            <p v-if="errors.description" class="!mt-1 text-xs text-red-600">{{ errors.description }}</p>
           </div>
           
-          <!-- Image input -->
-          <div class="mb-6">
-            <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-            <div class="border border-gray-300 border-dashed rounded-lg p-4 bg-gray-50">
-              <input
-                id="image"
-                type="file"
-                accept="image/*"
-                @change="handleImageChange"
-                class="w-full"
-              />
-              
-              <!-- Image preview -->
-              <div v-if="formData.images" class="mt-3">
-                <img :src="formData.images" alt="Preview" class="h-40 object-cover rounded-md mx-auto" />
+          <!-- Image input - Simplified -->
+          <div>
+            <label for="image" class="block text-sm font-medium text-gray-700 !mb-1">Event Image</label>
+            
+            <!-- Image preview (compact) -->
+            <div v-if="formData.images" class="!mb-2 rounded-lg overflow-hidden shadow-sm">
+              <div class="flex items-center">
+                <img :src="formData.images" alt="Preview" class="h-20 w-20 object-cover" />
+                <div class="flex-1 px-3 flex justify-between items-center bg-gray-50">
+                  <span class="text-xs text-gray-600 truncate max-w-[150px]">Image selected</span>
+                  <button 
+                    type="button"
+                    @click="formData.images = ''"
+                    class="text-xs text-red-600 hover:text-red-800 focus:outline-none cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             </div>
             
+            <!-- File upload (simplified) -->
+            <div class="flex items-center !mt-2 border border-gray-300 rounded-lg p-2 bg-gray-50">
+              <label for="image" class="inline-block px-3 py-1 bg-[var(--primary-blue)] text-white rounded text-xs cursor-pointer hover:bg-[#007aa3]">
+                Choose File
+                <input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  @change="handleImageChange"
+                  class="hidden"
+                />
+              </label>
+              <span class="!ml-2 text-xs text-gray-600 truncate max-w-[150px]" id="file-name">
+                No file chosen
+              </span>
+            </div>
+            
             <!-- Image URL input -->
-            <div class="mt-3">
-              <label for="imageUrl" class="block text-sm font-medium text-gray-700 mb-1">Or enter image URL</label>
-              <input
-                id="imageUrl"
-                v-model="formData.images"
-                type="text"
-                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:border-transparent"
-                placeholder="https://example.com/image.jpg"
-              />
+            <div class="!mt-2">
+              <div class="flex items-center">
+                <input
+                  id="imageUrl"
+                  v-model="formData.images"
+                  type="text"
+                  class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
+                  placeholder="Or enter image URL..."
+                />
+              </div>
             </div>
           </div>
-          
-          <!-- Form actions -->
-          <div class="flex justify-end space-x-3">
-            <button
-              type="button"
-              @click="handleCancel"
-              class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-5 py-2.5 bg-[#0099cc] text-white rounded-lg hover:bg-[#007aa3] focus:outline-none focus:ring-2 focus:ring-[#0099cc] focus:ring-offset-2 font-medium transition-colors"
-            >
-              Save
-            </button>
-          </div>
         </form>
+      </div>
+      
+      <!-- Footer with Actions -->
+      <div class="p-4 flex justify-end !space-x-2 !mt-auto">
+        <button
+          type="button"
+          @click="handleCancel"
+          class="px-4 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          @click="handleSubmit"
+          class="px-4 py-1.5 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[#007aa3] text-sm font-medium transition-colors cursor-pointer"
+        >
+          Save
+        </button>
       </div>
     </div>
   </div>
