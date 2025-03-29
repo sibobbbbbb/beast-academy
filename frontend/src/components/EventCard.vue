@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue';
 import { formatDistanceToNow } from 'date-fns';
 import type { EventData } from '@/services/eventServices';
+import { useRouter } from 'vue-router';
+import { defineProps } from 'vue';
 
 const props = defineProps({
   event: {
@@ -9,6 +11,12 @@ const props = defineProps({
     required: true
   }
 });
+
+const router = useRouter();
+
+function goToEventDetails() {
+  router.push(`/event-details/${props.event.id}`);
+}
 
 const emit = defineEmits(['edit', 'delete']);
 
@@ -53,7 +61,7 @@ if (typeof window !== 'undefined') {
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 transition-all hover:shadow-md">
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 transition-all hover:shadow-md" @click="goToEventDetails">
     <!-- Card header -->
     <div class="p-4 flex items-center justify-between">
       <div class="flex items-center">

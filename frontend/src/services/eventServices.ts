@@ -117,3 +117,23 @@ export const createEvents = async (eventData: Partial<EventData>): Promise<ApiRe
   }
 }
 
+export const fetchEventDetails = async (id: string): Promise<ApiResponse<EventData>> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/eventDetails/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error fetching event: ${response.statusText}`)
+    }
+
+    const data: ApiResponse<EventData> = await response.json()
+    return data
+  } catch (error) {
+    console.error(`Failed to fetch event with id ${id}:`, error)
+    throw error
+  }
+}

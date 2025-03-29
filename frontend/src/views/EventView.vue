@@ -1,5 +1,6 @@
 <template>
   <div class="events-container mx-auto p-6 bg-gray-50">
+    <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold text-[#0099cc]">Events</h1>
       <button 
@@ -12,15 +13,26 @@
         Create Event
       </button>
     </div>
-    
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <input
+        v-model="searchQuery"
+        @input="handleSearch"
+        type="text"
+        placeholder="Search events..."
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0099cc]"
+      />
+    </div>
+
     <!-- Error alert -->
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
       {{ error }}
     </div>
-    
+
     <!-- Events list -->
-    <div v-if="events.length > 0" class="flex flex-col items-center space-y-6 w-full">
-      <div v-for="event in events" :key="event.id" class="w-full max-w-[70%]">
+    <div v-if="filteredEvents.length > 0" class="event-card-container flex flex-col items-center w-full">
+      <div v-for="event in filteredEvents" :key="event.id" class="w-full max-w-[70%]">
         <EventCard 
           :event="event"
           @edit="openEditForm"
@@ -28,7 +40,7 @@
         />
       </div>
     </div>
-    
+
     <!-- Empty state -->
     <div v-else-if="!loading" class="text-center py-16 bg-white rounded-lg shadow-sm">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#e6f5fa] mb-4">
@@ -39,15 +51,15 @@
       <h3 class="text-xl font-semibold text-gray-800 mb-2">No events found</h3>
       <p class="text-gray-600">Create your first event to get started!</p>
     </div>
-    
+
     <!-- Loading indicator -->
     <div v-if="loading" class="flex justify-center py-8">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0099cc]"></div>
     </div>
-    
+
     <!-- Sentinel element for infinite scrolling -->
     <div id="sentinel" class="h-4 w-full"></div>
-    
+
     <!-- Create Event Modal -->
     <EventForm
       v-if="showCreateForm"
@@ -80,14 +92,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted} from 'vue';
-import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData} from '@/services/eventServices.ts';
+import { ref, computed, onMounted } from 'vue';
+import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData } from '@/services/eventServices.ts';
 import EventCard from '../components/EventCard.vue';
 import EventForm from '../components/EventFrom.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 
 // State management
 const events = ref<EventData[]>([]);
+const searchQuery = ref<string>(''); // Search query
+const filteredEvents = computed(() =>
+  events.value.filter(event =>
+    event.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    event.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+);
 const page = ref(1);
 const loading = ref(false);
 const hasMore = ref(true);
@@ -155,6 +174,11 @@ function handleIntersect(entries: IntersectionObserverEntry[]) {
   if (entries[0].isIntersecting && !loading.value && hasMore.value) {
     loadEvents();
   }
+}
+
+// Handle search input
+function handleSearch() {
+  // This function is triggered on every input change in the search bar
 }
 
 // Open create form
@@ -260,4 +284,17 @@ async function handleDeleteEvent() {
 .events-container {
   min-height: 100vh;
 }
+
+.search-bar input {
+  color: black; 
+}
+
+.search-bar {
+  margin: 10px;
+}
+
+.event-card-container > div {
+  margin-bottom: 8px; /* Tambahkan margin bawah 8px */
+}
+
 </style>

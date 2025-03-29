@@ -139,3 +139,32 @@ export const deleteEventContorller = async (req, res) => {
         })
     } 
 }
+
+export const readEventControllerId = async (req, res) => {
+    const {id} = req.params;
+    try{
+
+        const event = await prisma.events.findUnique({
+            where : {id : parseInt(id)}
+        })
+
+        if(!event){
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            })
+        }
+        res.status(200).json({
+            success: true,
+            message: "Event found",
+            data : event
+        })
+    }catch(error){
+        console.log("error get event")
+        res.status(500).json({
+            success: false,
+            message: "Failed to get event",
+            error: error.message
+        })
+    }
+}
