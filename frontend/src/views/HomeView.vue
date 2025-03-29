@@ -541,7 +541,7 @@ onMounted(async () => {
       userName.value = response.data.username;
       userAvatar.value = response.data.avatar || '';
     }
-  } catch (error) {
+  } catch{
     console.log('User not logged in');
     isLoggedIn.value = false;
   }
