@@ -1,22 +1,22 @@
 <template>
-  <div class="min-h-screen bg-[#f8f8f8]">
+  <div class="min-h-screen bg-[var(--neutral-200)]">
     <!-- Navbar placeholder - will use the existing Navbar component -->
     <Navbar />
     
     <div class="container !mx-auto !px-6 md:!px-12 !pt-24 !pb-16">
       <!-- Header with tennis ball decoration -->
       <div class="relative !mb-8">
-        <div class="absolute -top-6 -right-6 w-16 h-16 rounded-full hidden md:block" style="background: #7FB32A; opacity: 0.2"></div>
+        <div class="absolute -top-6 -right-6 w-16 h-16 rounded-full hidden md:block" style="background: var(--primary-green); opacity: 0.2"></div>
         
         <div class="flex flex-col md:flex-row justify-between items-center !mb-8">
           <div>
-            <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: #0084C5">Tennis Events</h1>
-            <p class="text-[#707070] max-w-xl">Find and join tennis tournaments, clinics, and social events in your area</p>
+            <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: var(--primary-blue)">Tennis Events</h1>
+            <p class="text-[var(--neutral-700)] max-w-xl">Find and join tennis tournaments, clinics, and social events in your area</p>
           </div>
           
           <button 
             @click="openCreateForm" 
-            class="mt-4 md:mt-0 bg-[#0084C5] hover:bg-[#0067a3] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
+            class="mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
@@ -32,7 +32,7 @@
           <div class="flex-1">
             <div class="relative">
               <div class="absolute inset-y-0 left-0 flex items-center !pl-3 pointer-events-none">
-                <svg class="w-5 h-5 text-[#a0a0a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-5 h-5 text-[var(--neutral-600)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </div>
@@ -41,7 +41,7 @@
                 @input="handleSearch"
                 type="text"
                 placeholder="Search events..."
-                class="w-full !pl-10 !py-3 !px-4 bg-[#f8f8f8] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0084C5]"
+                class="w-full !pl-10 !py-3 !px-4 bg-[var(--neutral-200)] border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]"
               />
             </div>
           </div>
@@ -72,7 +72,7 @@
             @click="viewEventDetails(event)"
           >
             <!-- Event image -->
-            <div class="relative h-48 bg-[#f2f2f2] overflow-hidden">
+            <div class="relative h-48 bg-[var(--neutral-300)] overflow-hidden">
               <img 
                 :src="event.images || ''" 
                 :alt="event.title"
@@ -80,7 +80,7 @@
                 @error="handleImageError"
               />
               <!-- Tennis ball decoration -->
-              <div class="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center" style="background: #7FB32A">
+              <div class="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center" style="background: var(--primary-green)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -89,20 +89,20 @@
             
             <!-- Event content -->
             <div class="!p-5">
-              <h3 class="text-xl !font-bold !mb-2 text-[#404040] line-clamp-1">{{ event.title }}</h3>
+              <h3 class="text-xl !font-bold !mb-2 text-[var(--neutral-800)] line-clamp-1">{{ event.title }}</h3>
               
-              <p class="text-sm text-[#a0a0a0] !mb-3">
+              <p class="text-sm text-[var(--neutral-600)] !mb-3">
                 {{ formatDate(event.posted_at) }}
               </p>
               
-              <p class="text-[#707070] !mb-4 line-clamp-2">{{ event.description }}</p>
+              <p class="text-[var(--neutral-700)] !mb-4 line-clamp-2">{{ event.description }}</p>
               
               <!-- Action buttons -->
               <div class="flex justify-end items-center">
                 <div class="flex space-x-2">
                   <button 
                     @click.stop="openEditForm(event)" 
-                    class="p-2 text-[#a0a0a0] hover:text-[#0084C5] rounded-full hover:bg-[#f8f8f8] z-10 cursor-pointer"
+                    class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -111,7 +111,7 @@
                   
                   <button 
                     @click.stop="openDeleteConfirm(event)" 
-                    class="p-2 text-[#a0a0a0] hover:text-red-500 rounded-full hover:bg-[#f8f8f8] z-10 cursor-pointer"
+                    class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -126,18 +126,18 @@
 
       <!-- Empty state -->
       <div v-else-if="!loading" class="bg-white rounded-xl shadow-sm !p-12 text-center">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#f2f2f2] !mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#0084C5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--neutral-300)] !mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--primary-blue)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <h3 class="text-2xl !font-bold text-[#404040] !mb-3">No events found</h3>
-        <p class="text-[#a0a0a0] !mb-6 max-w-md mx-auto">
+        <h3 class="text-2xl !font-bold text-[var(--neutral-800)] !mb-3">No events found</h3>
+        <p class="text-[var(--neutral-600)] !mb-6 max-w-md mx-auto">
           There are no tennis events available right now. Create your first event to get started!
         </p>
         <button 
           @click="openCreateForm" 
-          class="bg-[#0084C5] hover:bg-[#0067a3] text-white !px-6 !py-3 rounded-lg inline-flex items-center !font-medium transition-colors"
+          class="bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-6 !py-3 rounded-lg inline-flex items-center !font-medium transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
@@ -150,9 +150,9 @@
       <div v-if="loading" class="flex justify-center !py-12">
         <div class="relative">
           <!-- Tennis ball loading spinner -->
-          <div class="w-16 h-16 rounded-full animate-ping absolute" style="background: #7FB32A; opacity: 0.3"></div>
-          <div class="w-16 h-16 rounded-full animate-pulse" style="background: #7FB32A; opacity: 0.6"></div>
-          <div class="w-16 h-16 rounded-full border-4 border-[#0084C5] border-t-transparent animate-spin"></div>
+          <div class="w-16 h-16 rounded-full animate-ping absolute" style="background: var(--primary-green); opacity: 0.3"></div>
+          <div class="w-16 h-16 rounded-full animate-pulse" style="background: var(--primary-green); opacity: 0.6"></div>
+          <div class="w-16 h-16 rounded-full border-4 border-[var(--primary-blue)] border-t-transparent animate-spin"></div>
         </div>
       </div>
 
@@ -190,7 +190,7 @@
     </div>
     
     <!-- Tennis court decoration at bottom -->
-    <div class="h-2" style="background: linear-gradient(90deg, #7FB32A 0%, #95c251 100%)"></div>
+    <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
   </div>
 </template>
 
@@ -301,7 +301,7 @@ function formatDate(dateString: string): string {
 function handleImageError(e: Event) {
   const target = e.target as HTMLImageElement;
   target.src = ''; // You can set a default image here
-  target.classList.add('bg-[#f2f2f2]');
+  target.classList.add('bg-[var(--neutral-300)]');
 }
 const router = useRouter();
 
