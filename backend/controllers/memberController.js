@@ -318,6 +318,7 @@ export const updateProfileControllers = async (req, res) => {
       await prisma.users.update({
         where: { id: decoded.userId },
         data: {
+          username: name,
           avatar: cloudinaryUrl,
         },
       });
