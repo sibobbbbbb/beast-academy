@@ -85,14 +85,14 @@
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { ref, onMounted, watch, toValue} from 'vue';
+import { ref, onMounted, watch} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers } from '@/services/templateServices';
 import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
-import { selectedMembersMap, selectMember, deselectMember, clearSelectedMembers, selectMembers, isEmpty, selectedCount , exportToFile} from '@/utils/memberSelection';
+import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
 import { type Member } from '@/types/member';
 
 const perPage = ref(10);
