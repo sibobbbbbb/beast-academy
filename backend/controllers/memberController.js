@@ -265,6 +265,12 @@ export const updateProfileControllers = async (req, res) => {
           phone_no: phone_no === "" ? null : phone_no,
         },
       });
+      await prisma.users.update({
+        where: { id: decoded.userId },
+        data: {
+          username: name,
+        },
+      });
     } else {
       // Delete last image from Cloudinary
       const lastMemberData = await prisma.members.findFirst({
