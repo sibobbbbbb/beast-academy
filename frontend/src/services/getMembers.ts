@@ -1,12 +1,5 @@
 import { ref } from "vue";
-
-// Definisi tipe data
-interface Member {
-  id: number;
-  name: string;
-  join_date: string;
-  role: string;
-}
+import { type Member } from "@/types/member";
 
 interface Pagination {
   total: number;

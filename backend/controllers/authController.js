@@ -79,7 +79,7 @@ export const register = async (req, res) => {
       const result = await prisma.$transaction(async (prisma) => {
           // Create user record first
           const user = await prisma.users.create({
-              data: { role, username, email, password: hashedPassword },
+              data: { role, username, email, password: hashedPassword, avatar: cloudinaryUrl },
           });
 
           // If the role is 'member', also create a record in the members table

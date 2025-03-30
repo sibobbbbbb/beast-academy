@@ -1,26 +1,26 @@
 <template>
+  <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
+    <img src="https://placehold.co/512x512" style="height: 8dvh; aspect-ratio: 1/1; display: inline-block; margin-right: 1%;">
+    <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
+  </header>
+  <hr>
   <div class="content">
-    <SearchBox @search="handleSearch" />
-    <FilterDropdown @filter="handleFilter" />
-
-    <span>
-      <h1>User List Test</h1>
-      <h3>Showing
-        <select v-model="perPage">
-          <option :value="10">10</option>
-          <option :value="20">20</option>
-          <option :value="50">50</option>
-        </select>
-        per page
-      </h3>
+    <span style="display: flex;">
+      <FilterDropdown @filter="handleFilter" />
+      <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
+      <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
     <button @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
     <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
+    <button @click="(_) => {exportToFile()}"> Export </button>
     <table>
       <thead>
         <tr>
-          <th class="shead">
+          <th>
+            <svg style="width: 2rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path style=" color: white" d="M64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16L64 80zM0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM200 344l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"/></svg>
+          </th>
+          <th class="shead" style="width: 6rem;">
             <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
           </th>
           <th>Edit Button</th>
@@ -37,7 +37,14 @@
       </thead>
 
       <tbody>
-        <tr v-for="item in lastFetch" :key="item.id">
+        <tr v-for="item in lastFetch" :key="item.id" :class="{ selected : selectedMembersMap.has(item.id) }">
+          <td>
+            <input 
+              type="checkbox" 
+                @change="($event) => ($event.target as HTMLInputElement).checked ? selectMember(item) : deselectMember(item)"
+              :checked="selectedMembersMap.has(item.id)"
+    />
+          </td>
           <td>{{ item.id }}</td>
           <td>
             <button @click="editMember(item)">Edit</button>
@@ -57,11 +64,21 @@
         </tr>
       </tbody>
     </table>
+    <span style="float: right; margin-top: 1%;">
+      <h3>Showing
+        <select v-model="perPage">
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
+        </select>
+        per page
+      </h3>
+    </span>
 
     <span id="pagination" class="pagination-container">
-      <button @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
+      <button class="pageButton" @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev </button>
       <Pagination :current-page="currentPage" @go-to-page="refresh" :page-count="totalPages"/>
-      <button @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
+      <button class="pageButton" @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
     </span>
   </div>
 </template>
@@ -72,9 +89,11 @@ import { ref, onMounted, watch} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
-import { fetchMembers, type Member } from '@/services/templateServices';
+import { fetchMembers } from '@/services/templateServices';
 import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
+import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
+import { type Member } from '@/types/member';
 
 const perPage = ref(10);
 const currentPage = ref(0);
@@ -168,15 +187,19 @@ const handleFilter = (role: string) => {
 };
 
 const refresh = async (newPage?: number) => {
+  console.log('Refreshing data...',newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }
   await dataFetcher(currentPage.value);
+
+  console.log(currentPage.value);
 };
 
 onMounted(() => {
   refresh(0);
 });
+
 </script>
 
 <style>
@@ -186,6 +209,10 @@ onMounted(() => {
     display: block;
     align-items: center;
   }
+}
+
+.content {
+  padding: 1dvh 2dvw;
 }
 
 .shead {
@@ -244,4 +271,45 @@ button {
 button:hover {
     background-color: var(--color-background-mute);
 }
+
+table {
+  
+  padding: 2dvw 1dvw;
+  width: 100%;
+  border: 4px solid var(--color-border);
+
+  thead {
+    
+
+    th {
+      
+      padding: 0.5%;
+    }
+  }
+
+  tbody td {
+    border-top : 1px solid var(--color-border);
+    padding: 0 1%;
+  }
+
+  tr {
+    height: 1rem;
+  }
+
+  tr.selected {
+    background-color: var(--color-background-mute);
+  }
+}
+
+/*
+.pageButton {
+
+}
+*/
+
+select {
+  background-color: var(--color-background-mute);
+  padding: 0.25rem;
+}
+
 </style>

@@ -13,16 +13,6 @@ export const getData = async () => {
   }
 };
 
-
-export type Member = {
-  id: number;
-  name: string;
-  email: string;
-  phone_no: string;
-  created_at: string;
-  last_activity: string;
-};
-
 export const fetchMembers = async (perPage: number, page: number, sortBy?: string, order?: string, search?: string, filterBy?: string) => {
   try {
     const params = new URLSearchParams({

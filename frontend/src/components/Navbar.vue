@@ -156,7 +156,6 @@ import { ref, onMounted, onBeforeUnmount, defineComponent, computed, watch } fro
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import logoImage from '@/assets/beastLogo.png';
-import api from '@/utils/axios';
 
 // Fix multi-word component name warning
 defineComponent({
@@ -235,7 +234,7 @@ const navigationItems = [
 ];
 
 // Close menus when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
+const handleClickOutside = () => {
   // Close the profile dropdown if it's open
   if (profileDropdownOpen.value) {
     profileDropdownOpen.value = false;
