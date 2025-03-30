@@ -1,6 +1,6 @@
 <template>
   <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
-    <img src="https://placehold.co/512x512" style="height: 8dvh; aspect-ratio: 1/1; display: inline-block; margin-right: 1%;">
+    <img :src=logoImage style="height: 8dvh; display: inline-block; margin-right: 1%;">
     <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
   </header>
   <hr>
@@ -52,8 +52,8 @@
           <td>
             <span v-if="editingMember !== item.id">{{ item.name }}</span>
             <input v-else v-model="item.name" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
-          </td>
-          <td>{{ item.created_at }}</td>
+            </td>
+            <td>{{ new Date(item.created_at).toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(',', ',') }}</td>
           <td>
             <span v-if="editingMember !== item.id">{{ item.phone_no }}</span>
             <input v-else v-model="item.phone_no" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
@@ -94,6 +94,7 @@ import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
 import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
 import { type Member } from '@/types/member';
+import logoImage from '@/assets/beastLogo.png';
 
 const perPage = ref(10);
 const currentPage = ref(0);
@@ -152,7 +153,7 @@ const dataFetcher = async (page: number) => {
   try {
     const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
     lastFetch.value = response.data;
-    totalPages.value = response.pagination.totalPages; // 🔹 Pastikan backend mengembalikan total halaman
+    totalPages.value = response.pagination.totalPages;
 
     // Cek apakah ini halaman terakhir
     maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
