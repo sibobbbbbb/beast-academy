@@ -188,19 +188,37 @@ export const logout = (req, res) => {
     res.json({ message: 'Logout successful' });
 };
 
-// Get User Profile dari Cookie
+// Update this method in your authController.js file
 export const getProfile = async (req, res) => {
-    try {
-        const token = req.cookies.token;
-        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+      const token = req.cookies.token;
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await prisma.users.findUnique({ where: { id: decoded.userId } });
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Get the user with full details
+      const user = await prisma.users.findUnique({ 
+          where: { id: decoded.userId } 
+      });
 
-        res.json(user);
-    } catch {
-        res.status(403).json({ error: 'Invalid token' });
-    }
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Include avatar in the response
+      res.json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          provider: user.provider,
+          created_at: user.created_at
+      });
+  } catch (error) {
+      console.error('Error getting profile:', error);
+      res.status(403).json({ error: 'Invalid token' });
+  }
 };
 
 // Google Login
@@ -557,7 +575,8 @@ export const googleCallback = async (req, res) => {
           id: result.user.id,
           username: result.user.username,
           email: result.user.email,
-          role: result.user.role
+          role: result.user.role,
+          avatar: result.user.avatar || picture // Make sure to include the avatar URL
         }
       });
     } catch (tokenError) {

@@ -1,4 +1,4 @@
-// GoogleView.vue
+// Update GoogleView.vue
 <template>
   <div class="google-callback">
     <div v-if="loading" class="loading">
@@ -14,12 +14,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import api from '@/utils/axios';
 
 const router = useRouter();
 const route = useRoute();
 const loading = ref(true);
 const error = ref('');
+const authStore = useAuthStore();
 
 const redirectToLogin = () => {
   router.push('/login');
@@ -43,11 +45,17 @@ onMounted(async () => {
   try {
     // Send code to backend for verification
     console.log('Sending code to backend for verification');
-    await api.post('/auth/google/callback', { code }, {
+    const response = await api.post('/auth/google/callback', { code }, {
       withCredentials: true
     });
     
-    console.log('Google auth successful');
+    console.log('Google auth successful:', response.data);
+    
+    // Initialize auth store with user data from response
+    if (response.data.user) {
+      await authStore.fetchProfile();
+    }
+    
     router.push('/');
   } catch (err: unknown) {
     console.error('Google auth error:', err);

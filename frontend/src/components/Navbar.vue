@@ -39,7 +39,14 @@
           class="flex items-center !space-x-2 text-white hover:text-[var(--primary-green)] transition-colors focus:outline-none cursor-pointer"
         >
           <div class="w-8 h-8 lg:w-9 lg:h-9 rounded-full overflow-hidden border-2 border-white">
-            <img v-if="authStore.userAvatar" :src="authStore.userAvatar" alt="Profile" class="w-full h-full object-cover" />
+            <img 
+              v-if="avatarUrl" 
+              :src="avatarUrl" 
+              alt="Profile" 
+              class="w-full h-full object-cover" 
+              @error="handleAvatarError"
+              referrerpolicy="no-referrer"
+            />
             <div v-else class="w-full h-full flex items-center justify-center bg-[var(--primary-green)] text-white font-medium">
               {{ authStore.userInitials }}
             </div>
@@ -105,7 +112,14 @@
     <div v-if="authStore.isLoggedIn" class="!mt-4 pt-4 border-t border-white/20">
       <div class="flex items-center !mb-4">
         <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white !mr-3">
-          <img v-if="authStore.userAvatar" :src="authStore.userAvatar" alt="Profile" class="w-full h-full object-cover" />
+          <img 
+            v-if="avatarUrl" 
+            :src="avatarUrl" 
+            alt="Profile" 
+            class="w-full h-full object-cover" 
+            @error="handleAvatarError"
+            referrerpolicy="no-referrer"
+          />
           <div v-else class="w-full h-full flex items-center justify-center bg-[var(--primary-green)] text-white !font-medium">
             {{ authStore.userInitials }}
           </div>
@@ -138,23 +152,62 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, defineComponent } from 'vue';
+import { ref, onMounted, onBeforeUnmount, defineComponent, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import logoImage from '@/assets/beastLogo.png';
+import api from '@/utils/axios';
 
 // Fix multi-word component name warning
 defineComponent({
   name: 'SiteNavbar'
 });
 
-// Inisialisasi router dan auth store
+// Initialize router and auth store
 const router = useRouter();
 const authStore = useAuthStore();
 
 // Menu states
 const mobileMenuOpen = ref(false);
 const profileDropdownOpen = ref(false);
+const avatarLoadError = ref(false);
+
+// Use computed property for avatar URL to handle Google avatar URLs properly
+const avatarUrl = computed(() => {
+  if (avatarLoadError.value) return ''; // Return empty if previous load attempt failed
+  
+  const url = authStore.userAvatar;
+  if (!url) return '';
+  
+  // Make sure Google avatar URLs use https and don't get blocked by referrer policy
+  if (url.includes('googleusercontent.com')) {
+    return url.replace(/^http:\/\//i, 'https://');
+  }
+  
+  return url;
+});
+
+// Watch for changes in auth state and reset avatar error state
+watch(() => authStore.isLoggedIn, (isLoggedIn) => {
+  if (isLoggedIn) {
+    avatarLoadError.value = false;
+  }
+});
+
+// Handle avatar loading errors
+const handleAvatarError = async () => {
+  console.log('Avatar failed to load, refreshing user data');
+  avatarLoadError.value = true;
+  
+  // Try to refresh user data
+  try {
+    await authStore.fetchProfile();
+    // Reset error state to try again
+    avatarLoadError.value = false;
+  } catch (error) {
+    console.error('Failed to refresh user data:', error);
+  }
+};
 
 // Toggle functions
 const toggleMobileMenu = () => {
@@ -197,14 +250,14 @@ const handleResize = () => {
 };
 
 // Event listeners
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', handleResize);
   
   // Add global click event to close dropdown when clicking outside
   document.addEventListener('click', handleClickOutside);
   
-  // Check authentication status
-  authStore.checkAuthStatus();
+  // Check authentication status and ensure proper loading of user data
+  await authStore.checkAuthStatus();
 });
 
 onBeforeUnmount(() => {
@@ -219,14 +272,14 @@ const handleLogout = async () => {
     mobileMenuOpen.value = false;
     profileDropdownOpen.value = false;
     
-    // Redirect ke halaman home dan reload halaman
+    // Redirect to home page and reload page
     router.push('/').then(() => {
       window.location.reload();
     });
   }
 };
 
-// Fungsi untuk navigasi ke home dengan reload
+// Navigate to home with reload
 const goToHomeAndReload = () => {
   window.location.href = '/';
 };
