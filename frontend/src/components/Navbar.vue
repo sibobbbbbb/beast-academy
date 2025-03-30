@@ -163,7 +163,8 @@ const toggleMobileMenu = () => {
   if (profileDropdownOpen.value) profileDropdownOpen.value = false;
 };
 
-const toggleProfileDropdown = () => {
+const toggleProfileDropdown = (event: MouseEvent) => {
+  event.stopPropagation(); // Prevent the click event from propagating to document
   profileDropdownOpen.value = !profileDropdownOpen.value;
 };
 
@@ -180,26 +181,18 @@ const navigationItems = [
   { name: 'Contact', path: '/#contact' },
 ];
 
+// Close menus when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+  // Close the profile dropdown if it's open
+  if (profileDropdownOpen.value) {
+    profileDropdownOpen.value = false;
+  }
+};
+
 // Close menus when window is resized
 const handleResize = () => {
   if (window.innerWidth >= 768 && mobileMenuOpen.value) {
     mobileMenuOpen.value = false;
-  }
-  
-  // Add click outside event listener for profile dropdown
-  if (profileDropdownOpen.value) {
-    window.addEventListener('click', handleClickOutside);
-  } else {
-    window.removeEventListener('click', handleClickOutside);
-  }
-};
-
-// Handle click outside profile dropdown
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement;
-  const dropdown = document.querySelector('.profile-dropdown-container');
-  if (dropdown && !dropdown.contains(target)) {
-    profileDropdownOpen.value = false;
   }
 };
 
@@ -207,10 +200,8 @@ const handleClickOutside = (event: MouseEvent) => {
 onMounted(() => {
   window.addEventListener('resize', handleResize);
   
-  // Add click outside event listener for profile dropdown
-  if (profileDropdownOpen.value) {
-    window.addEventListener('click', handleClickOutside);
-  }
+  // Add global click event to close dropdown when clicking outside
+  document.addEventListener('click', handleClickOutside);
   
   // Check authentication status
   authStore.checkAuthStatus();
@@ -218,7 +209,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
-  window.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('click', handleClickOutside);
 });
 
 // Logout handler

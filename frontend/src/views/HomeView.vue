@@ -9,11 +9,11 @@
       <div class="absolute top-10 right-10 w-32 h-32 rounded-full" :style="{ background: 'var(--primary-green)', opacity: 0.2 }"></div>
       <div class="absolute bottom-20 left-10 w-24 h-24 rounded-full" :style="{ background: 'var(--primary-green)', opacity: 0.15 }"></div>
       
-      <div class="w-full md:w-1/2 text-center md:text-left !mb-12 md:!mb-0">
-        <h2 class="text-4xl md:text-5xl lg:text-6xl !font-bold text-white leading-tight !mb-6">
+      <div class="w-full md:w-1/2 text-center md:text-left !mb-8 sm:!mb-10 md:!mb-0 md:!pr-6 lg:!pr-12">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl !font-bold text-white leading-tight !mb-4 sm:!mb-5 md:!mb-6">
           Connect with Tennis Players Near You
         </h2>
-        <p class="text-xl text-white/90 !mb-8 max-w-lg mx-auto md:mx-0">
+        <p class="text-base sm:text-lg md:text-xl text-white/90 !mb-6 sm:!mb-7 md:!mb-8 max-w-lg mx-auto md:mx-0">
           Join the largest tennis community platform. Find matches, improve your skills, and connect with players at your level.
         </p>
         <!-- Hero Section tombol untuk user yang sudah login -->
@@ -41,7 +41,7 @@
       <div class="w-full md:w-1/2 flex justify-center">
         <div class="relative w-full max-w-md">
           <div class="absolute inset-0 bg-[var(--primary-green)]/20 rounded-2xl transform rotate-3"></div>
-          <div class="relative z-10 w-full h-[400px] rounded-2xl shadow-xl bg-white/10"></div>
+          <div class="relative z-10 w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] rounded-2xl shadow-xl bg-white/10"></div>
         </div>
       </div>
     </section>
@@ -56,7 +56,7 @@
           </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 !gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 !gap-4 sm:!gap-6 md:!gap-8">
           <!-- Feature 1 -->
           <div class="bg-[var(--neutral-200)] !p-8 rounded-xl shadow-md">
             <div class="w-16 h-16 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center !mb-6">
@@ -196,7 +196,7 @@
           </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 !gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 !gap-4 sm:!gap-6 md:!gap-8">
           <!-- Testimonial 1 -->
           <div class="bg-[var(--neutral-200)] !p-8 rounded-xl shadow-md">
             <div class="flex items-center !mb-6">
@@ -300,7 +300,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section id="contact" class="!py-16 md:!py-24" :style="{ background: 'var(--primary-blue)' }">
+    <section id="contact" class="!py-10 sm:!py-12 md:!py-16 lg:!py-24" :style="{ background: 'var(--primary-blue)' }">
       <div class="container !mx-auto !px-6 md:!px-12">
         <div class="max-w-4xl !mx-auto text-center">
           <!-- Show CTA heading and buttons only for non-logged in users -->
@@ -362,8 +362,8 @@
         
     <!-- Footer -->
     <footer class="bg-white !py-12">
-      <div class="container !mx-auto !px-6 md:!px-12">
-        <div class="grid grid-cols-1 md:grid-cols-4 !gap-8">
+      <div class="container !mx-auto !px-4 sm:!px-6 md:!px-8 lg:!px-12">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 !gap-8">
           <div>
             <div class="flex items-center !mb-4">
               <img :src="logoImage" alt="Tennis Community Logo" class="w-10 h-auto object-contain" />
