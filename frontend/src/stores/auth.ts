@@ -107,6 +107,13 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.isLoading = false;
       }
+    },
+    
+    // Add this method to update user avatar
+    updateUserAvatar(avatarUrl: string) {
+      if (this.user) {
+        this.user.avatar = avatarUrl;
+      }
     }
   }
 });
