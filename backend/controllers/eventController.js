@@ -17,7 +17,7 @@ export const createEventController = async (req, res) => {
         const newevent  = await prisma.events.create({
             data :{
                 title,
-                images : images || [],
+                images : images || "",
                 description : description || "",
                 posted_at: new Date(),
             }
@@ -99,7 +99,7 @@ export const updateEventController = async (req, res) => {
             where : {id : parseInt(id)},
             data : {
                 title,
-                images: images || [],
+                images: images || "",
                 description,
             }
         })
