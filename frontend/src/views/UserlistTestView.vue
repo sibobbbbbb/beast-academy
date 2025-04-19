@@ -1,7 +1,7 @@
 <template>
   <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
     <img :src=logoImage style="height: 8dvh; display: inline-block; margin-right: 1%;">
-    <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
+    <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils | {{ deviceStore.currentMode }}</h1>
   </header>
   <hr>
   <div class="content">
@@ -84,122 +84,48 @@
 </template>
 
 <script setup lang="ts">
-import SortableHeader from '@/components/SortableHeader.vue';
-import { ref, onMounted, watch} from 'vue';
-import { deleteMemberById, updateUserData } from '../services/memberServices';
-import SearchBox from '@/components/SearchBox.vue';
-import FilterDropdown from '@/components/FilterDropdown.vue';
-import { fetchMembers } from '@/services/templateServices';
-import Pagination from '@/components/PaginationApp.vue';
-import { useRouter } from 'vue-router';
-import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
-import { type Member } from '@/types/member';
-import logoImage from '@/assets/beastLogo.png';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-const perPage = ref(10);
-const currentPage = ref(0);
-const lastFetch = ref<Member[]>([]);
-const maxPage = ref(false);
-const sortBy = ref("id");
-const order = ref("asc");
-const searchQuery = ref("");
-const selectedRole = ref("");
-const totalPages = ref(1);
-const router = useRouter();
+import logoImage from '@/assets/beastLogo.png'
+import SortableHeader from '@/components/SortableHeader.vue'
+import SearchBox from '@/components/SearchBox.vue'
+import FilterDropdown from '@/components/FilterDropdown.vue'
+import Pagination from '@/components/PaginationApp.vue'
 
-const editingMember = ref<number | null>(null);
-const originalName = ref<string | null>(null);
-const originalPhone = ref<string | null>(null);
-const showDeleteColumn = ref(false);
+import { selectedMembersMap, selectMember, deselectMember, exportToFile } from '@/utils/memberSelection'
+import { useMemberTable } from '@/utils/memberTable'
+import { useDeviceModeStore } from '@/stores/deviceMode'
 
-const deleteMember = async (id: number) => {
-  const confirmed = confirm('Are you sure you want to delete this member?');
-  if (confirmed) {
-    await deleteMemberById(id);
-    dataFetcher(0); // Refresh data after deletion
-  }
-  console.log('Delete member:', id);
-};
-
-function editMember(item: Member) {
-  editingMember.value = item.id;
-  originalName.value = item.name;
-  originalPhone.value = item.phone_no;
-}
-
-async function saveItem(item: Member) {
-  editingMember.value = null;
-  originalName.value = null;
-  originalPhone.value = null;
-  await updateUserData(item.id, item.name, item.phone_no);
-  dataFetcher(0);
-  console.log('Save item:', item);
-}
-
-function cancelEdit(item: Member) {
-  item.name = originalName.value ?? '';
-  item.phone_no = originalPhone.value ?? '';
-  editingMember.value = null;
-  originalName.value = null;
-  originalPhone.value = null; 
-  console.log('Edit cancelled:', item);
-}
-
-function toggleDeleteColumn() {
-  showDeleteColumn.value = !showDeleteColumn.value;
-}
-
-const dataFetcher = async (page: number) => {
-  try {
-    const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
-    lastFetch.value = response.data;
-    totalPages.value = response.pagination.totalPages;
-
-    // Cek apakah ini halaman terakhir
-    maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
-  } catch (error) {
-    console.error("Failed to fetch members:", error);
-  }
-};
-
-//On perpage change
-watch(perPage, async () => {
-  currentPage.value = 0;
-  await dataFetcher(0);
-});
-
-// Fungsi untuk menangani sorting dari SortableHeader
-const handleSort = (column: string, reverse: boolean) => {
-  sortBy.value = column;
-  order.value = reverse ? "desc" : "asc";
-  refresh(0);
-};
-
-// Fungsi untuk menangani pencarian
-const handleSearch = (query: string) => {
-  searchQuery.value = query;
-  refresh(0);
-};
-
-// Fungsi untuk menangani filter role
-const handleFilter = (role: string) => {
-  selectedRole.value = role;
-  refresh(0);
-};
-
-const refresh = async (newPage?: number) => {
-  console.log('Refreshing data...',newPage);
-  if (newPage !== undefined) {
-    currentPage.value = newPage;
-  }
-  await dataFetcher(currentPage.value);
-
-  console.log(currentPage.value);
-};
+const router = useRouter()
+const {
+  perPage,
+  currentPage,
+  lastFetch,
+  maxPage,
+  sortBy,
+  order,
+  searchQuery,
+  selectedRole,
+  totalPages,
+  editingMember,
+  showDeleteColumn,
+  refresh,
+  deleteMember,
+  editMember,
+  saveItem,
+  cancelEdit,
+  toggleDeleteColumn,
+  handleSort,
+  handleSearch,
+  handleFilter,
+} = useMemberTable()
 
 onMounted(() => {
-  refresh(0);
-});
+  refresh(0)
+})
+
+const deviceStore = useDeviceModeStore()
 
 </script>
 
