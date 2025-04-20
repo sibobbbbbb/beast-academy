@@ -100,6 +100,22 @@
               <!-- Action buttons -->
               <div class="flex justify-end items-center">
                 <div class="flex space-x-2">
+                  <!-- Like button -->
+                  <button 
+                    @click.stop="toggleLike(event)" 
+                    class="p-2 rounded-full cursor-pointer"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      :class="['h-5', 'w-5', likedEvents[event.id] ? 'fill-red-500 stroke-red-500' : 'fill-white stroke-black']" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+                    </svg>
+                  </button>
+                  
+                  <!-- Edit button -->
                   <button 
                     @click.stop="openEditForm(event)" 
                     class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
@@ -109,6 +125,7 @@
                     </svg>
                   </button>
                   
+                  <!-- Delete button -->
                   <button 
                     @click.stop="openDeleteConfirm(event)" 
                     class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
@@ -225,6 +242,7 @@ const currentEvent = ref<EventData>({
   posted_at: ''
 });
 const error = ref<string | null>(null);
+  const likedEvents = ref<Record<string, boolean>>({});
 
 // Load initial events
 onMounted(async () => {
@@ -240,6 +258,12 @@ onMounted(async () => {
     observer.observe(sentinel);
   }
 });
+
+function toggleLike(event: EventData) {
+  // Pastikan id adalah string
+  const eventId = event.id;
+  likedEvents.value[eventId] = !likedEvents.value[eventId];
+}
 
 // Load events function
 async function loadEvents(reset = false) {
