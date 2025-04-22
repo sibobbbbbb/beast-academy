@@ -1,10 +1,12 @@
 import {PrismaClient} from "@prisma/client";
+import cloudinary from "../config/cloudinary.js";
 
 const prisma = new PrismaClient()
 
 export const createEventController = async (req, res) => {
 
-    const {title, images, description} = req.body;
+    const {title, description} = req.body;
+    const img_file = req.file;
 
     if (!title){
         return res.status(400).json({
@@ -14,10 +16,39 @@ export const createEventController = async (req, res) => {
     };
 
     try{
+        let cloudinaryUrl = "";
+        // handle image upload to cloudinary
+        if (img_file) {
+            try {
+                const uploadResult = await new Promise((resolve, reject) => {
+                    cloudinary.v2.uploader.upload_stream(
+                        { 
+                            folder: 'events', 
+                            transformation: [
+                                { quality: "auto", fetch_format: "auto" }
+                            ]
+                        }, 
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    ).end(img_file.buffer);
+                });
+                
+                cloudinaryUrl = uploadResult.secure_url;
+            } catch (uploadError) {
+                console.error('Cloudinary Upload Error:', uploadError);
+                return res.status(400).json({ 
+                    success: false,
+                    message: "Failed to upload image" 
+                });
+            }
+        }
+
         const newevent  = await prisma.events.create({
             data :{
                 title,
-                images : images || "",
+                images : cloudinaryUrl,
                 description : description || "",
                 posted_at: new Date(),
             }
@@ -93,25 +124,111 @@ export const readEventController = async (req, res) => {
 export const updateEventController = async (req, res) => {
     const {id} = req.params;
     const {title, images, description} = req.body
+    const img_file = req.file;
 
     try{
-        const event = await prisma.events.update({
-            where : {id : parseInt(id)},
-            data : {
-                title,
-                images: images || "",
-                description,
-            }
-        })
+        // Check if the event exists
+        const existingEvent = await prisma.events.findUnique({
+            where: { id: parseInt(id) }
+        });
         
-        res.status(201).json({
-            success: true,
-            message: "sucessfully to update event",
-            data : event
-        })
+        if (!existingEvent) {
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            });
+        }
 
+        // handle imgae cloudinary
+        let cloudinaryUrl = existingEvent.images;
+
+        if (!images){
+            // Delete last image from Cloudinary
+            if (cloudinaryUrl && cloudinaryUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/'))
+            {
+                try {
+                    const publicId = cloudinaryUrl.split("/").pop().split(".")[0];
+                    await cloudinary.v2.uploader.destroy(`events/${publicId}`);
+                } catch (deleteError) {
+                    console.error("Failed to delete old image:", deleteError);
+                }
+            }
+            // Update event with new data
+            const event = await prisma.events.update({
+                where : {id : parseInt(id)},
+                data : {
+                    title,
+                    images: '',
+                    description,
+                }
+            })
+            
+            res.status(201).json({
+                success: true,
+                message: "sucessfully to update event",
+                data : event
+            })
+        }
+        else
+        {
+            if (img_file) {
+                // Delete old image from Cloudinary if it exists
+                if (cloudinaryUrl && cloudinaryUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/'))
+                    {
+                        try {
+                            console.log("delete old image2")
+                            const publicId = cloudinaryUrl.split("/").pop().split(".")[0];
+                            await cloudinary.v2.uploader.destroy(`events/${publicId}`);
+                        } catch (deleteError) {
+                            console.error("Failed to delete old image:", deleteError);
+                        }
+                    }
+                
+                // Upload new image to Cloudinary
+                try {
+                    const uploadResult = await new Promise((resolve, reject) => {
+                        cloudinary.v2.uploader.upload_stream(
+                            { 
+                                folder: 'events', 
+                                transformation: [
+                                    { quality: "auto", fetch_format: "auto" }
+                                ]
+                            }, 
+                            (error, result) => {
+                                if (error) reject(error);
+                                else resolve(result);
+                            }
+                        ).end(img_file.buffer);
+                    });
+                    
+                    cloudinaryUrl = uploadResult.secure_url;
+                } catch (uploadError) {
+                    console.error('Cloudinary Upload Error:', uploadError);
+                    return res.status(400).json({ 
+                        success: false,
+                        message: "Failed to upload image" 
+                    });
+                }
+            }
+    
+            // Update event with new data
+            const event = await prisma.events.update({
+                where : {id : parseInt(id)},
+                data : {
+                    title,
+                    images: cloudinaryUrl,
+                    description,
+                }
+            })
+            
+            res.status(201).json({
+                success: true,
+                message: "sucessfully to update event",
+                data : event
+            })
+        }
     }catch(error){
-        console.log("Error Update event")
+        console.error('Error updating event:', error);
 
         res.status(500).json({
             success:false,
@@ -124,6 +241,20 @@ export const updateEventController = async (req, res) => {
 export const deleteEventContorller = async (req, res) => {
     const {id} = req.params;
     try{
+        // Handle image deletion from Cloudinary
+        const event = await prisma.events.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (event && event.images && event.images.includes('https://res.cloudinary.com/duemu25rz/image/upload/')) {
+            try {
+                const publicId = event.images.split("/").pop().split(".")[0];
+                await cloudinary.v2.uploader.destroy(`events/${publicId}`);
+            } catch (deleteError) {
+                console.error("Failed to delete old image:", deleteError);
+            }
+        }
+
         await prisma.events.delete({
             where : {id : parseInt(id)},
         })

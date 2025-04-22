@@ -6,7 +6,8 @@ export interface EventData {
   images: string
   description: string
   posted_at: string
-}
+  imageFile?: File
+} 
 
 export interface ApiResponse<T> {
   data?: T
@@ -64,15 +65,29 @@ export const deleteEvents = async (id: string): Promise<ApiResponse<DeleteEventR
 
 export const editEvents = async (id: string, eventData: EventData): Promise<ApiResponse<EventData>> => {
   try {
-    // Make sure we're sending the expected fields based on backend requirements
-    const { title, images, description } = eventData
+    // Validate required fields as the backend does
+    if (!eventData.title || !eventData.description) {
+      throw new Error("Title and description are required fields")
+    }
+
+    console.log("Event data to be sent:", eventData)
+    
+    // FORM DATA
+    const formData = new FormData();
+    formData.append('title', eventData.title || '');
+    formData.append('description', eventData.description || '');
+
+    if (eventData.imageFile) {
+      formData.append('img_file', eventData.imageFile);
+    }
+
+    if (eventData.images) {
+      formData.append('images', eventData.images);
+    }
 
     const response = await fetch(`${API_BASE_URL}/events/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, images, description }),
+      body: formData,
     })
 
     if (!response.ok) {
@@ -89,20 +104,23 @@ export const editEvents = async (id: string, eventData: EventData): Promise<ApiR
 
 export const createEvents = async (eventData: Partial<EventData>): Promise<ApiResponse<EventData>> => {
   try {
-    // Make sure we're sending the expected fields based on backend requirements
-    const { title, images, description } = eventData
-
     // Validate required fields as the backend does
-    if (!title || !description) {
+    if (!eventData.title || !eventData.description) {
       throw new Error("Title and description are required fields")
     }
+    
+    // FORM DATA
+    const formData = new FormData();
+    formData.append('title', eventData.title || '');
+    formData.append('description', eventData.description || '');
 
+    if (eventData.imageFile) {
+      formData.append('img_file', eventData.imageFile);
+    }
+    
     const response = await fetch(`${API_BASE_URL}/events`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, images, description }),
+      body: formData,
     })
 
     if (!response.ok) {

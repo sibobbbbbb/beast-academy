@@ -163,16 +163,18 @@
       <EventForm
         v-if="showCreateForm"
         :event="currentEvent"
+        :isProcessing="isFormProcessing"
         title="Create New Event"
         @save="handleCreateEvent"
         @cancel="showCreateForm = false"
-      />
-      
-      <!-- Edit Event Modal -->
-      <EventForm
+        />
+        
+        <!-- Edit Event Modal -->
+        <EventForm
         v-if="showEditForm"
         :event="currentEvent"
         title="Edit Event"
+        :isProcessing="isFormProcessing"
         @save="handleEditEvent"
         @cancel="showEditForm = false"
       />
@@ -184,6 +186,7 @@
         message="Are you sure you want to delete this event? This action cannot be undone."
         confirm-text="Delete"
         cancel-text="Cancel"
+        :isProcessing="isFormProcessing"
         @confirm="handleDeleteEvent"
         @cancel="showDeleteConfirm = false"
       />
@@ -204,6 +207,7 @@ import Navbar from '@/components/Navbar.vue';
 
 // State management
 const events = ref<EventData[]>([]);
+const isFormProcessing = ref(false);
 const searchQuery = ref<string>(''); // Search query
 const filteredEvents = computed(() =>
   events.value.filter(event =>
@@ -225,6 +229,7 @@ const currentEvent = ref<EventData>({
   posted_at: ''
 });
 const error = ref<string | null>(null);
+
 
 // Load initial events
 onMounted(async () => {
@@ -338,17 +343,15 @@ function openDeleteConfirm(event: EventData) {
 // Handle create event
 async function handleCreateEvent(event: EventData) {
   try {
-    loading.value = true;
+    isFormProcessing.value = true;
     error.value = null;
     
     const response = await createEvents(event);
-    showCreateForm.value = false;
     
     // Get the created event with its ID from the response
     const createdEvent = response.data as EventData || response as EventData;
     
     // Add the new event to the beginning of the events array
-    // If the API doesn't return a posted_at field, add the current date
     if (!createdEvent.posted_at) {
       createdEvent.posted_at = new Date().toISOString();
     }
@@ -356,11 +359,14 @@ async function handleCreateEvent(event: EventData) {
     // Add the new event to the beginning of the array so it appears at the top
     events.value = [createdEvent, ...events.value];
     
+    // Clear the form
+    showCreateForm.value = false;
+    
   } catch (err) {
     error.value = 'Failed to create event. Please try again.';
     console.error(err);
   } finally {
-    loading.value = false;
+    isFormProcessing.value = false;
   }
 }
 
@@ -369,6 +375,7 @@ async function handleEditEvent(eventData: EventData) {
   try {
     loading.value = true;
     error.value = null;
+    isFormProcessing.value = true;
     
     await editEvents(eventData.id, eventData);
     showEditForm.value = false;
@@ -383,6 +390,7 @@ async function handleEditEvent(eventData: EventData) {
     console.error(err);
   } finally {
     loading.value = false;
+    isFormProcessing.value = false;
   }
 }
 
@@ -391,6 +399,7 @@ async function handleDeleteEvent() {
   try {
     loading.value = true;
     error.value = null;
+    isFormProcessing.value = true;
     
     if (currentEvent.value) {
       await deleteEvents(currentEvent.value.id);
@@ -406,6 +415,7 @@ async function handleDeleteEvent() {
     console.error(err);
   } finally {
     loading.value = false;
+    isFormProcessing.value = false;
   }
 }
 </script>
