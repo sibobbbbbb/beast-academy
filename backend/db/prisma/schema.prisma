@@ -18,8 +18,9 @@ model member_user {
 }
 
 model liked_by {
-  u_id        Int       
-  e_id        Int       
+  id   Int  @id @default(autoincrement())
+  u_id Int       
+  e_id Int
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.

@@ -47,11 +47,9 @@ CREATE TABLE events(
 );
 
 CREATE TABLE liked_by(
+    id SERIAL PRIMARY KEY,
     u_id INT NOT NULL,
-    e_id INT NOT NULL,
-
-    FOREIGN KEY (u_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (e_id) REFERENCES events(id) ON DELETE CASCADE
+    e_id INT NOT NULL
 );
 
 -- Insert dummy users
