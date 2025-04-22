@@ -73,6 +73,8 @@ export const addNewMember = async (
       formData.email = ''
       formData.phone = ''
     }
+    console.log('Form submitted successfully:', data)
+    return data;
   } catch (error) {
     apiError.value = 'Network error. Please check your connection and try again.'
     console.error('Error submitting form:', error)

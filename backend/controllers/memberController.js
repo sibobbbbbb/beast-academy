@@ -3,6 +3,8 @@ import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import { upload } from '../middlewares/multerMiddleware.js';
 import cloudinary  from "../config/cloudinary.js";
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from "uuid";
 
 // Add a new member
 export const addMemberControllers = [
@@ -76,16 +78,53 @@ export const addMemberControllers = [
       }
 
       // Buat user baru
-      await prisma.members.create({
-        data: {
-          name,
-          img_url: cloudinaryUrl,
-          phone_no: phone || null,
-          email,
-        },
+      const result = await prisma.$transaction(async (prisma) => {
+        // Buat member baru
+        const newMember = await prisma.members.create({
+          data: {
+            name,
+            img_url: cloudinaryUrl,
+            phone_no: phone || null,
+            email,
+          },
+        });
+
+        // generate default password
+        const uniqueId = uuidv4().substring(0, 6);
+
+        // Password default: nama (lowercase, tanpa spasi) + 6 karakter acak
+        const defaultPassword = `${name.toLowerCase().replace(/\s+/g, '')}${uniqueId}`;
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+        
+        // Buat user baru dengan password default
+        const newUser = await prisma.users.create({
+          data: {
+            username: name,
+            email,
+            password: hashedPassword,
+            avatar: cloudinaryUrl,
+            role: "member",
+          },
+        });
+        
+        // Hubungkan member dengan user di tabel member_user
+        await prisma.member_user.create({
+          data: {
+            m_id: newMember.id,
+            u_id: newUser.id,
+          },
+        });
+
+        return { memberId: newMember.id, defaultPassword };
       });
 
-      res.status(201).json({ message: "Member berhasil ditambahkan" });
+      // Member berhasil ditambahkan
+      res.status(201).json({ 
+        message: "Member berhasil ditambahkan", 
+        defaultPassword: result.defaultPassword 
+      });
     } catch (error) {
       console.error(error);
       res
