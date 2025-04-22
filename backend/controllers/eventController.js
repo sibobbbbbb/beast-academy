@@ -168,3 +168,59 @@ export const readEventControllerId = async (req, res) => {
         })
     }
 }
+
+export const likeEventController = async (req, res) => {
+    try {
+        const { event_id, user_id } = req.body;
+
+        // Insert ke tabel liked_by
+        const result = await prisma.liked_by.create({
+        data: {
+            u_id: user_id,
+            e_id: event_id
+        }
+        });
+
+        res.status(201).json({
+        success: true,
+        message: "Event liked successfully",
+        data: result
+        });
+    } catch (error) {
+        console.error("Error liking event:", error);
+        res.status(500).json({
+        success: false,
+        message: "Failed to like event",
+        error: error.message
+        });
+    }
+};
+
+export const unlikeEventController = async (req, res) => {
+    try {
+        const { event_id } = req.body;
+        // Dapatkan user_id dari token atau session (misalnya req.user.id)
+        const user_id = req.user.id;
+
+        // Hapus dari tabel liked_by
+        const result = await prisma.liked_by.deleteMany({
+            where: {
+                e_id: event_id,
+                u_id: user_id
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Event unliked successfully",
+            data: result
+        });
+    } catch (error) {
+        console.error("Error unliking event:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to unlike event",
+            error: error.message
+        });
+    }
+};

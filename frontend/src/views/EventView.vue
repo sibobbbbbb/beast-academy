@@ -208,16 +208,25 @@
     
     <!-- Tennis court decoration at bottom -->
     <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
+    <div v-if="showLoginPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="showLoginPrompt = false">
+      <div class="bg-white p-6 rounded-lg shadow-md" @click.stop>
+        <p class="mb-4">Anda ingin like event ini? Yuk login dulu</p>
+        <button @click="router.push('/login')" class="bg-[var(--primary-blue)] text-white px-4 py-2 rounded">
+          Login
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData } from '@/services/eventServices.ts';
+import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData, likeEvent, unlikeEvent } from '@/services/eventServices.ts';
 import EventForm from '../components/EventFrom.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import Navbar from '@/components/Navbar.vue';
+import api from '@/utils/axios.ts';
 
 // State management
 const events = ref<EventData[]>([]);
@@ -242,7 +251,10 @@ const currentEvent = ref<EventData>({
   posted_at: ''
 });
 const error = ref<string | null>(null);
-  const likedEvents = ref<Record<string, boolean>>({});
+const likedEvents = ref<Record<string, boolean>>({});
+const isLoggedIn = ref(false);
+const userID = ref('');
+const showLoginPrompt = ref(false);
 
 // Load initial events
 onMounted(async () => {
@@ -257,13 +269,21 @@ onMounted(async () => {
   if (sentinel) {
     observer.observe(sentinel);
   }
-});
 
-function toggleLike(event: EventData) {
-  // Pastikan id adalah string
-  const eventId = event.id;
-  likedEvents.value[eventId] = !likedEvents.value[eventId];
-}
+  try {
+    const response = await api.get('/auth/me', {
+      withCredentials: true
+    });
+    if (response.data) {
+      isLoggedIn.value = true;
+      userID.value = response.data.id;
+      console.log('User logged in:', userID.value);
+    }
+  } catch {
+    console.log('User not logged in');
+    isLoggedIn.value = false;
+  }
+});
 
 // Load events function
 async function loadEvents(reset = false) {
@@ -297,6 +317,12 @@ async function loadEvents(reset = false) {
   }
 }
 
+async function checkLoginStatus() {
+  // Check if the user is logged in
+  // This is a placeholder function. Implement your own logic to check login status.
+  isLoggedIn.value = true; // Set to true for testing purposes
+}
+
 // Intersection observer handler for infinite scrolling
 function handleIntersect(entries: IntersectionObserverEntry[]) {
   if (entries[0].isIntersecting && !loading.value && hasMore.value) {
@@ -307,6 +333,32 @@ function handleIntersect(entries: IntersectionObserverEntry[]) {
 // Handle search input
 function handleSearch() {
   // This function is triggered on every input change in the search bar
+}
+
+async function toggleLike(event: EventData) {
+  if (!isLoggedIn.value) {
+    showLoginPrompt.value = true;
+    return;
+  }
+  try {
+    await likeEvent(event.id, userID.value);
+    likedEvents.value[event.id] = true;
+  } catch (err) {
+    console.error("Error liking event:", err);
+  }
+}
+
+async function toggleUnlike(event: EventData) {
+  if (!isLoggedIn.value) {
+    showLoginPrompt.value = true;
+    return;
+  }
+  try {
+    await unlikeEvent(event.id, userID.value);
+    likedEvents.value[event.id] = false;
+  } catch (err) {
+    console.error("Error unliking event:", err);
+  }
 }
 
 // Format date
@@ -327,13 +379,13 @@ function handleImageError(e: Event) {
   target.src = ''; // You can set a default image here
   target.classList.add('bg-[var(--neutral-300)]');
 }
+
 const router = useRouter();
 
 function viewEventDetails(event: EventData) {
   // Navigate to the event details page
   router.push(`/event-details/${event.id}`);
 }
-
 
 // Open create form
 function openCreateForm() {

@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+import axios from 'axios'
 
 export interface EventData {
   id: string
@@ -136,4 +137,18 @@ export const fetchEventDetails = async (id: string): Promise<ApiResponse<EventDa
     console.error(`Failed to fetch event with id ${id}:`, error)
     throw error
   }
+}
+
+export async function likeEvent(eventId: number, userId: number) {
+  return axios.post(`${API_BASE_URL}/likeEvent`, {
+    event_id: eventId,
+    user_id: userId
+  }, { withCredentials: true });
+}
+
+export async function unlikeEvent(eventId: number, userId: number) {
+  return axios.post(`${API_BASE_URL}/unlikeEvent`, {
+    event_id: eventId, 
+    user_id: userId
+  }, { withCredentials: true });
 }
