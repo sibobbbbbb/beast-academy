@@ -105,8 +105,26 @@ export const addMemberControllers = [
 // Get all members
 export const getMemberControllers = async (req, res) => {
   try {
-    const members = await prisma.members.findMany();
-    res.status(200).json(members);
+    // Ambil role dan userId dari token yang sudah diverifikasi
+    const { role, userId } = req.user;
+    
+    // Jika role adalah trainer, ambil member yang dilatih oleh trainer tersebut
+    if (role === "trainer") {
+      const members = await prisma.trained_by.findMany({
+        where: { trainer_id: parseInt(userId) },
+        include: {
+          members: true,
+        },
+      });
+      return res.status(200).json(members);
+    } else {
+      const members = await prisma.members.findMany({
+        orderBy: {
+          name: 'asc',
+        },
+      });
+      return res.status(200).json(members);
+    }
   } catch (error) {
     console.error(error);
     res

@@ -1,0 +1,99 @@
+// noteService.js
+import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+/**
+ * Fetch all notes for a specific member
+ * @param {number} memberId - ID of the member to fetch notes for
+ * @returns {Promise} - Promise with notes data
+ */
+export const fetchMemberNotes = async (memberId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/notes/member/${memberId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching member notes:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new note
+ * @param {number} memberId - ID of the member the note is for
+ * @param {string} notes - The note content
+ * @param {string} status - The status of the note (active, completed, on-hold)
+ * @returns {Promise} - Promise with created note data
+ */
+export const createNote = async (memberId, notes, status = 'active') => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/notes`, {
+      memberId,
+      notes,
+      status
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating note:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing note
+ * @param {number} noteId - ID of the note to update
+ * @param {Object} noteData - Object containing note data to update
+ * @returns {Promise} - Promise with updated note data
+ */
+export const updateNote = async (noteId, noteData) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/notes/${noteId}`, noteData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating note:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a note
+ * @param {number} noteId - ID of the note to delete
+ * @returns {Promise} - Promise with response data
+ */
+export const deleteNote = async (noteId) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/notes/${noteId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a single note by ID
+ * @param {number} noteId - ID of the note to fetch
+ * @returns {Promise} - Promise with note data
+ */
+export const getNoteById = async (noteId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/notes/${noteId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching note:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch all notes created by the current trainer
+ * @returns {Promise} - Promise with notes data
+ */
+export const fetchTrainerNotes = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/notes/trainer`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching trainer notes:', error);
+    throw error;
+  }
+};

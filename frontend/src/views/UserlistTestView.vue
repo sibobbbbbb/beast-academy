@@ -6,13 +6,13 @@
   <hr>
   <div class="content">
     <span style="display: flex;">
-      <FilterDropdown @filter="handleFilter" />
+      <FilterDropdown v-if="userRole == 'admin'" @filter="handleFilter" />
       <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
       <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
-    <button @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
-    <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
-    <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
+    <button v-if="userRole == 'admin'" @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
+    <button v-if="!showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Delete Member</button>
+    <button v-if="showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Cancel</button>
     <button @click="(_) => {exportToFile()}"> Export </button>
     <table>
       <thead>
@@ -23,7 +23,8 @@
           <th class="shead" style="width: 6rem;">
             <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
           </th>
-          <th>Edit Button</th>
+          <th v-if="userRole == 'admin'">Edit Button</th>
+          <th v-if="userRole == 'trainer'"> Add Notes</th>
           <th class="shead">
             <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
           </th>
@@ -46,8 +47,9 @@
     />
           </td>
           <td>{{ item.id }}</td>
-          <td>
-            <button @click="editMember(item)">Edit</button>
+          <td v-if="userRole === 'admin' || userRole === 'trainer'">
+            <button v-if="userRole === 'admin'" @click="editMember(item)">Edit</button>
+            <button v-if="userRole === 'trainer'" @click="navigateToNotes(item)"> + </button>
           </td>
           <td>
             <span v-if="editingMember !== item.id">{{ item.name }}</span>
@@ -58,7 +60,7 @@
             <span v-if="editingMember !== item.id">{{ item.phone_no }}</span>
             <input v-else v-model="item.phone_no" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
           </td>
-          <td v-if="showDeleteColumn">
+          <td v-if="showDeleteColumn && userRole === 'admin'">
             <button @click="deleteMember(item.id)">Delete</button>
           </td>
         </tr>
@@ -112,6 +114,44 @@ const originalName = ref<string | null>(null);
 const originalPhone = ref<string | null>(null);
 const showDeleteColumn = ref(false);
 
+const userRole = ref("");
+
+const getUserRole = async () => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // Mengambil role dari API endpoint /me
+    const response = await fetch(`${API_BASE_URL}/auth/me`, 
+      {
+        credentials: 'include',
+      }
+    );
+    
+    // Response berisi data user termasuk role
+    const userData = await response.json();
+    console.log(userData)
+    // Set role ke variabel userRole
+    userRole.value = userData.role || '';
+    
+    // Opsional: Simpan data user lainnya jika diperlukan
+    // userId.value = userData.id;
+    // username.value = userData.username;
+    // dll.
+    console.log("User role:", userRole.value);
+    return userData.role;
+  } catch (error) {
+    console.error("Failed to get user role from API:", error);
+    
+    // Jika error, set role kosong
+    userRole.value = '';
+    return '';
+  }
+};
+
+onMounted(() => {
+  refresh(0);
+  getUserRole();
+});
+
 const deleteMember = async (id: number) => {
   const confirmed = confirm('Are you sure you want to delete this member?');
   if (confirmed) {
@@ -147,6 +187,11 @@ function cancelEdit(item: Member) {
 
 function toggleDeleteColumn() {
   showDeleteColumn.value = !showDeleteColumn.value;
+}
+
+function navigateToNotes(item: Member) {
+  router.push(`/notes-list/${item.id}`);
+  console.log('Navigate to notes for member:', item.id);
 }
 
 const dataFetcher = async (page: number) => {

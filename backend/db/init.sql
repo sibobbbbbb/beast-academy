@@ -13,7 +13,6 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 CREATE TABLE members (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -46,6 +45,27 @@ CREATE TABLE events(
     posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE trained_by(
+    trainer_id INT NOT NULL,
+    member_id INT NOT NULL,
+    PRIMARY KEY (trainer_id, member_id),
+    FOREIGN KEY (trainer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
+);
+
+CREATE TABLE training_assignments (
+    id SERIAL PRIMARY KEY,
+    trainer_id INTEGER NOT NULL,
+    member_id INTEGER NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    status VARCHAR(20) DEFAULT 'active',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES users(id),
+    FOREIGN KEY (member_id) REFERENCES users(id)
+);
 
 -- Insert dummy users
 INSERT INTO users (role, username, password, email)

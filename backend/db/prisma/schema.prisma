@@ -32,20 +32,24 @@ model members {
   stat4         Int?
   stat5         Int?
   member_user   member_user[]
+  trained_by    trained_by[]
 }
 
 model users {
-  id          Int           @id @default(autoincrement())
-  role        user_role
-  username    String        @db.VarChar(100)
-  password    String?       @db.VarChar(255)  // Made nullable for social logins
-  email       String        @unique @db.VarChar(100)
-  provider    String?       @db.VarChar(20)   // 'google', 'facebook', etc.
-  provider_id String?       @db.VarChar(100)  // ID from the provider
-  avatar      String?       // Profile picture URL
-  created_at  DateTime?     @default(now()) @db.Timestamp(6)
-  updated_at  DateTime?     @default(now()) @updatedAt @db.Timestamp(6)
-  member_user member_user[]
+  id                                                          Int                    @id @default(autoincrement())
+  role                                                        user_role
+  username                                                    String                 @db.VarChar(100)
+  password                                                    String?                @db.VarChar(255)
+  email                                                       String                 @unique @db.VarChar(100)
+  provider                                                    String?                @db.VarChar(20)
+  provider_id                                                 String?                @db.VarChar(100)
+  avatar                                                      String?
+  created_at                                                  DateTime?              @default(now()) @db.Timestamp(6)
+  updated_at                                                  DateTime?              @default(now()) @updatedAt @db.Timestamp(6)
+  member_user                                                 member_user[]
+  trained_by                                                  trained_by[]
+  training_assignments_training_assignments_member_idTousers  training_assignments[] @relation("training_assignments_member_idTousers")
+  training_assignments_training_assignments_trainer_idTousers training_assignments[] @relation("training_assignments_trainer_idTousers")
 }
 
 model events {
@@ -54,6 +58,29 @@ model events {
   images      String    @default("")
   description String?   @default("Description here") @db.VarChar(200)
   posted_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model trained_by {
+  trainer_id Int
+  member_id  Int
+  members    members @relation(fields: [member_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users   @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([trainer_id, member_id])
+}
+
+model training_assignments {
+  id                                           Int       @id @default(autoincrement())
+  trainer_id                                   Int
+  member_id                                    Int
+  start_date                                   DateTime  @db.Date
+  end_date                                     DateTime? @db.Date
+  status                                       String?   @default("active") @db.VarChar(20)
+  notes                                        String?
+  created_at                                   DateTime? @default(now()) @db.Timestamp(6)
+  updated_at                                   DateTime? @default(now()) @db.Timestamp(6)
+  users_training_assignments_member_idTousers  users     @relation("training_assignments_member_idTousers", fields: [member_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_training_assignments_trainer_idTousers users     @relation("training_assignments_trainer_idTousers", fields: [trainer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum user_role {

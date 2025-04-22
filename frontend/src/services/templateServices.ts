@@ -28,7 +28,7 @@ export const fetchMembers = async (perPage: number, page: number, sortBy?: strin
     const fullURL = `${API_BASE_URL}/members?${params.toString()}`;
     console.log("Fetching data from:", fullURL); // 🔹 Debug URL
 
-    const response = await fetch(fullURL);
+    const response = await fetch(fullURL, {credentials: 'include'}); 
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
