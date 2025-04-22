@@ -20,17 +20,18 @@ model member_user {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model members {
   id            Int           @id @default(autoincrement())
-  name          String        @db.VarChar(100)
+  name          String        @default("") @db.VarChar(100)
   img_url       String        @default("")
   phone_no      String?       @unique @db.VarChar(15)
   email         String        @unique @db.VarChar(100)
   created_at    DateTime?     @default(now()) @db.Timestamp(6)
   last_activity DateTime?     @default(now()) @db.Timestamp(6)
-  stat1         Int?
-  stat2         Int?
-  stat3         Int?
-  stat4         Int?
-  stat5         Int?
+  stat1         Int?          @default(0)
+  stat2         Int?          @default(0)
+  stat3         Int?          @default(0)
+  stat4         Int?          @default(0)
+  stat5         Int?          @default(0)
+  activity      activity[]
   member_user   member_user[]
 }
 
@@ -51,8 +52,23 @@ model events {
   posted_at   DateTime? @default(now()) @db.Timestamp(6)
 }
 
+model activity {
+  id       Int           @id @default(autoincrement())
+  m_id     Int
+  activity activity_type @default(other)
+  date     DateTime      @default(now()) @db.Timestamp(6)
+  members  members       @relation(fields: [m_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
 enum user_role {
   admin
   trainer
   member
+}
+
+enum activity_type {
+  tournament
+  class
+  friendlies
+  other
 }
