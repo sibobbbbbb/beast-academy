@@ -7,7 +7,7 @@
   >
     <div class="w-full pb-3 sm:mx-auto sm:max-w-md">
       <h2 class="mt-6 text-center text-3xl font-extrabold" style="color: var(--color-heading);">
-        Add New Member
+        Add New Member / Trainer
       </h2>
     </div>
 
@@ -97,6 +97,30 @@
             </p>
           </div>
 
+          <!-- Role Input -->
+          <div class="pb-2">
+            <label for="role" class="block text-sm font-medium" style="color: var(--color-text);">
+              Role
+            </label>
+            <div class="mt-1 relative">
+              <select
+                id="role"
+                v-model="form.role"
+                name="role"
+                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm pr-10"
+                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
+              >
+                <option value="member">Member</option>
+                <option value="trainer">Trainer</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <!-- Phone Input -->
           <div class="pb-2">
             <label for="phone" class="block text-sm font-medium" style="color: var(--color-text);">
@@ -174,7 +198,7 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {{ isSubmitting ? 'Adding...' : 'Add Member' }}
+              {{ isSubmitting ? 'Adding...' : 'Add Member / Trainer' }}
             </button>
           </div>
         </form>
@@ -190,7 +214,7 @@
       <!-- Header dengan tombol close -->
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-medium" style="color: var(--color-heading);">
-          Member Berhasil Ditambahkan
+          {{form.role}} Berhasil Ditambahkan
         </h3>
         <button 
           @click="closePasswordModal" 
@@ -220,7 +244,7 @@
         </div>
         <div class="ml-3 pb-2">
           <p class="text-sm" style="color: var(--color-text);">
-            Member baru telah berhasil ditambahkan ke sistem. Berikut adalah informasi login:
+            {{form.role}} baru telah berhasil ditambahkan ke sistem. Berikut adalah informasi login:
           </p>
         </div>
       </div>
@@ -254,7 +278,7 @@
           </div>
           <div class="ml-3">
             <p class="text-sm text-yellow-700">
-              Harap catat password ini. Member perlu menggunakan password ini untuk login pertama kali.
+              Harap catat password ini. {{form.role}} perlu menggunakan password ini untuk login pertama kali.
             </p>
           </div>
         </div>
@@ -277,6 +301,7 @@ export default defineComponent({
       img_file: null as File | null,
       email: '',
       phone: '',
+      role: 'member',
     })
 
     // Refs for form state and validation

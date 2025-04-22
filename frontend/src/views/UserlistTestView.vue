@@ -10,8 +10,8 @@
       <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
       <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
-    <button @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
-    <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
+    <button @click="() => {router.push('/add-member'); console.log('Added New Data')}">Add Data</button>
+    <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Data</button>
     <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
     <button @click="(_) => {exportToFile()}"> Export </button>
     <table>
