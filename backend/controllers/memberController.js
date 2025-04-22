@@ -1,15 +1,8 @@
 import { prisma } from "../db/prisma/prisma.js";
 import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
-import cloudinary from "cloudinary";
 import { upload } from '../middlewares/multerMiddleware.js';
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import cloudinary  from "../config/cloudinary.js";
 
 // Add a new member
 export const addMemberControllers = [
@@ -278,7 +271,7 @@ export const updateProfileControllers = async (req, res) => {
       });
 
       const lastImgUrl = lastMemberData.img_url;
-      if (!lastImgUrl || !lastImgUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/v1743012173/members/'))
+      if (!lastImgUrl || !lastImgUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/'))
       {
         try {
           const publicId = lastImgUrl.split("/").pop().split(".")[0];
