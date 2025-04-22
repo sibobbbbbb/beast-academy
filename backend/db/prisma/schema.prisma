@@ -17,6 +17,11 @@ model member_user {
   @@id([u_id, m_id])
 }
 
+model liked_by {
+  u_id        Int       
+  e_id        Int       
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model members {
   id            Int           @id @default(autoincrement())

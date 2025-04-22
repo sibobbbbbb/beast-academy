@@ -46,6 +46,13 @@ CREATE TABLE events(
     posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE liked_by(
+    u_id INT NOT NULL,
+    e_id INT NOT NULL,
+
+    FOREIGN KEY (u_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (e_id) REFERENCES events(id) ON DELETE CASCADE
+);
 
 -- Insert dummy users
 INSERT INTO users (role, username, password, email)
@@ -105,6 +112,17 @@ VALUES
 ('Tennis Tech Conference', 'https://example.com/images/example.jpg', 'Exploring the latest technology in tennis training and analytics.'),
 ('Tennis Food Fair', 'https://example.com/images/example.jpg', 'Fuel up with athlete-focused nutrition and delicious dishes.'),
 ('Tennis Book Launch', 'https://example.com/images/example.jpg', 'Launching the latest biography of a tennis legend.');
+
+-- INSERT INTO liked_by (u_id, e_id)
+-- VALUES
+-- (3, 1),
+-- (4, 2),
+-- (5, 3),
+-- (6, 4),
+-- (3, 5),
+-- (4, 1),
+-- (5, 2),
+-- (6, 3);
 
 
 INSERT INTO events DEFAULT VALUES;
