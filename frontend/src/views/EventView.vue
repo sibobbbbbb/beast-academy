@@ -102,16 +102,24 @@
                 <div class="flex space-x-2">
                   <!-- Like button -->
                   <button 
-                    @click.stop="toggleLike(event)" 
+                    @click.stop="likedEvents[event.id] ? toggleUnlike(event) : toggleLike(event)" 
                     class="p-2 rounded-full cursor-pointer"
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
-                      :class="['h-5', 'w-5', likedEvents[event.id] ? 'fill-red-500 stroke-red-500' : 'fill-white stroke-black']" 
+                      :class="[
+                        'h-5', 
+                        'w-5', 
+                        likedEvents[event.id] 
+                          ? 'fill-red-500 stroke-red-500' 
+                          : 'fill-white stroke-gray-500'
+                      ]" 
                       viewBox="0 0 24 24" 
                       stroke="currentColor"
                     >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" 
+                      />
                     </svg>
                   </button>
                   
@@ -222,7 +230,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData, likeEvent, unlikeEvent } from '@/services/eventServices.ts';
+import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData, likeEvent, unlikeEvent, eventLikedById } from '@/services/eventServices.ts';
 import EventForm from '../components/EventFrom.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import Navbar from '@/components/Navbar.vue';
@@ -256,6 +264,21 @@ const isLoggedIn = ref(false);
 const userID = ref('');
 const showLoginPrompt = ref(false);
 
+const router = useRouter();
+
+async function fetchLikedEvents() {
+  try {
+    const response = await eventLikedById(userID.value);
+    if (response.data) {
+      response.data.forEach((event: EventData) => {
+        likedEvents.value[event.e_id] = true;
+      });
+    }
+  } catch (err) {
+    console.error("Failed to fetch liked events:", err);
+  }
+}
+
 // Load initial events
 onMounted(async () => {
   await loadEvents();
@@ -277,7 +300,7 @@ onMounted(async () => {
     if (response.data) {
       isLoggedIn.value = true;
       userID.value = response.data.id;
-      console.log('User logged in:', userID.value);
+      await fetchLikedEvents(userID.value);
     }
   } catch {
     console.log('User not logged in');
@@ -317,12 +340,6 @@ async function loadEvents(reset = false) {
   }
 }
 
-async function checkLoginStatus() {
-  // Check if the user is logged in
-  // This is a placeholder function. Implement your own logic to check login status.
-  isLoggedIn.value = true; // Set to true for testing purposes
-}
-
 // Intersection observer handler for infinite scrolling
 function handleIntersect(entries: IntersectionObserverEntry[]) {
   if (entries[0].isIntersecting && !loading.value && hasMore.value) {
@@ -330,7 +347,6 @@ function handleIntersect(entries: IntersectionObserverEntry[]) {
   }
 }
 
-// Handle search input
 function handleSearch() {
   // This function is triggered on every input change in the search bar
 }
@@ -380,10 +396,7 @@ function handleImageError(e: Event) {
   target.classList.add('bg-[var(--neutral-300)]');
 }
 
-const router = useRouter();
-
 function viewEventDetails(event: EventData) {
-  // Navigate to the event details page
   router.push(`/event-details/${event.id}`);
 }
 

@@ -1,5 +1,4 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-import axios from 'axios'
 
 export interface EventData {
   id: string
@@ -140,15 +139,64 @@ export const fetchEventDetails = async (id: string): Promise<ApiResponse<EventDa
 }
 
 export async function likeEvent(eventId: number, userId: number) {
-  return axios.post(`${API_BASE_URL}/likeEvent`, {
-    event_id: eventId,
-    user_id: userId
-  }, { withCredentials: true });
+  try {
+    const response = await fetch(`${API_BASE_URL}/likeEvent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ event_id: eventId, user_id: userId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error liking event: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to like event:", error);
+    throw error;
+  }
 }
 
 export async function unlikeEvent(eventId: number, userId: number) {
-  return axios.post(`${API_BASE_URL}/unlikeEvent`, {
-    event_id: eventId, 
-    user_id: userId
-  }, { withCredentials: true });
+  try {
+    const response = await fetch(`${API_BASE_URL}/unlikeEvent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ event_id: eventId, user_id: userId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error unliking event: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to unlike event:", error);
+    throw error;
+  }
+}
+
+export async function eventLikedById(userId: number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/likedEvents/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error checking if event is liked: ${response.statusText}`);
+    }
+
+    const data: ApiResponse<EventData[]> = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to check if event is liked:", error);
+    throw error;
+  }
 }

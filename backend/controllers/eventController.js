@@ -173,7 +173,6 @@ export const likeEventController = async (req, res) => {
     try {
         const { event_id, user_id } = req.body;
 
-        // Insert ke tabel liked_by
         const result = await prisma.liked_by.create({
         data: {
             u_id: user_id,
@@ -198,11 +197,8 @@ export const likeEventController = async (req, res) => {
 
 export const unlikeEventController = async (req, res) => {
     try {
-        const { event_id } = req.body;
-        // Dapatkan user_id dari token atau session (misalnya req.user.id)
-        const user_id = req.user.id;
+        const { event_id, user_id } = req.body;
 
-        // Hapus dari tabel liked_by
         const result = await prisma.liked_by.deleteMany({
             where: {
                 e_id: event_id,
@@ -224,3 +220,34 @@ export const unlikeEventController = async (req, res) => {
         });
     }
 };
+
+export const readLikedEventControllerId = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const likedEvents = await prisma.liked_by.findMany({
+            where: {
+                u_id: parseInt(userId)
+            }
+        });
+
+        if (likedEvents.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No liked events found for this user"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Liked events fetched successfully",
+            data: likedEvents
+        });
+    } catch (error) {
+        console.error("Error fetching liked events:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch liked events",
+            error: error.message
+        });
+    }
+}

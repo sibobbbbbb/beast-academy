@@ -1,5 +1,5 @@
 import express from 'express';
-import { createEventController, readEventController, deleteEventContorller, updateEventController, readEventControllerId, likeEventController, unlikeEventController } from '../controllers/eventController.js';
+import { createEventController, readEventController, deleteEventContorller, updateEventController, readEventControllerId, likeEventController, unlikeEventController, readLikedEventControllerId } from '../controllers/eventController.js';
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.put('/events/:id', updateEventController)
 router.get('/eventDetails/:id', readEventControllerId);
 router.post('/likeEvent', likeEventController);
 router.post('/unlikeEvent', unlikeEventController);
+router.get('/likedEvents/:userId', readLikedEventControllerId);
 
 export default router;
