@@ -98,12 +98,24 @@
               <p class="text-[var(--neutral-700)] !mb-4 line-clamp-2">{{ event.description }}</p>
               
               <!-- Action buttons -->
-              <div class="flex justify-end items-center">
+              <div class="flex justify-between items-center w-full">
+                <!-- Tombol JOIN -->
+                <div>
+                  <button 
+                    @click.stop="openJoinForm(event)" 
+                    class="px-4 py-1 rounded-full bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--blue-dark)] transition-colors"
+                    title="Join Event"
+                  >
+                    JOIN
+                  </button>
+                </div>
+
                 <div class="flex space-x-2">
                   <!-- Like button -->
                   <button 
                     @click.stop="likedEvents[event.id] ? toggleUnlike(event) : toggleLike(event)" 
                     class="p-2 rounded-full cursor-pointer"
+                    title="Like Event"
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
@@ -122,24 +134,30 @@
                       />
                     </svg>
                   </button>
-                  
+
                   <!-- Edit button -->
                   <button 
                     @click.stop="openEditForm(event)" 
-                    class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
+                    class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] cursor-pointer"
+                    title="Edit Event"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
+                      />
                     </svg>
                   </button>
                   
                   <!-- Delete button -->
                   <button 
                     @click.stop="openDeleteConfirm(event)" 
-                    class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
+                    class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] cursor-pointer"
+                    title="Delete Event"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                      />
                     </svg>
                   </button>
                 </div>
@@ -279,10 +297,19 @@ async function fetchLikedEvents() {
   }
 }
 
+function openJoinForm(event: EventData) {
+  if (event.joinform) {
+    window.open(event.joinform, "_blank");
+  } else {
+    // Jika joinform kosong, Anda bisa tampilkan pesan atau lakukan alternatif
+    alert("Join form not available for this event.");
+  }
+}
+
 // Load initial events
 onMounted(async () => {
   await loadEvents();
-  
+
   // Set up intersection observer for infinite scrolling
   const observer = new IntersectionObserver(handleIntersect, {
     rootMargin: '100px',
@@ -429,6 +456,8 @@ async function handleCreateEvent(event: EventData) {
   try {
     loading.value = true;
     error.value = null;
+
+    console.log('Creating event:', event);
     
     const response = await createEvents(event);
     showCreateForm.value = false;

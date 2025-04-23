@@ -3,71 +3,73 @@ import {PrismaClient} from "@prisma/client";
 const prisma = new PrismaClient()
 
 export const createEventController = async (req, res) => {
+    const { title, images, description, joinform } = req.body;
 
-    const {title, images, description} = req.body;
-
-    if (!title){
+    if (!title || !description) {
         return res.status(400).json({
             success: false,
-            message: 'Title and description are requried fields'
-        })
+            message: 'Title and description are required fields'
+        });
     };
 
-    try{
-        const newevent  = await prisma.events.create({
-            data :{
+    try {
+        const newevent = await prisma.events.create({
+            data: {
                 title,
-                images : images || "",
-                description : description || "",
+                images: images || "",
+                description: description || "",
+                joinform: joinform || "https://example.com/join-form",  // gunakan default jika tidak ada link
                 posted_at: new Date(),
             }
-        })
+        });
 
         return res.status(201).json({
             success: true,
             message: "Event created successfully",
-            data : newevent
+            data: newevent
         });
-
     } catch(error) {
         console.error('Error creating event:', error);
-
         return res.status(500).json({
-            success : false,
+            success: false,
             message: 'Failed to create event',
             error: error.message
-        })
+        });
     }
-
 }
 
 export const readEventController = async (req, res) => {
     try {
         // Get page parameter from query string, default to 1 if not provided
         const page = parseInt(req.query.page) || 1;
-        
         const pageSize = page === 1 ? 20 : 5;
-        
-        
         const skip = page === 1 ? 0 : 20 + (page - 2) * 5;
-        
+
         // Get total count for pagination metadata
         const totalCount = await prisma.events.count();
-        
-        // Fetch events with pagination
+
+        // Fetch events with joinform included
         const events = await prisma.events.findMany({
             skip,
             take: pageSize,
             orderBy: {
                 posted_at: 'desc' // Most recent events first
+            },
+            select: {
+                id: true,
+                title: true,
+                images: true,
+                description: true,
+                posted_at: true,
+                joinform: true
             }
         });
-        
+
         // Calculate if there are more items to load
         const loadedSoFar = page === 1 ? 20 : 20 + (page - 1) * 5;
         const hasMore = totalCount > loadedSoFar;
-        
-        // Return paginated response
+
+        // Return paginated response with joinform
         res.status(200).json({
             success: true,
             message: "Success fetching data",
@@ -81,7 +83,6 @@ export const readEventController = async (req, res) => {
         });
     } catch (error) {
         console.log("Error getting data:", error);
-        
         res.status(500).json({
             success: false,
             message: "Failed to get data",
@@ -91,36 +92,35 @@ export const readEventController = async (req, res) => {
 };
 
 export const updateEventController = async (req, res) => {
-    const {id} = req.params;
-    const {title, images, description} = req.body
+    const { id } = req.params;
+    const { title, images, description, joinform } = req.body;
 
-    try{
+    try {
         const event = await prisma.events.update({
-            where : {id : parseInt(id)},
-            data : {
+            where: { id: parseInt(id) },
+            data: {
                 title,
                 images: images || "",
                 description,
+                joinform: joinform || ""  // update joinform sesuai input, bisa juga validasi jika perlu
             }
-        })
-        
+        });
+
         res.status(201).json({
             success: true,
-            message: "sucessfully to update event",
-            data : event
-        })
-
-    }catch(error){
-        console.log("Error Update event")
-
+            message: "Successfully updated event",
+            data: event
+        });
+    } catch(error) {
+        console.error("Error updating event:", error);
         res.status(500).json({
-            success:false,
+            success: false,
             message:"Failed to update event",
-            error : error.message
-        })
+            error: error.message
+        });
     }
-    
 }
+
 export const deleteEventContorller = async (req, res) => {
     const {id} = req.params;
     try{
