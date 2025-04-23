@@ -3,6 +3,7 @@ export interface FormDataMember {
   img_file: File | null
   email: string
   phone?: string
+  role: string
 }
 
 export interface FormErrors {

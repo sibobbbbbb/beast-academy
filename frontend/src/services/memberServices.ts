@@ -40,6 +40,7 @@ export const addNewMember = async (
     const form = new FormData()
     form.append('name', formData.name)
     form.append('email', formData.email)
+    form.append('role', formData.role)
     if (formData.img_file) {
       form.append('img_file', formData.img_file);
     }
@@ -66,6 +67,8 @@ export const addNewMember = async (
       } else {
         apiError.value = 'An unexpected error occurred. Please try again.'
       }
+
+      throw new Error('Failed to submit form')
     } else {
       formSubmitted.value = true
       formData.name = ''
@@ -73,6 +76,8 @@ export const addNewMember = async (
       formData.email = ''
       formData.phone = ''
     }
+    console.log('Form submitted successfully:', data)
+    return data;
   } catch (error) {
     apiError.value = 'Network error. Please check your connection and try again.'
     console.error('Error submitting form:', error)

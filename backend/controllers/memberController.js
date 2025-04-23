@@ -3,6 +3,8 @@ import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import { upload } from '../middlewares/multerMiddleware.js';
 import cloudinary  from "../config/cloudinary.js";
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from "uuid";
 
 // Add a new member
 export const addMemberControllers = [
@@ -17,6 +19,16 @@ export const addMemberControllers = [
         .isMobilePhone()
         .withMessage("Nomor telepon tidak valid")
         .run(req),
+      body("role")
+        .notEmpty()
+        .withMessage("Role tidak boleh kosong")
+        .isIn(["member", "trainer"])
+        .withMessage("Role tidak valid")
+        .run(req),
+      body("name")
+        .notEmpty()
+        .withMessage("Nama tidak boleh kosong")
+        .run(req),
     ]);
 
     const errors = validationResult(req);
@@ -24,9 +36,8 @@ export const addMemberControllers = [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, phone, email } = req.body;
+    const { name, phone, role, email } = req.body;
     const img_file = req.file;
-
     try {
       // Cek jika email atau nomor hp sudah ada
       const existingEmail = await prisma.members.findUnique({
@@ -51,13 +62,15 @@ export const addMemberControllers = [
         return res.status(400).json({ message: "Request Tidak Valid" });
       }
 
+      const folder = role === "trainer" ? "trainers" : "members";
+
       // Upload image to Cloudinary
       let cloudinaryUrl = null;
       try {
         const uploadResult = await new Promise((resolve, reject) => {
           cloudinary.v2.uploader.upload_stream(
             { 
-              folder: 'members', 
+              folder: folder, 
               transformation: [
                 { quality: "auto", fetch_format: "auto" }
               ]
@@ -76,18 +89,62 @@ export const addMemberControllers = [
       }
 
       // Buat user baru
-      await prisma.members.create({
-        data: {
-          name,
-          img_url: cloudinaryUrl,
-          phone_no: phone || null,
-          email,
-        },
-      });
+      const result = await prisma.$transaction(async (prisma) => {
+        if (role === "member")
+        {
+          // Buat member baru
+          var newMember = await prisma.members.create({
+            data: {
+              name,
+              img_url: cloudinaryUrl,
+              phone_no: phone || null,
+              email,
+            },
+          });
+        }
 
-      res.status(201).json({ message: "Member berhasil ditambahkan" });
-    } catch (error) {
-      console.error(error);
+        // generate default password
+        const uniqueId = uuidv4().substring(0, 6);
+        
+        // Password default: nama (lowercase, tanpa spasi) + 6 karakter acak
+        const defaultPassword = `${name.toLowerCase().replace(/\s+/g, '')}${uniqueId}`;
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+        
+        // Buat user baru dengan password default
+        const newUser = await prisma.users.create({
+          data: {
+            username: name,
+            email,
+            password: hashedPassword,
+            avatar: cloudinaryUrl,
+            role: role,
+          },
+        });
+        
+        if (role === "member")
+        {
+          // Hubungkan member dengan user di tabel member_user
+          await prisma.member_user.create({
+            data: {
+              m_id: newMember.id,
+              u_id: newUser.id,
+            },
+          });
+        }
+        
+        return { defaultPassword };
+      
+      });
+        
+        // Member berhasil ditambahkan
+        res.status(201).json({ 
+          message: "Member berhasil ditambahkan", 
+          defaultPassword: result.defaultPassword 
+        });
+      } catch (error) {
+        console.error(error);
       res
         .status(500)
         .json({ message: "Terjadi kesalahan saat menambahkan member" });
