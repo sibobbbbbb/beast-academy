@@ -86,7 +86,7 @@ export const addMemberControllers = [
       await prisma.members.create({
         data: {
           name,
-          img_url: cloudinaryUrl,
+          avatar: cloudinaryUrl,
           phone_no: phone || null,
           email,
         },
@@ -273,7 +273,7 @@ export const updateProfileControllers = async (req, res) => {
         where: { id: m_id.m_id },
       });
 
-      const lastImgUrl = lastMemberData.img_url;
+      const lastImgUrl = lastMemberData.avatar;
       if (!lastImgUrl || !lastImgUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/v1743012173/members/'))
       {
         try {
@@ -312,7 +312,7 @@ export const updateProfileControllers = async (req, res) => {
         where: { id: m_id.m_id },
         data: {
           name,
-          img_url: cloudinaryUrl,
+          avatar: cloudinaryUrl,
           phone_no: phone_no === "" ? null : phone_no,
         },
       });

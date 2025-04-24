@@ -15,48 +15,37 @@ enum user_role {
 }
 
 model users {
-  id             Int           @id @default(autoincrement())
-  role           user_role
-  username       String        @db.VarChar(100)
-  password       String?       @db.VarChar(255)
-  email          String        @unique @db.VarChar(100)
-  provider       String?       @db.VarChar(20)
-  provider_id    String?       @db.VarChar(100)
-  avatar         String?
-  created_at     DateTime?     @default(now()) @db.Timestamp(6)
-  updated_at     DateTime?     @default(now()) @updatedAt @db.Timestamp(6)
-  name           String?       @db.VarChar(100)
-  img_url        String        @default("") 
-  phone_no       String?       @unique @db.VarChar(15)
-  last_activity  DateTime?     @default(now()) @db.Timestamp(6)
-  
-  // Hanya sebutkan nama relasi saja
-  member       members?        @relation("UserMember")
-  member_user  member_user[]
+  id            Int       @id @default(autoincrement())
+  role          user_role
+  username      String    @db.VarChar(100)
+  password      String?   @db.VarChar(255)
+  email         String    @unique @db.VarChar(100)
+  provider      String?   @db.VarChar(20)
+  provider_id   String?   @db.VarChar(100)
+  avatar        String    // sesuai dengan default di DB (TEXT NOT NULL DEFAULT '')
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  name          String?   @db.VarChar(100)
+  phone_no      String?   @unique @db.VarChar(15)
+  last_activity DateTime? @default(now()) @db.Timestamp(6)
+
+  // Jika tidak ada tabel member_user, relasi ini bisa dihapus atau dibiarkan terpisah
+  member       members?      @relation("UserMember")
 }
 
 model members {
-  // Primary key sama dengan id user (foreign key ke users)
-  id          Int       @id
-  stat1       Int?
-  stat2       Int?
-  stat3       Int?
-  stat4       Int?
-  stat5       Int?
+  // Primary key sesuai DB: id_m SERIAL PRIMARY KEY
+  id_m        Int   @id @default(autoincrement())
+  // id_u adalah foreign key ke users(id) dan harus UNIQUE
+  id_u        Int   @unique
+  stat1       Int?  // CHECK (stat1 BETWEEN 1 AND 100)
+  stat2       Int?  // CHECK (stat2 BETWEEN 1 AND 100)
+  stat3       Int?  // CHECK (stat3 BETWEEN 1 AND 100)
+  stat4       Int?  // CHECK (stat4 BETWEEN 1 AND 100)
+  stat5       Int?  // CHECK (stat5 BETWEEN 1 AND 100)
   
-  // Tentukan properti relasi secara penuh di sini
-  user        users     @relation("UserMember", fields: [id], references: [id], onDelete: Cascade)
-  member_user member_user[]
-}
-
-model member_user {
-  u_id    Int
-  m_id    Int
-  
-  users   users   @relation(fields: [u_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  members members @relation(fields: [m_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  
-  @@id([u_id, m_id])
+  // Relasi ke users
+  user        users @relation("UserMember", fields: [id_u], references: [id], onDelete: Cascade)
 }
 
 model events {
@@ -69,7 +58,7 @@ model events {
 }
 
 model liked_by {
-  id   Int  @id @default(autoincrement())
+  id   Int @id @default(autoincrement())
   u_id Int       
   e_id Int
 }

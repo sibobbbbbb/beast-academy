@@ -75,19 +75,20 @@ export const register = async (req, res) => {
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Use a transaction to ensure data consistency across tables
+      let user;
+      
       const result = await prisma.$transaction(async (prisma) => {
           // Create user record first
           user = await prisma.users.create({
             data: {
               email,
-              username: email.split('@')[0], // gunakan email prefix untuk username (misal)
-              role: 'member',
-              provider: 'google',
-              provider_id: googleId,
-              avatar: picture,
-              password: null,
-              name: ""
+              username,
+              role, // misalnya diambil dari req.body
+              password: hashedPassword,
+              name: "",
+              avatar: cloudinaryUrl, // dari hasil upload
+              provider: null,       // karena bukan Google
+              provider_id: null     // karena bukan Google
             }
           });
 
@@ -95,20 +96,12 @@ export const register = async (req, res) => {
               // Create member record
               const member = await prisma.members.create({
                   data: {
-                      id: user.id, // menghubungkan record member ke record user yang sudah ada
+                      id_u: user.id, // menghubungkan record member ke record user yang sudah ada
                       stat1: 50,   
                       stat2: 50,
                       stat3: 50,
                       stat4: 50,
                       stat5: 50
-                  }
-              });
-
-              // Create relation in member_user table
-              await prisma.member_user.create({
-                  data: {
-                      u_id: user.id,
-                      m_id: member.id
                   }
               });
 

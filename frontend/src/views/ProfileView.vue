@@ -200,7 +200,7 @@ export default defineComponent({
         name.value = response.name
         email.value = response.email
         phoneNumber.value = response.phone_no || ''
-        profilePhoto.value = response.img_url
+        profilePhoto.value = response.avatar
         joinDate.value = new Date(response.created_at)
 
         // Store original values for comparison
