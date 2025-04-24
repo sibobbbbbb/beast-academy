@@ -113,12 +113,12 @@ export const getMemberControllers = async (req, res) => {
       const members = await prisma.trained_by.findMany({
         where: { trainer_id: parseInt(userId) },
         include: {
-          members: true,
+          users: true,
         },
       });
       return res.status(200).json(members);
     } else {
-      const members = await prisma.members.findMany({
+      const members = await prisma.users.findMany({
         orderBy: {
           name: 'asc',
         },
@@ -137,7 +137,7 @@ export const getMemberControllers = async (req, res) => {
 export const getMemberByIdControllers = async (req, res) => {
   const { id } = req.params;
   try {
-    const member = await prisma.members.findUnique({
+    const member = await prisma.users.findUnique({
       where: { id: parseInt(id) },
     });
     res.status(200).json(member);
@@ -153,7 +153,7 @@ export const getMemberByIdControllers = async (req, res) => {
 export const deleteMemberControllers = async (req, res) => {
   const { id } = req.params;
   try {
-    await prisma.members.delete({
+    await prisma.users.delete({
       where: { id: parseInt(id) },
     });
     res.status(200).json({ message: "Member berhasil dihapus" });
@@ -172,7 +172,7 @@ export const updateMemberControllers = async (req, res) => {
   try {
     // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
     if (phone_no) {
-      const existingPhoneNo = await prisma.members.findUnique({
+      const existingPhoneNo = await prisma.users.findUnique({
         where: { phone_no },
       });
 
@@ -183,7 +183,7 @@ export const updateMemberControllers = async (req, res) => {
       }
     }
 
-    await prisma.members.update({
+    await prisma.users.update({
       where: { id: parseInt(id) },
       data: {
         name,
