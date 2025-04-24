@@ -26,15 +26,9 @@ export const getMembers = async (req, res) => {
 
     // Filter berdasarkan role (via relasi many-to-many dengan users)
     if (filterBy) {
-      whereCondition.member_user = {
-        some: {
-          users: {
-            role: filterBy,
-          },
-        },
-      };
+      whereCondition.role = filterBy;
     }
-
+    
     // Pencarian berdasarkan name, email, atau phone_no
     if (search) {
       whereCondition.OR = [
@@ -43,10 +37,11 @@ export const getMembers = async (req, res) => {
         { phone_no: { contains: search, mode: "insensitive" } },
       ];
     }
+    console.log(whereCondition, "WHERE CONDITION");
 
     // Query untuk mendapatkan daftar members
     // console.log(pageNumber, limitNumber, offset, "GET METRICS");
-    const members = await prisma.members.findMany({
+    const members = await prisma.users.findMany({
       where: whereCondition,
       orderBy: { [sortBy]: order },
       skip: offset,
@@ -61,7 +56,7 @@ export const getMembers = async (req, res) => {
     });
 
     // Menghitung total members
-    const totalMembers = await prisma.members.count({
+    const totalMembers = await prisma.users.count({
       where: whereCondition,
     });
 

@@ -105,7 +105,7 @@ export const addMemberControllers = [
 // Get all members
 export const getMemberControllers = async (req, res) => {
   try {
-    const members = await prisma.members.findMany();
+    const members = await prisma.users.findMany();
     res.status(200).json(members);
   } catch (error) {
     console.error(error);

@@ -78,19 +78,24 @@ export const register = async (req, res) => {
       // Use a transaction to ensure data consistency across tables
       const result = await prisma.$transaction(async (prisma) => {
           // Create user record first
-          const user = await prisma.users.create({
-              data: { role, username, email, password: hashedPassword, avatar: cloudinaryUrl },
+          user = await prisma.users.create({
+            data: {
+              email,
+              username: email.split('@')[0], // gunakan email prefix untuk username (misal)
+              role: 'member',
+              provider: 'google',
+              provider_id: googleId,
+              avatar: picture,
+              password: null,
+              name: ""
+            }
           });
 
-          // If the role is 'member', also create a record in the members table
-          // and link it in the member_user table
           if (role === 'member') {
               // Create member record
               const member = await prisma.members.create({
                   data: {
-                      name: username,
-                      email: email,
-                      img_url: cloudinaryUrl, 
+                      id: user.id, // menghubungkan record member ke record user yang sudah ada
                       stat1: 50,   
                       stat2: 50,
                       stat3: 50,
@@ -249,12 +254,13 @@ export const googleLogin = async (req, res) => {
         user = await prisma.users.create({
           data: {
             email,
-            username: name || email.split('@')[0],
-            password: '', // No password for OAuth users
-            role: 'member', // Default role
+            username: email.split('@')[0], // gunakan email prefix untuk username (misal)
+            role: 'member',
             provider: 'google',
             provider_id: googleId,
-            avatar: picture
+            avatar: picture,
+            password: null,
+            name:""
           }
         });
         
@@ -262,9 +268,7 @@ export const googleLogin = async (req, res) => {
         if (user.role === 'member') {
           member = await prisma.members.create({
             data: {
-              name: user.username,
-              email: user.email,
-              img_url: picture || '',
+              id: user.id, // menghubungkan record member ke record user yang sudah ada
               stat1: 50, // Default values
               stat2: 50,
               stat3: 50,
@@ -305,9 +309,7 @@ export const googleLogin = async (req, res) => {
             // Create missing member record
             member = await prisma.members.create({
               data: {
-                name: user.username,
-                email: user.email,
-                img_url: picture || '',
+                id: user.id, // menghubungkan record member ke record user yang sudah ada
                 stat1: 50,
                 stat2: 50,
                 stat3: 50,
@@ -419,7 +421,7 @@ export const googleCallback = async (req, res) => {
     
     // Destructure payload here so variabelnya tersedia untuk block transaction
     const { email, name, picture, sub: googleId } = payload;
-    const userName = name || email.split('@')[0];
+    const userName = name ? name : ""
     
     const result = await prisma.$transaction(async (prisma) => {
       // Find if user already exists
@@ -432,13 +434,13 @@ export const googleCallback = async (req, res) => {
         user = await prisma.users.create({
           data: {
             email,
-            username: userName,
-            name: userName,
+            username: email.split('@')[0],
             role: 'member',
             provider: 'google',
             provider_id: googleId,
             avatar: picture,
-            password: null
+            password: null,
+            name: name ? name : ""
           }
         });
         
@@ -488,9 +490,7 @@ export const googleCallback = async (req, res) => {
           if (!existingMemberRelation) {
             member = await prisma.members.create({
               data: {
-                name: user.username,
-                email: user.email,
-                img_url: picture || '',
+                id: user.id, // menghubungkan record member ke record user yang sudah ada
                 stat1: 50,
                 stat2: 50,
                 stat3: 50,
