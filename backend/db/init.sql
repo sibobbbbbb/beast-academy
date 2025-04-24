@@ -10,11 +10,10 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
     provider VARCHAR(20),    -- 'google', 'facebook', etc.
     provider_id VARCHAR(100),-- ID from the provider
-    avatar TEXT,             -- Profile picture URL
+    avatar TEXT NOT NULL DEFAULT '',             -- Profile picture URL
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     name VARCHAR(100),
-    img_url TEXT NOT NULL DEFAULT '',
     phone_no VARCHAR(15) CHECK (phone_no ~ '^[0-9]+$') UNIQUE,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -51,7 +50,7 @@ CREATE TABLE liked_by(
 );
 
 -- Memasukkan data users
-INSERT INTO users (role, username, password, email, name, img_url, phone_no)
+INSERT INTO users (role, username, password, email, name, avatar, phone_no)
 VALUES 
 ('admin', 'admin1', 'hashedpassword1', 'admin1@example.com', 'Admin One', 'https://example.com/images/admin1.jpg', '1111111111'),
 ('trainer', 'trainer1', 'hashedpassword2', 'trainer1@example.com', 'Trainer One', 'https://example.com/images/trainer1.jpg', '2222222222'),
