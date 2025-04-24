@@ -30,7 +30,7 @@ export const register = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
   try {
-      const { role, username, email, password } = req.body;
+      const { role, username, email, password, name } = req.body;
       const img_file = req.file;
 
       // Validate input fields
@@ -85,7 +85,7 @@ export const register = async (req, res) => {
               username,
               role, // misalnya diambil dari req.body
               password: hashedPassword,
-              name: "",
+              name: name,
               avatar: cloudinaryUrl, // dari hasil upload
               provider: null,       // karena bukan Google
               provider_id: null     // karena bukan Google

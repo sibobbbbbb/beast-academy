@@ -13,7 +13,7 @@ CREATE TABLE users (
     avatar TEXT NOT NULL DEFAULT '',             -- Profile picture URL
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    name VARCHAR(100),
+    name VARCHAR(100) NOT NULL ,
     phone_no VARCHAR(15) CHECK (phone_no ~ '^[0-9]+$') UNIQUE,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
