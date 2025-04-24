@@ -1,7 +1,4 @@
-// noteService.js
-import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 /**
  * Fetch all notes for a specific member
  * @param {number} memberId - ID of the member to fetch notes for
@@ -9,8 +6,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
  */
 export const fetchMemberNotes = async (memberId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/notes/member/${memberId}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/notes/member/${memberId}`, {
+      credentials: 'include'
+    }
+    );
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching member notes:', error);
     throw error;
@@ -26,12 +27,21 @@ export const fetchMemberNotes = async (memberId) => {
  */
 export const createNote = async (memberId, notes, status = 'active') => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/notes`, {
-      memberId,
-      notes,
-      status
+    const response = await fetch(`${API_BASE_URL}/notes`,
+       {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        memberId,
+        notes,
+        status
+      })
     });
-    return response.data;
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error creating note:', error);
     throw error;
@@ -46,8 +56,16 @@ export const createNote = async (memberId, notes, status = 'active') => {
  */
 export const updateNote = async (noteId, noteData) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/notes/${noteId}`, noteData);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(noteData)
+    });
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error updating note:', error);
     throw error;
@@ -61,8 +79,12 @@ export const updateNote = async (noteId, noteData) => {
  */
 export const deleteNote = async (noteId) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/notes/${noteId}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
+      credentials: 'include',
+      method: 'DELETE'
+    });
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error deleting note:', error);
     throw error;
@@ -76,8 +98,13 @@ export const deleteNote = async (noteId) => {
  */
 export const getNoteById = async (noteId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/notes/${noteId}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/notes/${noteId}`,
+      {
+        credentials: 'include'
+      }
+    );
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching note:', error);
     throw error;
@@ -90,8 +117,11 @@ export const getNoteById = async (noteId) => {
  */
 export const fetchTrainerNotes = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/notes/trainer`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/notes/trainer`, {
+      credentials: 'include'
+    });
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching trainer notes:', error);
     throw error;

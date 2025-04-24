@@ -6,6 +6,7 @@ import memberRoutes from './routes/memberRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import path from 'path';
 import eventRoutes from './routes/eventRoutes.js';
+import noteRoutes from './routes/noteRoutes.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use('/api/static', express.static(path.join(process.cwd(), 'public')));
 
 // Routes
+app.use('/api', noteRoutes);
 app.use('/api', templateRoutes);
 app.use('/api', memberRoutes);
 app.use('/api/auth', authRoutes);

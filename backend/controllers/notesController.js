@@ -1,3 +1,5 @@
+import { prisma } from "../db/prisma/prisma.js";
+
 export const createNote = async (req, res) => {
     try {
         const { userId, role } = req.user;
@@ -31,67 +33,86 @@ export const createNote = async (req, res) => {
 
 
 export const getMemberNotes = async (req, res) => {
-    try {
-      const memberId = parseInt(req.params.memberId);
-      
-      const notes = await prisma.training_assignments.findMany({
-        where: {
-          member_id: memberId
-        },
-        orderBy: {
-          created_at: 'desc'
-        },
-        include: {
-          users_training_assignments_trainer_idTousers: {
-            select: {
-              id: true,
-              name: true
-            }
+  try {
+    const memberId = parseInt(req.params.memberId);
+    console.log('Member ID:', req.params.memberId);
+    const notes = await prisma.training_assignments.findMany({
+      where: {
+        member_id: memberId
+      },
+      orderBy: {
+        created_at: "desc"
+      },
+      include: {
+        // Include trainer information with correct fields from users model
+        users_training_assignments_trainer_idTousers: {
+          select: {
+            id: true,
+            username: true,  // replaced 'name' with 'username'
+            email: true,
+            avatar: true
           }
         }
-      });
-      
-      return res.status(200).json(notes);
-    } catch (error) {
-      console.error('Error getting member notes:', error);
-      return res.status(500).json({ error: 'Server error' });
-    }
+      }
+    });
+    
+    return res.status(200).json(notes);
+  } catch (error) {
+    console.error('Error getting member notes:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
 };
 
 
 export const getNoteById = async (req, res) => {
-    try {
-      const noteId = parseInt(req.params.id);
-      
-      const note = await prisma.training_assignments.findUnique({
-        where: {
-          id: noteId
+  try {
+    const noteId = parseInt(req.params.id);
+    
+    const note = await prisma.training_assignments.findUnique({
+      where: {
+        id: noteId
+      },
+      include: {
+        // Include trainer information
+        users_training_assignments_trainer_idTousers: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            avatar: true
+          }
         },
-        include: {
-          users_training_assignments_trainer_idTousers: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          users_training_assignments_member_idTousers: {
-            select: {
-              id: true,
-              name: true
-            }
+        // Include member information
+        users_training_assignments_member_idTousers: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            avatar: true
           }
         }
-      });
-      
-      if (!note) {
-        return res.status(404).json({ error: 'Note not found' });
       }
-      
-      return res.status(200).json(note);
-    } catch (error) {
-      console.error('Error getting note:', error);
-      return res.status(500).json({ error: 'Server error' });
+    });
+    
+    if (!note) {
+      return res.status(404).json({ error: 'Note not found' });
     }
+    
+    // Rename properties for more intuitive response structure
+    const formattedNote = {
+      ...note,
+      trainer: note.users_training_assignments_trainer_idTousers,
+      member: note.users_training_assignments_member_idTousers,
+      // Remove the verbose property names from the response
+      users_training_assignments_trainer_idTousers: undefined,
+      users_training_assignments_member_idTousers: undefined
+    };
+    
+    return res.status(200).json(formattedNote);
+  } catch (error) {
+    console.error('Error getting note:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
 };
 
 export const updateNote = async (req, res) => {
@@ -204,4 +225,40 @@ export const deleteNote = async (req, res) => {
       console.error('Error getting trainer notes:', error);
       return res.status(500).json({ error: 'Server error' });
     }
+};
+
+// Middleware to check if trainer has access to the member
+export const checkTrainerAccess = async (req, res, next) => {
+  try {
+    const { userId, role } = req.user;
+    const memberId = parseInt(req.params.memberId || req.body.memberId);
+    
+    // Admin can access all members
+    if (role === 'admin') {
+      return next();
+    }
+    
+    // Check if the trainer has access to this member
+    if (role === 'trainer') {
+      const trainerMember = await prisma.trained_by.findUnique({
+        where: {
+          trainer_id_member_id: {
+            trainer_id: parseInt(userId),
+            member_id: memberId
+          }
+        }
+      });
+      
+      if (!trainerMember) {
+        return res.status(403).json({ error: 'You do not have access to this member' });
+      }
+      
+      return next();
+    }
+    
+    return res.status(403).json({ error: 'Unauthorized' });
+  } catch (error) {
+    console.error('Error checking trainer access:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
 };

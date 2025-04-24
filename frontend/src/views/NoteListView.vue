@@ -89,7 +89,7 @@
           </div>
           <div class="form-actions">
             <button @click="showEditNoteModal = false" class="cancel-btn">Cancel</button>
-            <button @click="updateNote" class="submit-btn">Save Changes</button>
+            <button @click="saveNote" class="submit-btn">Save Changes</button>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@
           <p>Are you sure you want to delete this note? This action cannot be undone.</p>
           <div class="form-actions">
             <button @click="showDeleteModal = false" class="cancel-btn">Cancel</button>
-            <button @click="deleteNote" class="delete-btn">Delete</button>
+            <button @click="removeNote" class="delete-btn">Delete</button>
           </div>
         </div>
       </div>
@@ -111,7 +111,17 @@
   <script setup>
   import { ref, onMounted } from 'vue';
   import { useRoute } from 'vue-router';
-  import axios from 'axios';
+  import { 
+    createNote, 
+    updateNote as updateNoteService, 
+    deleteNote as deleteNoteService, 
+    fetchMemberNotes, 
+    getNoteById 
+  } from '@/services/noteServices';
+  
+  // We need to import a service function for fetching member details
+  // I'll assume it exists in a memberServices.js file
+  import { getMemberById } from '@/services/memberServices';
   
   const route = useRoute();
   const memberId = route.params.id;
@@ -155,18 +165,19 @@
         hour: '2-digit',
         minute: '2-digit'
     }).format(date);
-    };
+  };
   
   // Fetch member notes
   const fetchNotes = async () => {
     try {
       loading.value = true;
-      const response = await axios.get(`/api/notes/member/${memberId}`);
-      notes.value = response.data;
+      // Use the service function for notes
+      const notesData = await fetchMemberNotes(memberId);
+      notes.value = notesData;
       
-      // Fetch member details to get name
-      const memberResponse = await axios.get(`/api/members/get-member/${memberId}`);
-      memberName.value = memberResponse.data.name;
+      // Use service function for member details instead of direct fetch
+      const memberData = await getMemberById(memberId);
+      memberName.value = memberData.name;
     } catch (error) {
       console.error('Error fetching notes:', error);
     } finally {
@@ -182,11 +193,8 @@
         return;
       }
       
-      await axios.post('/api/notes', {
-        memberId: memberId,
-        notes: newNote.value.notes,
-        status: newNote.value.status
-      });
+      // Use the service function
+      const createdNote = await createNote(memberId, newNote.value.notes, newNote.value.status);
       
       showAddNoteModal.value = false;
       newNote.value = { notes: '', status: 'active' };
@@ -209,18 +217,21 @@
   };
   
   // Update note
-  const updateNote = async () => {
+  const saveNote = async () => {
     try {
       if (!editingNote.value.notes.trim()) {
         alert('Note cannot be empty');
         return;
       }
       
-      await axios.put(`/api/notes/${editingNote.value.id}`, {
+      const noteData = {
         notes: editingNote.value.notes,
         status: editingNote.value.status,
         end_date: editingNote.value.status === 'completed' ? editingNote.value.end_date : null
-      });
+      };
+      
+      // Use the service function
+      await updateNoteService(editingNote.value.id, noteData);
       
       showEditNoteModal.value = false;
       await fetchNotes();
@@ -237,9 +248,11 @@
   };
   
   // Delete note
-  const deleteNote = async () => {
+  const removeNote = async () => {
     try {
-      await axios.delete(`/api/notes/${noteIdToDelete.value}`);
+      // Use the service function
+      await deleteNoteService(noteIdToDelete.value);
+      
       showDeleteModal.value = false;
       noteIdToDelete.value = null;
       await fetchNotes();
@@ -252,7 +265,7 @@
   onMounted(() => {
     fetchNotes();
   });
-  </script>
+</script>
   
   <style scoped>
   .notes-container {
