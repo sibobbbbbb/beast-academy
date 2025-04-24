@@ -6,7 +6,6 @@ const prisma = new PrismaClient()
 export const createEventController = async (req, res) => {
     const { title, images, description, joinform } = req.body;
 
-    const {title, description} = req.body;
     const img_file = req.file;
 
     if (!title){
@@ -147,7 +146,7 @@ export const updateEventController = async (req, res) => {
 
         if (!images){
             // Delete last image from Cloudinary
-            if (cloudinaryUrl && cloudinaryUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/'))
+            if (cloudinaryUrl && cloudinaryUrl.includes(process.env.CLOUDINARY_CLOUD_NAME))
             {
                 try {
                     const publicId = cloudinaryUrl.split("/").pop().split(".")[0];
@@ -176,7 +175,7 @@ export const updateEventController = async (req, res) => {
         {
             if (img_file) {
                 // Delete old image from Cloudinary if it exists
-                if (cloudinaryUrl && cloudinaryUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/'))
+                if (cloudinaryUrl && cloudinaryUrl.includes(process.env.CLOUDINARY_CLOUD_NAME))
                     {
                         try {
                             console.log("delete old image2")
@@ -249,7 +248,7 @@ export const deleteEventContorller = async (req, res) => {
             where: { id: parseInt(id) }
         });
 
-        if (event && event.images && event.images.includes('https://res.cloudinary.com/duemu25rz/image/upload/')) {
+        if (event && event.images && event.images.includes(process.env.CLOUDINARY_CLOUD_NAME)) {
             try {
                 const publicId = event.images.split("/").pop().split(".")[0];
                 await cloudinary.v2.uploader.destroy(`events/${publicId}`);
