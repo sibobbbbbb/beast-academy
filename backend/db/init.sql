@@ -1,3 +1,4 @@
+-- Membuat type yang dibutuhkan
 CREATE TYPE user_role as ENUM ('admin','trainer','member');
 
 -- Membuat tabel users (struktur tetap sama)
@@ -9,7 +10,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
     provider VARCHAR(20),    -- 'google', 'facebook', etc.
     provider_id VARCHAR(100),-- ID from the provider
-    avatar TEXT NOT NULL ,             -- Profile picture URL
+    avatar TEXT NOT NULL,             -- Profile picture URL
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     name VARCHAR(100) NOT NULL ,
@@ -77,7 +78,12 @@ VALUES
 ('trainer', 'trainer1', 'hashedpassword2', 'trainer1@example.com', 'Trainer One', 'https://example.com/images/trainer1.jpg', '2222222222'),
 ('member', 'member1', 'hashedpassword3', 'alice@example.com', 'Alice', 'https://example.com/images/alice.jpg', '1234567890'),
 ('member', 'member2', 'hashedpassword4', 'bob@example.com', 'Bob', 'https://example.com/images/bob.jpg', '0987654321'),
-('member', 'member3', 'hashedpassword5', 'charlie@example.com', 'Charlie', 'https://example.com/images/charlie.jpg', '1122334455', 'greenwood');
+('member', 'member3', 'hashedpassword5', 'charlie@example.com', 'Charlie', 'https://example.com/images/charlie.jpg', '1122334455');
+
+-- Memasukkan user dengan social login
+INSERT INTO users (role, username, password, email, provider, provider_id, avatar)
+VALUES 
+('member', 'Google User', NULL, 'google.user@example.com', 'google', '123456789', 'https://example.com/images/google-avatar.jpg');
 
 -- Memasukkan data members
 -- Langsung terhubung dengan users melalui id_u
@@ -96,6 +102,9 @@ VALUES
 ('Tennis Tech Conference', 'https://example.com/images/example.jpg', 'Exploring the latest technology in tennis training and analytics.'),
 ('Tennis Food Fair', 'https://example.com/images/example.jpg', 'Fuel up with athlete-focused nutrition and delicious dishes.'),
 ('Tennis Book Launch', 'https://example.com/images/example.jpg', 'Launching the latest biography of a tennis legend.');
+
+-- Memasukkan event tambahan (default values)
+INSERT INTO events DEFAULT VALUES;
 
 -- Memasukkan data liked_by
 INSERT INTO liked_by (u_id, e_id)

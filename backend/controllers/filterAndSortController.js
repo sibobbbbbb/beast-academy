@@ -28,15 +28,9 @@ export const getMembers = async (req, res) => {
 
     // Filter berdasarkan role (via relasi many-to-many dengan users)
     if (filterBy) {
-      whereCondition.member_user = {
-        some: {
-          users: {
-            role: filterBy,
-          },
-        },
-      };
+      whereCondition.role = filterBy;
     }
-
+    
     // Pencarian berdasarkan name, email, atau phone_no
     if (search) {
       whereCondition.OR = [
