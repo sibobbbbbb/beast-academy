@@ -83,7 +83,7 @@
             </div>
 
             <!-- Phone Number Field -->
-            <div>
+            <div v-if ="role === 'member'">
               <label class="block text-xs font-medium text-gray-700 !mb-1">Phone Number</label>
               <div class="flex items-center p-2 border rounded-md">
                 <div class="flex-shrink-0 text-[var(--primary-blue)]">
@@ -163,6 +163,7 @@ export default defineComponent({
     const email = ref('')
     const phoneNumber = ref('')
     const profilePhoto = ref('')
+    const role = ref('')
     const joinDate = ref<Date>()
     const originalData = reactive({
       name: '',
@@ -197,10 +198,10 @@ export default defineComponent({
     onMounted(async () => {
       try {
         const response = await getProfileUsers()
-        name.value = response.name
+        name.value = response.role === 'member'? response.name: response.username
         email.value = response.email
         phoneNumber.value = response.phone_no || ''
-        profilePhoto.value = response.img_url
+        profilePhoto.value = response.role === 'member'? response.img_url: response.avatar
         joinDate.value = new Date(response.created_at)
 
         // Store original values for comparison
@@ -372,8 +373,8 @@ export default defineComponent({
       formatDate,
       handleImageUpload,
       triggerFileInput,
-      imageUploadRef
-
+      imageUploadRef,
+      role
     }
   }
 })
