@@ -45,14 +45,7 @@ export const getMembers = async (req, res) => {
       where: whereCondition,
       orderBy: { [sortBy]: order },
       skip: offset,
-      take: limitNumber,
-      include: {
-        member_user: {
-          include: {
-            users: true, // Menyertakan data users dalam hasil query
-          },
-        },
-      },
+      take: limitNumber
     });
 
     // Menghitung total members
