@@ -53,6 +53,28 @@
             </p>
           </div>
 
+          <!-- Username Input -->
+          <div class="pb-2">
+            <label for="username" class="block text-sm font-medium" style="color: var(--color-text);">
+              Username
+            </label>
+            <div class="mt-1">
+              <input
+                id="username"
+                v-model="form.username"
+                username="username"
+                type="text"
+                autocomplete="username"
+                class="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none sm:text-sm"
+                :class="{ 'border-red-500': errors.username }"
+                style="border-color: var(--color-border); color: var(--color-text); background: var(--color-background-soft);"
+              />
+            </div>
+            <p v-if="errors.username" class="mt-2 text-sm text-red-500">
+              {{ errors.username }}
+            </p>
+          </div>
+          
           <!-- Name Input -->
           <div class="pb-2">
             <label for="name" class="block text-sm font-medium" style="color: var(--color-text);">
@@ -297,6 +319,7 @@ export default defineComponent({
   setup() {
     // Form data reactive object
     const form = reactive<FormDataMember>({
+      username: '',
       name: '',
       img_file: null as File | null,
       email: '',
@@ -336,6 +359,7 @@ export default defineComponent({
 
     // Fungsi untuk reset form ketika menambah member baru
     const resetForm = () => {
+      form.username = '';
       form.name = '';
       form.email = '';
       form.phone = '';
@@ -393,9 +417,21 @@ export default defineComponent({
       apiError.value = null
       let isValid = true
 
+      // Username validation
+      if (!form.username) {
+        errors.username = 'Username is required'
+        isValid = false
+      } else if (form.username.length > 100) {
+        errors.username = 'Username must be less than 100 characters'
+        isValid = false
+      }
+
       // Name validation
       if (!form.name) {
         errors.name = 'Name is required'
+        isValid = false
+      }else if (form.name.length > 100) {
+        errors.name = 'Name must be less than 100 characters'
         isValid = false
       }
 
@@ -434,17 +470,12 @@ export default defineComponent({
       try {
         // Call service to add member
         const result = await addNewMember(form, errors, apiError, isSubmitting, formSubmitted)
-      
         // Simpan password default dari response dan tandai form sebagai submitted
         defaultPassword.value = result.defaultPassword
         formSubmitted.value = true
-        
-        console.log('Form submitted successfully')
-        console.log('Default password:', defaultPassword.value)
 
       } catch (error) {
-        console.error('Member addition failed', error)
-        apiError.value = 'Failed to add member. Please try again.'
+        apiError.value = error instanceof Error ? error.message : 'An error occurred while adding the member.'
       } finally {
         isSubmitting.value = false
       }

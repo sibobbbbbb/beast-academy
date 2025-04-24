@@ -26,6 +26,10 @@ export const addMemberControllers = [
         .withMessage("Role tidak valid")
         .run(req),
       body("name").notEmpty().withMessage("Nama tidak boleh kosong").run(req),
+      body("username")
+        .notEmpty()
+        .withMessage("Username tidak boleh kosong")
+        .run(req),
     ]);
 
     const errors = validationResult(req);
@@ -33,7 +37,7 @@ export const addMemberControllers = [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, phone, role, email } = req.body;
+    const { username, name, phone, role, email } = req.body;
     const img_file = req.file;
     try {
       // Cek jika email atau nomor hp sudah ada
@@ -42,7 +46,7 @@ export const addMemberControllers = [
       });
 
       if (existingEmail) {
-        return res.status(409).json({ message: "Request Tidak Valid" });
+        return res.status(409).json({ message: "Email sudah digunakan" });
       }
 
       if (phone) {
@@ -51,12 +55,12 @@ export const addMemberControllers = [
         });
 
         if (existingPhoneNo) {
-          return res.status(409).json({ message: "Request Tidak Valid" });
+          return res.status(409).json({ message: "Nomor telepon sudah digunakan" });
         }
       }
 
       if (!img_file) {
-        return res.status(400).json({ message: "Request Tidak Valid" });
+        return res.status(400).json({ message: "Image Wajib ada" });
       }
 
       const folder = role === "trainer" ? "trainers" : "members";
@@ -87,18 +91,6 @@ export const addMemberControllers = [
 
       // Buat user baru
       const result = await prisma.$transaction(async (prisma) => {
-        if (role === "member") {
-          // Buat member baru
-          var newMember = await prisma.users.create({
-            data: {
-              name,
-              avatar: cloudinaryUrl,
-              phone_no: phone || null,
-              email,
-            },
-          });
-        }
-
         // generate default password
         const uniqueId = uuidv4().substring(0, 6);
 
@@ -113,20 +105,26 @@ export const addMemberControllers = [
         // Buat user baru dengan password default
         const newUser = await prisma.users.create({
           data: {
-            username: name,
-            email,
+            username: username,
+            name: name,
+            email: email,
             password: hashedPassword,
             avatar: cloudinaryUrl,
             role: role,
+            phone_no: phone || null,
           },
         });
 
         if (role === "member") {
           // Hubungkan member dengan user di tabel member_user
-          await prisma.member_user.create({
+          await prisma.members.create({
             data: {
-              m_id: newMember.id,
-              u_id: newUser.id,
+              id_u: newUser.id,
+              stat1: 50,   
+              stat2: 50,
+              stat3: 50,
+              stat4: 50,
+              stat5: 50
             },
           });
         }
