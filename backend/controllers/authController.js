@@ -456,7 +456,7 @@ export const googleCallback = async (req, res) => {
         
         if (user.role === 'member') {
           const existingMemberRelation = await prisma.users.findFirst({
-            where: { id_u: user.id }
+            where: { id: user.id }
           });
           
           if (!existingMemberRelation) {
