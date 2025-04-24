@@ -44,13 +44,13 @@ export const getMembers = async (req, res) => {
     if (role === "trainer") {
       // Kita perlu menambahkan filter untuk trainer
       const trainerFilter = {
-        trained_by: {
+        trained_by_trained_by_member_idTousers: {
           some: {
             trainer_id: parseInt(userId)
           }
         }
       };
-
+    
       // Gabungkan dengan whereCondition yang sudah ada
       if (whereCondition.OR) {
         // Jika sudah ada OR condition (dari search), kita perlu mempertahankannya
@@ -69,29 +69,29 @@ export const getMembers = async (req, res) => {
         };
       }
     }
-
+    
     // Query untuk mendapatkan daftar members
-    const members = await prisma.members.findMany({
+    const members = await prisma.users.findMany({
       where: whereCondition,
       orderBy: { [sortBy]: order },
       skip: offset,
       take: limitNumber,
       include: {
-        member_user: {
+        trained_by_trained_by_member_idTousers: {
           include: {
-            users: true,
+            users_trained_by_trainer_idTousers: true, // Include trainer data
           },
         },
-        trained_by: {
+        trained_by_trained_by_trainer_idTousers: {
           include: {
-            users: true, // Include trainer data if needed
+            users_trained_by_member_idTousers: true, // Include member data
           },
         },
       },
     });
 
     // Menghitung total members yang memenuhi kondisi
-    const totalMembers = await prisma.members.count({
+    const totalMembers = await prisma.users.count({
       where: whereCondition,
     });
 

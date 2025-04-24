@@ -18,6 +18,15 @@
       >
         {{ item.name }}
       </a>
+      
+      <!-- Daftar Anggota navigation item - only visible for admin and trainer -->
+      <router-link 
+        v-if="authStore.isLoggedIn && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
+        to="/userlisttest"
+        class="text-white text-sm lg:text-base hover:text-[var(--primary-green)] transition-colors"
+      >
+        Daftar Anggota
+      </router-link>
     </nav>
     
     <!-- Auth Buttons - Show only when NOT logged in -->
@@ -73,6 +82,15 @@
           <div class="py-1">
             <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="profileDropdownOpen = false">My Profile</router-link>
             <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="profileDropdownOpen = false">Settings</router-link>
+            <!-- Daftar Anggota menu item for admin and trainer in dropdown -->
+            <router-link 
+              v-if="authStore.user.role === 'admin' || authStore.user.role=== 'trainer'"
+              to="/userlisttest" 
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
+              @click="profileDropdownOpen = false"
+            >
+              Daftar Anggota
+            </router-link>
             <button @click="handleLogout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">Sign out</button>
           </div>
         </div>
@@ -107,6 +125,16 @@
       >
         {{ item.name }}
       </a>
+      
+      <!-- Daftar Anggota - Mobile menu item for admin and trainer -->
+      <router-link 
+        v-if="authStore.isLoggedIn && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
+        to="/userlisttest"
+        class="py-3 text-white hover:text-[var(--primary-green)] transition-colors !font-medium text-base border-b border-white/10"
+        @click="closeMobileMenu"
+      >
+        Daftar Anggota
+      </router-link>
     </nav>
     
     <div v-if="authStore.isLoggedIn" class="!mt-4 pt-4 border-t border-white/20">
@@ -174,7 +202,6 @@ const avatarLoadError = ref(false);
 // Use computed property for avatar URL to handle Google avatar URLs properly
 const avatarUrl = computed(() => {
   if (avatarLoadError.value) return ''; // Return empty if previous load attempt failed
-  
   const url = authStore.userAvatar;
   if (!url) return '';
   

@@ -1,8 +1,16 @@
 <template>
   <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
-    <img :src=logoImage style="height: 8dvh; display: inline-block; margin-right: 1%;">
-    <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
-  </header>
+  <!-- Back button to home page -->
+  <router-link to="/" class="back-button" style="margin-right: 15px; display: flex; align-items: center; text-decoration: none; color: var(--primary-blue, #0066cc); font-weight: 500;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+  </router-link>
+  
+  <img :src="logoImage" style="height: 8dvh; display: inline-block; margin-right: 1%;">
+  <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
+</header>
   <hr>
   <div class="content">
     <span style="display: flex;">
