@@ -1,10 +1,10 @@
 <template>
   <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
     <img :src=logoImage style="height: 8dvh; display: inline-block; margin-right: 1%;">
-    <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils | {{ deviceStore.currentMode }}</h1>
+    <h1 style="font-weight: 600; font-size: 2rem; display: inline-block;">BEAST Admin Page | {{ deviceStore.currentMode }}</h1>
   </header>
   <hr>
-  <div class="content">
+  <div class="content" v-if="!mobileMode">
     <span style="display: flex;">
       <FilterDropdown @filter="handleFilter" />
       <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
@@ -81,6 +81,73 @@
       <button class="pageButton" @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next </button>
     </span>
   </div>
+  
+  <div v-else>
+    <nav style="position: sticky; top: 0rem; background-color: rgba(190, 100, 180, 0.6); padding: 0.25rem 0.5rem; padding-top: 1rem;">
+     <details>
+      <summary>
+        <label style="font-size: 1.5rem;">
+      Display : Name
+        </label>
+      </summary>
+      <button>Skill</button>
+      <button>Join Date</button>
+      <button>Activity</button>
+    </details>
+
+    </nav>
+    <table class="mobile_list">
+      <thead>
+
+      </thead>
+      <tbody>
+        <MobileListItem
+        v-for="(item, idx) in dummyMobileItems"
+        :key="idx"
+      >
+        <!-- primary slot -->
+        <template #main>
+          {{ item.name }}
+        </template>
+        <!-- non-primary slots -->
+        <template #x1>
+          <label>
+            Skill
+          </label>
+          {{ item.x1 }}
+        </template>
+        <template #x2>
+          <label>
+            Skill
+          </label>
+          {{ item.x2 }}
+        </template>
+        <template #x3>
+          <label>
+            Skill
+          </label>
+          {{ item.x3 }}
+        </template>
+      </MobileListItem>
+      </tbody>
+    </table>
+    <nav style="position: sticky; bottom: 0; background-color: rgba(190, 100, 180, 0.6); text-align: center; padding-top: 0.025rem;">
+      <hr style="
+        width: 25%;
+        height: 4px;
+        background-color: #999;
+        border: none;
+        border-radius: 2px;
+        margin: 0.2rem auto;
+        align-self: center;
+      ">
+      <button>Do Something</button>
+      <button>Do Else</button>
+    </nav>
+    <h2>
+      A thick ass block of content lmao
+    </h2>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -96,6 +163,9 @@ import Pagination from '@/components/PaginationApp.vue'
 import { selectedMembersMap, selectMember, deselectMember, exportToFile } from '@/utils/memberSelection'
 import { useMemberTable } from '@/utils/memberTable'
 import { useDeviceModeStore } from '@/stores/deviceMode'
+import MobileListItem from './MobileListItem.vue'
+
+import dummyMobileItems from '@/utils/dummy.json'
 
 const router = useRouter()
 const {
@@ -121,11 +191,14 @@ const {
   handleFilter,
 } = useMemberTable()
 
-onMounted(() => {
-  refresh(0)
-})
 
 const deviceStore = useDeviceModeStore()
+const mobileMode = ref(false)
+
+onMounted(() => {
+  refresh(0)
+  mobileMode.value = deviceStore.currentMode == "mobile"
+})
 
 </script>
 
@@ -233,6 +306,12 @@ table {
 
 }
 */
+
+.mobile_list{
+  width: calc(100% - 0.2rem);
+  margin: 2rem 0.1rem;
+  margin-bottom: 0.5rem;
+}
 
 select {
   background-color: var(--color-background-mute);
