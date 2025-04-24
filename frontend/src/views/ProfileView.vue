@@ -54,6 +54,18 @@
           </div>
 
           <div class="!mt-4 !space-y-3">
+            <!-- Username Field -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 !mb-1">Username <span class="text-red-600"> * </span></label>
+              <input
+                v-model="username"
+                type="text"
+                class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[var(--primary-blue)] focus:outline-none text-gray-800 text-sm"
+                required
+              />
+              <p v-if="errors.username" class="!mt-1 text-xs text-red-500">{{ errors.username }}</p>
+            </div>
+
             <!-- Name Field -->
             <div>
               <label class="block text-xs font-medium text-gray-700 !mb-1">Name <span class="text-red-600"> * </span></label>
@@ -83,7 +95,7 @@
             </div>
 
             <!-- Phone Number Field -->
-            <div v-if ="role === 'member'">
+            <div v-if ="role !== 'admin'">
               <label class="block text-xs font-medium text-gray-700 !mb-1">Phone Number</label>
               <div class="flex items-center p-2 border rounded-md">
                 <div class="flex-shrink-0 text-[var(--primary-blue)]">
@@ -159,6 +171,7 @@ export default defineComponent({
   setup() {
     
     // Form data
+    const username = ref('')
     const name = ref('')
     const email = ref('')
     const phoneNumber = ref('')
@@ -166,6 +179,7 @@ export default defineComponent({
     const role = ref('')
     const joinDate = ref<Date>()
     const originalData = reactive({
+      username: '',
       name: '',
       phoneNumber: '',
       profilePhoto: ''
@@ -190,7 +204,8 @@ export default defineComponent({
       name: '',
       phone: '',
       img: '',
-      general: ''
+      general: '',
+      username: ''
     })
 
 
@@ -198,13 +213,16 @@ export default defineComponent({
     onMounted(async () => {
       try {
         const response = await getProfileUsers()
-        name.value = response.role === 'member'? response.name: response.username
+        console.log(response)
+        username.value = response.username
+        name.value = response.name
         email.value = response.email
         phoneNumber.value = response.phone_no || ''
-        profilePhoto.value = response.role === 'member'? response.img_url: response.avatar
+        profilePhoto.value = response.avatar
         joinDate.value = new Date(response.created_at)
 
         // Store original values for comparison
+        originalData.username = username.value
         originalData.name = name.value
         originalData.phoneNumber = phoneNumber.value
         originalData.profilePhoto = profilePhoto.value
@@ -254,6 +272,7 @@ export default defineComponent({
 
     // Check if data has changed
     const isDataChanged = () => {
+      if (username.value !== originalData.username) return true
       if (name.value !== originalData.name) return true
       if (phoneNumber.value !== originalData.phoneNumber) return true
       if (isImageChange.value) return true
@@ -319,12 +338,14 @@ export default defineComponent({
 
       try {
         await updateProfile(
+          username.value,
           name.value, 
           isImageChange.value ? imgFile : null, 
           phoneNumber.value || ''
         )
         
         // Update original data
+        originalData.username = username.value
         originalData.name = name.value
         originalData.phoneNumber = phoneNumber.value
         originalData.profilePhoto = profilePhoto.value
@@ -374,7 +395,8 @@ export default defineComponent({
       handleImageUpload,
       triggerFileInput,
       imageUploadRef,
-      role
+      role,
+      username,
     }
   }
 })

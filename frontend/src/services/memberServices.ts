@@ -120,9 +120,10 @@ export const getProfileUsers = async () => {
   }
 }
 
-export const updateProfile = async (name: string, img_file: File | null, phone_no: string) => {
+export const updateProfile = async (username:string, name: string, img_file: File | null, phone_no: string) => {
   try {
     const formData = new FormData();
+    formData.append('username', username);
     formData.append('name', name);
     if (img_file) {
       formData.append('img_file', img_file);
