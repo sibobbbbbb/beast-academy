@@ -135,7 +135,7 @@ export const getMemberByIdControllers = async (req, res) => {
 export const deleteMemberControllers = async (req, res) => {
   const { id } = req.params;
   try {
-    await prisma.members.delete({
+    await prisma.users.delete({
       where: { id: parseInt(id) },
     });
     res.status(200).json({ message: "Member berhasil dihapus" });
@@ -165,7 +165,7 @@ export const updateMemberControllers = async (req, res) => {
       }
     }
 
-    await prisma.members.update({
+    await prisma.users.update({
       where: { id: parseInt(id) },
       data: {
         name,
@@ -188,12 +188,8 @@ export const getProfileControllers = async (req, res) => {
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
   try {
-    const id_member = await prisma.member_user.findFirst({
-      where: { u_id: decoded.userId },
-    });
-
-    const member = await prisma.members.findUnique({
-      where: { id: id_member.m_id },
+    const member = await prisma.users.findUnique({
+      where: { id: decoded.userId },
     });
 
     res.status(200).json(member);
