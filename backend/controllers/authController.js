@@ -369,120 +369,129 @@ export const googleCallback = async (req, res) => {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    // Ensure all required environment variables are set
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-      console.error('Missing Google OAuth credentials in environment variables');
-      return res.status(500).json({ error: 'Server configuration error' });
-    }
-
-    // Make sure the redirect URI matches exactly what you configured in Google Cloud Console
+    // Exchange code for tokens
     const redirectUri = "http://localhost:5173/auth/google/callback";
-    console.log('Using redirect URI:', redirectUri);
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      })
+    });
     
-    try {
-      // Exchange the code for tokens
-      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          code,
-          client_id: process.env.GOOGLE_CLIENT_ID,
-          client_secret: process.env.GOOGLE_CLIENT_SECRET,
-          redirect_uri: redirectUri,
-          grant_type: 'authorization_code'
-        })
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.json();
+      console.error('Google token exchange error:', errorData);
+      return res.status(400).json({ error: 'Failed to exchange authorization code for tokens' });
+    }
+    
+    const tokens = await tokenResponse.json();
+    console.log('Received tokens from Google');
+    
+    let payload;
+    if (!tokens.id_token) {
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v1/userinfo', {
+        headers: { 'Authorization': `Bearer ${tokens.access_token}` }
       });
       
-      if (!tokenResponse.ok) {
-        const errorData = await tokenResponse.json();
-        console.error('Google token exchange error:', errorData);
-        return res.status(400).json({ error: 'Failed to exchange authorization code for tokens' });
+      if (!userInfoResponse.ok) {
+        return res.status(400).json({ error: 'Failed to fetch user information from Google' });
       }
       
-      const tokens = await tokenResponse.json();
-      console.log('Received tokens from Google');
+      payload = await userInfoResponse.json();
+      // Adjust property names if needed (ex: payload.id instead of payload.sub)
+      payload.sub = payload.id;
+    } else {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      payload = ticket.getPayload();
+    }
+    
+    if (!payload.email) {
+      return res.status(400).json({ error: 'Email is required from Google account' });
+    }
+    
+    // Destructure payload here so variabelnya tersedia untuk block transaction
+    const { email, name, picture, sub: googleId } = payload;
+    const userName = name || email.split('@')[0];
+    
+    const result = await prisma.$transaction(async (prisma) => {
+      // Find if user already exists
+      let user = await prisma.users.findUnique({ where: { email } });
+      let isNewUser = false;
+      let member = null;
       
-      let userInfo;
-      let googleId;
-      let email;
-      let name;
-      let picture;
-      
-      // Check if id_token exists
-      if (!tokens.id_token) {
-        console.log('No ID token received from Google, using access token to get user info');
-        
-        // Use access token to get user info instead
-        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v1/userinfo', {
-          headers: {
-            'Authorization': `Bearer ${tokens.access_token}`
+      if (!user) {
+        isNewUser = true;
+        user = await prisma.users.create({
+          data: {
+            email,
+            username: userName,
+            name: userName,
+            role: 'member',
+            provider: 'google',
+            provider_id: googleId,
+            avatar: picture,
+            password: null
           }
         });
         
-        if (!userInfoResponse.ok) {
-          return res.status(400).json({ error: 'Failed to fetch user information from Google' });
-        }
+        console.log('Created new user from Google sign-in:', user.id);
         
-        userInfo = await userInfoResponse.json();
-        console.log('Retrieved user info using access token');
-        
-        // Extract user info
-        email = userInfo.email;
-        name = userInfo.name;
-        picture = userInfo.picture;
-        googleId = userInfo.id;
-      } else {
-        // Verify the ID token
-        const ticket = await googleClient.verifyIdToken({
-          idToken: tokens.id_token,
-          audience: process.env.GOOGLE_CLIENT_ID
-        });
-        
-        const payload = ticket.getPayload();
-        email = payload.email;
-        name = payload.name;
-        picture = payload.picture;
-        googleId = payload.sub;
-      }
-      
-      if (!email) {
-        return res.status(400).json({ error: 'Email is required from Google account' });
-      }
-      
-      // Use a transaction to ensure data consistency
-      const result = await prisma.$transaction(async (prisma) => {
-        // Find if user already exists
-        let user = await prisma.users.findUnique({ where: { email } });
-        let isNewUser = false;
-        let member = null;
-        
-        if (!user) {
-          // Create a new user with Google data
-          isNewUser = true;
-          user = await prisma.users.create({
+        if (user.role === 'member') {
+          member = await prisma.members.create({
             data: {
-              email,
-              username: name || email.split('@')[0],
-              role: 'member', // Default role
-              provider: 'google',
-              provider_id: googleId,
-              avatar: picture,
-              password: null // No password for OAuth users
+              id: user.id, // menghubungkan record member ke record user yang sudah ada
+              stat1: 50,
+              stat2: 50,
+              stat3: 50,
+              stat4: 50,
+              stat5: 50
             }
           });
           
-          console.log('Created new user from Google sign-in:', user.id);
+          await prisma.member_user.create({
+            data: {
+              u_id: user.id,
+              m_id: member.id
+            }
+          });
           
-          // For new members, create entry in members and member_user tables
-          if (user.role === 'member') {
+          console.log('Created member record and linked to user:', member.id);
+        }
+      } else {
+        if (user.provider !== 'google' || user.provider_id !== googleId) {
+          user = await prisma.users.update({
+            where: { id: user.id },
+            data: {
+              provider: 'google',
+              provider_id: googleId,
+              avatar: picture || user.avatar
+            }
+          });
+          console.log('Updated existing user with Google information:', user.id);
+        } else {
+          console.log('Found existing Google user with email:', email);
+        }
+        
+        if (user.role === 'member') {
+          const existingMemberRelation = await prisma.member_user.findFirst({
+            where: { u_id: user.id }
+          });
+          
+          if (!existingMemberRelation) {
             member = await prisma.members.create({
               data: {
                 name: user.username,
                 email: user.email,
                 img_url: picture || '',
-                stat1: 50, // Default starting values
+                stat1: 50,
                 stat2: 50,
                 stat3: 50,
                 stat4: 50,
@@ -490,7 +499,6 @@ export const googleCallback = async (req, res) => {
               }
             });
             
-            // Create the relationship in member_user table
             await prisma.member_user.create({
               data: {
                 u_id: user.id,
@@ -498,91 +506,37 @@ export const googleCallback = async (req, res) => {
               }
             });
             
-            console.log('Created member record and linked to user:', member.id);
-          }
-        } else {
-          // Update existing user's Google information if needed
-          if (user.provider !== 'google' || user.provider_id !== googleId) {
-            user = await prisma.users.update({
-              where: { id: user.id },
-              data: {
-                provider: 'google',
-                provider_id: googleId,
-                avatar: picture || user.avatar
-              }
-            });
-            console.log('Updated existing user with Google information:', user.id);
-          } else {
-            console.log('Found existing Google user with email:', email);
-          }
-          
-          // Check if the user is a member but doesn't have a member record
-          if (user.role === 'member') {
-            // Check if user already has a member record
-            const existingMemberRelation = await prisma.member_user.findFirst({
-              where: { u_id: user.id }
-            });
-            
-            if (!existingMemberRelation) {
-              // Create missing member record
-              member = await prisma.members.create({
-                data: {
-                  name: user.username,
-                  email: user.email,
-                  img_url: picture || '',
-                  stat1: 50,
-                  stat2: 50,
-                  stat3: 50,
-                  stat4: 50,
-                  stat5: 50
-                }
-              });
-              
-              // Create the relationship
-              await prisma.member_user.create({
-                data: {
-                  u_id: user.id,
-                  m_id: member.id
-                }
-              });
-              
-              console.log('Created missing member record for existing user:', member.id);
-            }
+            console.log('Created missing member record for existing user:', member.id);
           }
         }
-        
-        return { user, isNewUser, member };
-      });
+      }
       
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: result.user.id, role: result.user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '1d' }
-      );
-      
-      // Set HTTP-only cookie
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-      
-      return res.json({
-        message: result.isNewUser ? 'Account created and login successful' : 'Google authentication successful',
-        user: {
-          id: result.user.id,
-          username: result.user.username,
-          email: result.user.email,
-          role: result.user.role,
-          avatar: result.user.avatar || picture // Make sure to include the avatar URL
-        }
-      });
-    } catch (tokenError) {
-      console.error('Token exchange or verification error:', tokenError);
-      return res.status(500).json({ error: 'Failed to authenticate with Google' });
-    }
+      return { user, isNewUser, member };
+    });
+    
+    const authToken = jwt.sign(
+      { userId: result.user.id, role: result.user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+    
+    res.cookie('token', authToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+    
+    return res.json({
+      message: result.isNewUser ? 'Account created and login successful' : 'Google authentication successful',
+      user: {
+        id: result.user.id,
+        username: result.user.username,
+        email: result.user.email,
+        role: result.user.role,
+        avatar: result.user.avatar || picture
+      }
+    });
   } catch (error) {
     console.error('Google callback error:', error);
     res.status(500).json({ error: 'An unexpected error occurred during Google authentication' });
