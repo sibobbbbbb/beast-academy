@@ -10,7 +10,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
     provider VARCHAR(20),    -- 'google', 'facebook', etc.
     provider_id VARCHAR(100),-- ID from the provider
-    avatar TEXT NOT NULL DEFAULT '',             -- Profile picture URL
+    avatar TEXT NOT NULL,             -- Profile picture URL
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     name VARCHAR(100) NOT NULL ,

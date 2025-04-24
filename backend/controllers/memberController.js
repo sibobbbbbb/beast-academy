@@ -181,6 +181,27 @@ export const getMemberByIdControllers = async (req, res) => {
 export const deleteMemberControllers = async (req, res) => {
   const { id } = req.params;
   try {
+    // Cek apakah member ada
+    const user = await prisma.users.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    // Hapus Avatar dari Cloudinary
+    const folder = user.role === "trainer" ? "trainers" : "members";
+    const lastImgUrl = user.avatar;
+    if (lastImgUrl && lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)) {
+      try {
+        console.log("Deleting old image from Cloudinary:", lastImgUrl);
+        const publicId = lastImgUrl.split("/").pop().split(".")[0];
+        await cloudinary.v2.uploader.destroy(`${folder}/${publicId}`);
+      } catch (deleteError) {
+        console.error("Failed to delete old image:", deleteError);
+      }
+    }
+
     await prisma.users.delete({
       where: { id: parseInt(id) },
     });
@@ -327,9 +348,7 @@ export const updateProfileControllers = async (req, res) => {
         const folder = decoded.role === "trainer" ? "trainers" : "members";
 
         const lastImgUrl = lastMemberData.avatar;
-        if ( lastImgUrl && lastImgUrl.includes(
-            "https://res.cloudinary.com/duemu25rz/image/upload/"
-          )
+        if ( lastImgUrl && lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)
         ) {
           try {
             console.log("Deleting old image from Cloudinary:", lastImgUrl);

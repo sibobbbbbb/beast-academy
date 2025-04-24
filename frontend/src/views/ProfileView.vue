@@ -213,7 +213,6 @@ export default defineComponent({
     onMounted(async () => {
       try {
         const response = await getProfileUsers()
-        console.log(response)
         username.value = response.username
         name.value = response.name
         email.value = response.email
