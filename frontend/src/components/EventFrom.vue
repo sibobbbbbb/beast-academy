@@ -25,7 +25,8 @@ const formData = ref<EventData>({
   title: '',
   images: '',
   description: '',
-  posted_at: ''
+  posted_at: '',
+  joinform: ''
 });
 
 // Form validation
@@ -155,11 +156,9 @@ function handleImageChange(event: Event) {
             <p v-if="errors.description" class="!mt-1 text-xs text-red-600">{{ errors.description }}</p>
           </div>
           
-          <!-- Image input - Simplified -->
+          <!-- Image input section (tetap sama) -->
           <div>
             <label for="image" class="block text-sm font-medium text-gray-700 !mb-1">Event Image</label>
-            
-            <!-- Image preview (compact) -->
             <div v-if="formData.images" class="!mb-2 rounded-lg overflow-hidden shadow-sm">
               <div class="flex items-center">
                 <img :src="formData.images" alt="Preview" class="h-20 w-20 object-cover" />
@@ -175,8 +174,6 @@ function handleImageChange(event: Event) {
                 </div>
               </div>
             </div>
-            
-            <!-- File upload (simplified) -->
             <div class="flex items-center !mt-2 border border-gray-300 rounded-lg p-2 bg-gray-50">
               <label for="image" class="inline-block px-3 py-1 bg-[var(--primary-blue)] text-white rounded text-xs cursor-pointer hover:bg-[#007aa3]">
                 Choose File
@@ -188,15 +185,31 @@ function handleImageChange(event: Event) {
                   class="hidden"
                 />
               </label>
-              <span class="!ml-2 text-xs text-gray-600 truncate max-w-[150px]" id="file-name">
+              <span class="!ml-2 text-xs text-gray-600 truncate max-w-[150px]">
                 No file chosen
               </span>
+            </div>
+          </div>
+          
+          <!-- Input Google Form URL -->
+          <div>
+            <label for="googleForm" class="block text-sm font-medium text-gray-700 !mb-1">Join Form URL</label>
+            <div class="!mt-2">
+              <div class="flex items-center">
+                <input
+                  id="googleForm"
+                  v-model="formData.joinform"
+                  type="text"
+                  class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
+                  placeholder="Enter Google Form URL..."
+                />
+              </div>
             </div>
           </div>
         </form>
       </div>
       
-      <!-- Footer with Actions -->
+      <!-- Footer dengan actions -->
       <div class="p-4 flex justify-end !space-x-2 !mt-auto">
         <button
           type="button"
