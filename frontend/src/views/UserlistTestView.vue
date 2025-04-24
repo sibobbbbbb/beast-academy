@@ -82,18 +82,35 @@
     </span>
   </div>
   
+  <!-- Mobile screen mode -->
   <div v-else>
     <nav style="position: sticky; top: 0rem; background-color: rgba(190, 100, 180, 0.6); padding: 0.25rem 0.5rem; padding-top: 1rem;">
-     <details>
-      <summary>
-        <label style="font-size: 1.5rem;">
-      Display : Name
-        </label>
-      </summary>
-      <button>Skill</button>
-      <button>Join Date</button>
-      <button>Activity</button>
-    </details>
+      <details>
+    <summary>
+      <label style="font-size: 1.5rem;">Display:</label>
+      <span v-if="mobileDisplayTag.length === 0" style="margin-left: 0.5rem;">(None)</span>
+      <span
+  v-for="tag in mobileTagSelected"
+    :key="tag"
+    class="tag-pill"
+    @click.stop.prevent="toggleTag(tag)"
+  >
+    {{ mobileTagText[tag] }}
+  </span>
+
+    </summary>
+
+    <div class="tag-buttons">
+      <button
+        v-for="(label, key) in mobileTagText"
+        :key="key"
+        @click="toggleTag(key)"
+        :class="{ selected: mobileTagSelected.includes(key) }"
+      >
+        {{ label }}
+      </button>
+    </div>
+  </details>
 
     </nav>
     <table class="mobile_list">
@@ -110,23 +127,23 @@
           {{ item.name }}
         </template>
         <!-- non-primary slots -->
-        <template #x1>
+        <template #x1 v-if="mobileTagSelected[0]">
           <label>
             Skill
           </label>
-          {{ item.x1 }}
+          {{ item[mobileTagSelected[0]] }}
         </template>
-        <template #x2>
+        <template #x2 v-if="mobileTagSelected[1]">
           <label>
             Skill
           </label>
-          {{ item.x2 }}
+          {{ item[mobileTagSelected[1]] }}
         </template>
-        <template #x3>
+        <template #x3 v-if="mobileTagSelected[2]">
           <label>
             Skill
           </label>
-          {{ item.x3 }}
+          {{ item[mobileTagSelected[2]] }}
         </template>
       </MobileListItem>
       </tbody>
@@ -151,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import logoImage from '@/assets/beastLogo.png'
@@ -199,6 +216,31 @@ onMounted(() => {
   refresh(0)
   mobileMode.value = deviceStore.currentMode == "mobile"
 })
+
+const mobileTagSelected = ref<string[]>([]);
+
+const mobileTagText: Record<string, string> = {
+  "x1": "Skill",
+  "x2": "Skill2",
+  "x3": "Join Date",
+};
+
+const mobileDisplayTag = computed(() => {
+  return mobileTagSelected.value.map(key => mobileTagText[key]);
+});
+
+// Function to toggle tag
+function toggleTag(key: string) {
+  const index = mobileTagSelected.value.indexOf(key);
+
+  if (index > -1) {
+    // Immutable removal to avoid Vue reactivity glitches
+    mobileTagSelected.value = mobileTagSelected.value.filter(k => k !== key);
+  } else if (mobileTagSelected.value.length < 3) {
+    mobileTagSelected.value = [...mobileTagSelected.value, key];
+  }
+}
+
 
 </script>
 
@@ -318,4 +360,43 @@ select {
   padding: 0.25rem;
 }
 
+
+/* Tags for mobile */
+.tag-buttons {
+  padding: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button.selected {
+  background: #4caf50;
+  color: white;
+  border-color: #388e3c;
+}
+
+.tag-pill {
+  margin-left: 0.5rem;
+  background: #eee;
+  border: 1px solid #aaa;
+  border-radius: 1rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-block;
+  transition: 0.2s;
+}
+
+.tag-pill:hover {
+  background: #ccc;
+}
 </style>
