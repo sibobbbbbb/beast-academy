@@ -235,6 +235,7 @@ export const googleLogin = async (req, res) => {
 
     // Use a transaction to ensure data consistency
     const result = await prisma.$transaction(async (prisma) => {
+      console.log('Google login payload:', payload);
       // Find if user already exists
       let user = await prisma.users.findUnique({ where: { email } });
 
@@ -242,6 +243,7 @@ export const googleLogin = async (req, res) => {
       let member = null;
 
       if (!user) {
+        console.log('Creating new user from Google sign-in:', email);
         // Create a new user with Google data
         isNewUser = true;
         user = await prisma.users.create({
@@ -253,7 +255,7 @@ export const googleLogin = async (req, res) => {
             provider_id: googleId,
             avatar: picture,
             password: null,
-            name:""
+            name: name
           }
         });
         
@@ -261,20 +263,12 @@ export const googleLogin = async (req, res) => {
         if (user.role === 'member') {
           member = await prisma.members.create({
             data: {
-              id: user.id, // menghubungkan record member ke record user yang sudah ada
+              id_u: user.id,
               stat1: 50, // Default values
               stat2: 50,
               stat3: 50,
               stat4: 50,
               stat5: 50
-            }
-          });
-          
-          // Create the relationship in member_user table
-          await prisma.member_user.create({
-            data: {
-              u_id: user.id,
-              m_id: member.id
             }
           });
         }
@@ -294,8 +288,8 @@ export const googleLogin = async (req, res) => {
         // Check if the user is a member but doesn't have a member record
         if (user.role === 'member') {
           // Check if user already has a member record
-          const existingMemberRelation = await prisma.member_user.findFirst({
-            where: { u_id: user.id }
+          const existingMemberRelation = await prisma.members.findFirst({
+            where: { id_u: user.id }
           });
           
           if (!existingMemberRelation) {
@@ -308,14 +302,6 @@ export const googleLogin = async (req, res) => {
                 stat3: 50,
                 stat4: 50,
                 stat5: 50
-              }
-            });
-            
-            // Create the relationship
-            await prisma.member_user.create({
-              data: {
-                u_id: user.id,
-                m_id: member.id
               }
             });
           }
@@ -442,19 +428,12 @@ export const googleCallback = async (req, res) => {
         if (user.role === 'member') {
           member = await prisma.members.create({
             data: {
-              id: user.id, // menghubungkan record member ke record user yang sudah ada
+              id_u: user.id, 
               stat1: 50,
               stat2: 50,
               stat3: 50,
               stat4: 50,
               stat5: 50
-            }
-          });
-          
-          await prisma.member_user.create({
-            data: {
-              u_id: user.id,
-              m_id: member.id
             }
           });
           
@@ -476,14 +455,14 @@ export const googleCallback = async (req, res) => {
         }
         
         if (user.role === 'member') {
-          const existingMemberRelation = await prisma.member_user.findFirst({
-            where: { u_id: user.id }
+          const existingMemberRelation = await prisma.users.findFirst({
+            where: { id_u: user.id }
           });
           
           if (!existingMemberRelation) {
             member = await prisma.members.create({
               data: {
-                id: user.id, // menghubungkan record member ke record user yang sudah ada
+                id_u: user.id, // menghubungkan record member ke record user yang sudah ada
                 stat1: 50,
                 stat2: 50,
                 stat3: 50,
@@ -491,14 +470,7 @@ export const googleCallback = async (req, res) => {
                 stat5: 50
               }
             });
-            
-            await prisma.member_user.create({
-              data: {
-                u_id: user.id,
-                m_id: member.id
-              }
-            });
-            
+              
             console.log('Created missing member record for existing user:', member.id);
           }
         }
