@@ -67,7 +67,6 @@ CREATE TABLE training_assignments (
 -- Memasukkan data users
 INSERT INTO users (role, username, password, email, name, avatar, phone_no)
 VALUES 
-('admin', 'admin1', 'hashedpassword1', 'admin1@example.com', 'Admin One', 'https://example.com/images/admin1.jpg', '1111111111'),
 ('trainer', 'trainer1', 'hashedpassword2', 'trainer1@example.com', 'Trainer One', 'https://example.com/images/trainer1.jpg', '2222222222'),
 ('member', 'member1', 'hashedpassword3', 'alice@example.com', 'Alice', 'https://example.com/images/alice.jpg', '1234567890'),
 ('member', 'member2', 'hashedpassword4', 'bob@example.com', 'Bob', 'https://example.com/images/bob.jpg', '0987654321'),
@@ -78,11 +77,11 @@ VALUES
 -- Memasukkan data events
 INSERT INTO events (title, images, description)
 VALUES
-('Tennis Grand Slam', 'https://example.com/images/example.jpg', 'Witness the best tennis players battle for glory.'),
-('Tennis Art Showcase', 'https://example.com/images/example.jpg', 'An exhibition of iconic tennis moments captured in art.'),
-('Tennis Tech Conference', 'https://example.com/images/example.jpg', 'Exploring the latest technology in tennis training and analytics.'),
-('Tennis Food Fair', 'https://example.com/images/example.jpg', 'Fuel up with athlete-focused nutrition and delicious dishes.'),
-('Tennis Book Launch', 'https://example.com/images/example.jpg', 'Launching the latest biography of a tennis legend.');
+('Tennis Grand Slam', 'https://placehold.co/600x400?text=Event+Image&font=roboto', 'Witness the best tennis players battle for glory.'),
+('Tennis Art Showcase', 'https://placehold.co/600x400?text=Event+Image&font=roboto', 'An exhibition of iconic tennis moments captured in art.'),
+('Tennis Tech Conference', 'https://placehold.co/600x400?text=Event+Image&font=roboto', 'Exploring the latest technology in tennis training and analytics.'),
+('Tennis Food Fair', 'https://placehold.co/600x400?text=Event+Image&font=roboto', 'Fuel up with athlete-focused nutrition and delicious dishes.'),
+('Tennis Book Launch', 'https://placehold.co/600x400?text=Event+Image&font=roboto', 'Launching the latest biography of a tennis legend.');
 
 -- Memasukkan event tambahan (default values)
 INSERT INTO events DEFAULT VALUES;
