@@ -21,7 +21,7 @@ const emit = defineEmits(['save', 'cancel']);
 
 // Form data
 const formData = ref<EventData>({
-  id: '',
+  id: 0,
   title: '',
   images: '',
   description: '',

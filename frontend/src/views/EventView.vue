@@ -274,11 +274,12 @@ const showCreateForm = ref(false);
 const showEditForm = ref(false);
 const showDeleteConfirm = ref(false);
 const currentEvent = ref<EventData>({
-  id: '',
+  id: 0,
   title: '',
   images: '',
   description: '',
-  posted_at: ''
+  posted_at: '',
+  joinform: ''
 });
 const error = ref<string | null>(null);
 const likedEvents = ref<Record<string, boolean>>({});
@@ -290,10 +291,10 @@ const router = useRouter();
 
 async function fetchLikedEvents() {
   try {
-    const response = await eventLikedById(userID.value);
+    const response = await eventLikedById(Number(userID.value));
     if (response.data) {
       response.data.forEach((event: EventData) => {
-        likedEvents.value[event.e_id] = true;
+        likedEvents.value[event.id] = true;
       });
     }
   } catch (err) {
@@ -332,7 +333,7 @@ onMounted(async () => {
     if (response.data) {
       isLoggedIn.value = true;
       userID.value = response.data.id;
-      await fetchLikedEvents(userID.value);
+      await fetchLikedEvents();
     }
   } catch {
     console.log('User not logged in');
@@ -389,7 +390,7 @@ async function toggleLike(event: EventData) {
     return;
   }
   try {
-    await likeEvent(event.id, userID.value);
+    await likeEvent(event.id, Number(userID.value));
     likedEvents.value[event.id] = true;
   } catch (err) {
     console.error("Error liking event:", err);
@@ -402,7 +403,7 @@ async function toggleUnlike(event: EventData) {
     return;
   }
   try {
-    await unlikeEvent(event.id, userID.value);
+    await unlikeEvent(event.id, Number(userID.value));
     likedEvents.value[event.id] = false;
   } catch (err) {
     console.error("Error unliking event:", err);
@@ -435,11 +436,12 @@ function viewEventDetails(event: EventData) {
 // Open create form
 function openCreateForm() {
   currentEvent.value = {
-    id: '',
+    id: 0,
     title: '',
     images: '',
     description: '',
-    posted_at: ''
+    posted_at: '',
+    joinform: ''
   } as EventData;
   showCreateForm.value = true;
 }
@@ -495,7 +497,7 @@ async function handleEditEvent(eventData: EventData) {
     error.value = null;
     isFormProcessing.value = true;
     
-    await editEvents(eventData.id, eventData);
+    await editEvents(eventData.id.toString(), eventData);
     showEditForm.value = false;
     
     // Update the event in the local state
@@ -520,7 +522,7 @@ async function handleDeleteEvent() {
     isFormProcessing.value = true;
     
     if (currentEvent.value) {
-      await deleteEvents(currentEvent.value.id);
+      await deleteEvents(currentEvent.value.id.toString());
     }
     showDeleteConfirm.value = false;
     

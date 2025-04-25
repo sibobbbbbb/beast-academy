@@ -1,13 +1,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export interface EventData {
-  id: string
-  title: string
-  images: string
-  description: string
-  posted_at: string
-  imageFile?: File
-} 
+  id: number;             // ID event sebagai number (bukan string)
+  title: string;
+  images: string;
+  description: string;
+  posted_at: string;
+  joinform: string;       // Tambahkan properti joinform
+  imageFile?: File;       // Opsional, untuk file yang diupload
+}
 
 export interface ApiResponse<T> {
   data?: T
@@ -104,9 +105,6 @@ export const editEvents = async (id: string, eventData: EventData): Promise<ApiR
 
 export const createEvents = async (eventData: Partial<EventData>): Promise<ApiResponse<EventData>> => {
   try {
-    // Make sure we're sending the expected fields based on backend requirements
-    const { title, images, description,  } = eventData
-
     // Validate required fields as the backend does
     if (!eventData.title || !eventData.description) {
       throw new Error("Title and description are required fields")
