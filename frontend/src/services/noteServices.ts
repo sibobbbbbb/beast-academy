@@ -4,7 +4,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 interface NoteData {
   notes?: string;
   status?: 'active' | 'completed' | 'on-hold';
-  [key: string]: any; // For any additional properties
+  memberId?: number | string;
+  end_date?: string | null;
+  // Add any other specific properties that might be used
+  // Instead of using [key: string]: any
 }
 
 /**

@@ -124,14 +124,17 @@ import {
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
 
-// Define interfaces for type safety
 interface Note {
   id: number | string;
   notes: string;
   status: string;
   created_at: string;
   end_date: string | null;
-  [key: string]: any; // For any additional properties
+  // Add specific properties that might be used
+  memberId?: number | string;
+  trainer_id?: number | string;
+  updated_at?: string;
+  // Instead of using [key: string]: any
 }
 
 interface EditingNote {
