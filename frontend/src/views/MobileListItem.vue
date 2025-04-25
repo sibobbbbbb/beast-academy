@@ -1,7 +1,9 @@
 <script lang="ts" setup>
+    const emit = defineEmits(['click']);
 </script>
+
 <template>
-    <tr class="mobile_item">
+    <tr class="mobile_item" @click="emit('click')">
 
         <td class="primary">
             <slot name="main">

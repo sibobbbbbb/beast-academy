@@ -61,16 +61,16 @@
             <button v-if="userRole === 'trainer'" @click="navigateToNotes(item)"> + </button>
           </td>
           <td>
-            <span v-if="editingMember !== item.id">{{ item.name }}</span>
-            <input v-else v-model="item.name" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
+            <span v-if="memberEditContext?.id !== item.id">{{ item.name }}</span>
+            <input v-else v-model="memberEditContext.name" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit()" />
           </td>
           <td>{{ new Date(item.created_at).toLocaleString('en-GB', {
             year: 'numeric', month: '2-digit', day: '2-digit',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
           }).replace(',', ',') }}</td>
           <td>
-            <span v-if="editingMember !== item.id">{{ item.phone_no }}</span>
-            <input v-else v-model="item.phone_no" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
+            <span v-if="memberEditContext?.id !== item.id">{{ item.phone_no }}</span>
+            <input v-else v-model="memberEditContext.phone_no" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit()" />
           </td>
           <td v-if="showDeleteColumn && userRole === 'admin'">
             <button @click="deleteMember(item.id)">Delete</button>
@@ -109,7 +109,6 @@
           <span v-for="tag in mobileTagSelected" :key="tag" class="tag-pill" @click.stop.prevent="toggleTag(tag)">
             {{ mobileTagText[tag] }}
           </span>
-
         </summary>
 
         <div class="tag-buttons">
@@ -128,7 +127,7 @@
         Search bar
       </thead> -->
       <tbody>
-        <MobileListItem v-for="item in lastFetch" :key="item.id">
+        <MobileListItem v-for="item in lastFetch" :key="item.id" @click="() => {mobileTapOnContext(item)}">
           <!-- primary slot, main text -->
           <template #main>
             {{ item.name }}
@@ -179,7 +178,8 @@
       ">
       <!-- toggle the overlay -->
       <button @click="showAddOverlay = true">Add Member</button>
-      <button>Edit Member</button>
+      <button @click="() => {toggleActionContext(mobileActions.Edit)}" :class="{ 'editting': isAction(mobileActions.Edit), 'edit': !isAction(mobileActions.Edit) }">Edit</button>
+      <button @click="() => {toggleActionContext(mobileActions.Delete)}" :class="{ 'deleting': isAction(mobileActions.Delete), 'delete': !isAction(mobileActions.Delete) }">Delete</button>
       <button>Export</button>
     </nav>
   </div>
@@ -192,13 +192,26 @@
         <AddMemberForm />
       </div>
     </div>
+    <div v-if="showEditOverlay" class="overlay" @click.self="() => {showEditOverlay = false; cancelEdit(true)}">
+      <div class="modal-content">
+        <template v-if="memberEditContext">
+          <label style="display: block;">Name</label>
+          <input style="display: block;" v-model="memberEditContext.name"/>
+          <label style="display: block;">Phone No</label>
+          <input style="display: block;" v-model="memberEditContext.phone_no"/>
+        </template>
+        <span>
+          <button @click="memberEditContext ? saveItem(memberEditContext).then(() => {showEditOverlay = false}) : console.warn('Save failed, undefined memberEditContext')"> Save </button>
+        </span>
+      </div>
+    </div>
   </teleport>
 
 </template>
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { ref, onMounted, watch, nextTick, onUnmounted, computed} from 'vue';
+import { ref, onMounted, watch, nextTick, onUnmounted, computed, type Ref} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
@@ -223,9 +236,7 @@ const selectedRole = ref("");
 const totalPages = ref(1);
 const router = useRouter();
 
-const editingMember = ref<number | null>(null);
-const originalName = ref<string | null>(null);
-const originalPhone = ref<string | null>(null);
+const memberEditContext = ref<Member | null>(null);
 const showDeleteColumn = ref(false);
 
 const userRole = ref("");
@@ -260,9 +271,61 @@ const getUserRole = async () => {
   }
 };
 
+enum mobileActions {
+  View,
+  Edit,
+  Delete,
+  Note
+}
+
 // ONE-TIME mode check so chanigng window size doesnt change mobile mode
 const deviceStore = useDeviceModeStore()
 const mobileMode   = ref(false)
+const mobileActionContext : Ref<mobileActions> = ref(mobileActions.View)
+
+function isAction(context : mobileActions) {
+  if (mobileActionContext.value === context) {
+    return true
+  } else {
+    return false;
+  }
+}
+
+function toggleActionContext(context : mobileActions) {
+  if (isAction(context)) {
+    mobileActionContext.value = mobileActions.View
+  } else {
+    mobileActionContext.value = context
+  }
+}
+
+
+
+// Mobile functionalities
+function mobileTapOnContext(item : Member) {
+  switch (mobileActionContext.value) {
+    case mobileActions.View: {
+      // View
+      break;
+    }
+    case mobileActions.Edit: {
+      // Edit
+      memberEditContext.value = item;
+      showEditOverlay.value = true
+      break;
+    }
+    case mobileActions.Delete: {
+      // Edit
+      deleteMember(item.id);
+      break;
+    }
+    case mobileActions.Note: {
+      // Note
+      break;
+    }
+  }
+}
+
 
 onMounted(() => {
   refresh(0);
@@ -314,6 +377,7 @@ const mobileDisplayTag = computed(() => {
 });
 
 const showAddOverlay = ref(false);
+const showEditOverlay = ref(false);
 
 // Function to toggle tag
 function toggleTag(key: string) {
@@ -337,25 +401,31 @@ const deleteMember = async (id: number) => {
 };
 
 function editMember(item: Member) {
-  editingMember.value = item.id;
-  originalName.value = item.name;
-  originalPhone.value = item.phone_no;
+  memberEditContext.value = { ...item }; // Create a shallow copy to avoid direct mutation
 }
 
 async function saveItem(item: Member) {
-  editingMember.value = null;
-  originalName.value = null;
-  originalPhone.value = null;
-  await updateUserData(item.id, item.name, item.phone_no);
-  dataFetcher(0);
+  if (item.id === memberEditContext.value?.id){
+    await updateUserData(item.id, item.name, item.phone_no);
+    dataFetcher(0);
+  } // assertion
+  else {
+    console.error("item id does not match member edit context value!")
+  }
+  
 }
 
-function cancelEdit(item: Member) {
-  item.name = originalName.value ?? '';
-  item.phone_no = originalPhone.value ?? '';
-  editingMember.value = null;
-  originalName.value = null;
-  originalPhone.value = null; 
+function cancelEdit(cancelAll: boolean = false) {
+  if (cancelAll) {
+    // Clear the edit context entirely
+    memberEditContext.value = null;
+  } else if (memberEditContext.value) {
+    // Reset the memberEditContext to null if no parameter is passed
+    console.log("Edit canceled for member:", memberEditContext.value.id);
+    memberEditContext.value = null;
+  } else {
+    console.error("No active edit context to cancel!");
+  }
 }
 
 function toggleDeleteColumn() {
@@ -424,6 +494,8 @@ onMounted(() => {
 });
 
 </script>
+
+<!-- STYLE -->
 
 <style>
 @media (min-width: 1024px) {
@@ -603,5 +675,25 @@ button.selected {
   width: 90%;
   max-height: 90%;
   overflow-y: auto;
+}
+
+.edit {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+.editting {
+  background-color: white;
+  color: var(--primary-blue);
+}
+
+.delete {
+  background-color: red;
+  color: white;
+}
+
+.deleting {
+  background-color: white;
+  color: red
 }
 </style>
