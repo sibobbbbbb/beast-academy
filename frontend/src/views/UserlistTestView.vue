@@ -1,16 +1,37 @@
 <template>
-  <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
-  <!-- Back button to home page -->
-  <router-link to="/" class="back-button" style="margin-right: 15px; display: flex; align-items: center; text-decoration: none; color: var(--primary-blue, #0066cc); font-weight: 500;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; padding: 1dvh 2%; margin: 1%;">
+  <!-- Back button -->
+  <router-link
+    to="/"
+    class="back-button"
+    style="margin-right: 15px; display: flex; align-items: center; text-decoration: none; color: var(--primary-blue, #0066cc); font-weight: 500;"
+  >
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
       <path d="M19 12H5"></path>
       <path d="M12 19l-7-7 7-7"></path>
     </svg>
   </router-link>
-  
-  <img :src="logoImage" style="height: 8dvh; display: inline-block; margin-right: 1%;">
-  <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
+
+  <!-- Logo -->
+  <img :src="logoImage" style="height: 6dvh; margin-right: 1%; flex-shrink: 0;">
+
+  <!-- Title -->
+  <h1
+    style="
+      font-weight: 600;
+      font-size: clamp(1.4rem, 4vw, 2.5rem);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    "
+  >
+    Academy Admin Utils
+  </h1>
 </header>
+
+
   <hr>
   <div class="content" v-if="!mobileMode">
     <span style="display: flex;">
