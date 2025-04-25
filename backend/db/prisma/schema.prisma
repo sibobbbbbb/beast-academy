@@ -77,14 +77,6 @@ model users {
   training_assignments_training_assignments_trainer_idTousers training_assignments[] @relation("training_assignments_trainer_idTousers")
 }
 
-model activity {
-  id       Int           @id @default(autoincrement())
-  m_id     Int
-  activity activity_type @default(other)
-  date     DateTime      @default(now()) @db.Timestamp(6)
-  members  members       @relation(fields: [m_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
 enum user_role {
   admin
   trainer

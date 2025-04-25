@@ -6,6 +6,7 @@
     
     <div class="notes-header">
       <h1>Member Notes - {{ memberName }}</h1>
+      <button @click="(_) => {exportTrainerNotes(notes)}" class="add-note-btn"> Export </button>
       <button @click="showAddNoteModal = true" class="add-note-btn">Add New Note</button>
     </div>
 
@@ -126,8 +127,10 @@ import type { NoteData } from '@/services/noteServices';
 
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
+import {exportTrainerNotes} from '../utils/trainerNotesExport'
 
-interface Note {
+
+export interface Note {
   id: number | string;
   notes: string;
   status: 'active' | 'completed' | 'on-hold';
