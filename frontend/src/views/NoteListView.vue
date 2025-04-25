@@ -111,15 +111,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   createNote, 
   updateNote as updateNoteService, 
   deleteNote as deleteNoteService, 
-  fetchMemberNotes, 
-  getNoteById 
+  fetchMemberNotes
 } from '@/services/noteServices';
 
 // We need to import a service function for fetching member details
@@ -202,7 +201,7 @@ const addNote = async () => {
     }
     
     // Use the service function
-    const createdNote = await createNote(memberId, newNote.value.notes, newNote.value.status);
+    await createNote(memberId, newNote.value.notes, newNote.value.status);
     
     showAddNoteModal.value = false;
     newNote.value = { notes: '', status: 'active' };
