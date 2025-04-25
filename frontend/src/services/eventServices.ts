@@ -104,9 +104,6 @@ export const editEvents = async (id: string, eventData: EventData): Promise<ApiR
 
 export const createEvents = async (eventData: Partial<EventData>): Promise<ApiResponse<EventData>> => {
   try {
-    // Make sure we're sending the expected fields based on backend requirements
-    const { title, images, description,  } = eventData
-
     // Validate required fields as the backend does
     if (!eventData.title || !eventData.description) {
       throw new Error("Title and description are required fields")
