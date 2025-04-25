@@ -18,23 +18,31 @@ export function useMemberTable() {
   const originalPhone = ref<string | null>(null);
   const showDeleteColumn = ref(false);
 
-  async function dataFetcher(page: number) {
-    try {
-      const response = await fetchMembers(
-        perPage.value,
-        page,
-        sortBy.value,
-        order.value,
-        searchQuery.value,
-        selectedRole.value
-      );
-      lastFetch.value = response.data;
-      totalPages.value = response.pagination.totalPages;
-      maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
-    } catch (error) {
-      console.error("Failed to fetch members:", error);
+// memberTable.ts
+
+async function dataFetcher(page: number, append = false) {
+  try {
+    const response = await fetchMembers(
+      perPage.value,
+      page,
+      sortBy.value,
+      order.value,
+      searchQuery.value,
+      selectedRole.value
+    );
+
+    if (append) {
+      lastFetch.value = [...lastFetch.value, ...response.data]; // append mode
+    } else {
+      lastFetch.value = response.data; // reset mode
     }
+
+    totalPages.value = response.pagination.totalPages;
+    maxPage.value = response.pagination.totalPages <= page + 1;
+  } catch (error) {
+    console.error("Failed to fetch members:", error);
   }
+}
 
   watch(perPage, async () => {
     currentPage.value = 0;
@@ -57,9 +65,9 @@ export function useMemberTable() {
     refresh(0);
   };
 
-  const refresh = async (newPage?: number) => {
-    if (newPage !== undefined) currentPage.value = newPage;
-    await dataFetcher(currentPage.value);
+  const refresh = async (page = 0, append = false) => {
+    currentPage.value = page;
+    await dataFetcher(page, append);
   };
 
   const deleteMember = async (id: number) => {

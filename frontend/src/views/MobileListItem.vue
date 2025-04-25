@@ -7,34 +7,41 @@
             <slot name="main">
                 Name
             </slot>
+            <section class="mini-text">
+                <slot name="sub">
+                    Sub
+                </slot>
+            </section>
         </td>
-        <td>
-            <slot name="x1">
-            </slot>
-        </td>
-        <td>
-            <slot name="x2">
-            </slot>
-        </td>
-        <td>
-            <slot name="x3">
-            </slot>
-        </td>
+        <!-- Slots for optional tags -->
+        <td v-if="$slots.x1"><slot name="x1"/></td>
+        <td v-if="$slots.x2"><slot name="x2"/></td>
+        <td v-if="$slots.x3"><slot name="x3"/></td>
     </tr>
 </template>
 
-<style>
+<style scoped>
 .mobile_item {
     height: 4rem;
     border: 2px solid red;
     margin: 0.5rem 0px;
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-auto-flow: column;
+    width: 100%;
+    grid-template-columns: 4fr;
+    grid-auto-columns: 1fr;
 }
 
 td {
     flex-grow: 0.5;
     text-align: center;
+    float: inline-start;
+}
+
+td:not(.primary) {
+    padding-left: 0.125rem;
+    margin-left: 0.125rem;
+    border-left: 1px solid red;
 }
 
 td #text {
@@ -44,8 +51,8 @@ td #text {
 
 .mini-text {
     display: block;
-    font-size: 1.75rem;
-    line-height: 2rem;
+    font-size: 1rem;
+    line-height: 1rem;
     margin-top: 0.1rem;
 }
 
