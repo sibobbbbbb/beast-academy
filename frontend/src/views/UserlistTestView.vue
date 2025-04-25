@@ -18,7 +18,7 @@
       <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
       <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
-    <button v-if="userRole == 'admin'" @click="() => {router.push('/add-member'); console.log('Added New Member')}">Add Member</button>
+    <button v-if="userRole == 'admin'" @click="() => {router.push('/add-member');}">Add Member</button>
     <button v-if="!showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Cancel</button>
     <button @click="(_) => {exportToFile()}"> Export </button>
@@ -136,7 +136,6 @@ const getUserRole = async () => {
     
     // Response berisi data user termasuk role
     const userData = await response.json();
-    console.log(userData)
     // Set role ke variabel userRole
     userRole.value = userData.role || '';
     
@@ -144,12 +143,12 @@ const getUserRole = async () => {
     // userId.value = userData.id;
     // username.value = userData.username;
     // dll.
-    console.log("User role:", userRole.value);
+    if (userRole.value === 'member') {
+      router.push(`/`);
+    }
     return userData.role;
   } catch (error) {
     console.error("Failed to get user role from API:", error);
-    
-    // Jika error, set role kosong
     userRole.value = '';
     return '';
   }
@@ -166,7 +165,6 @@ const deleteMember = async (id: number) => {
     await deleteMemberById(id);
     dataFetcher(0); // Refresh data after deletion
   }
-  console.log('Delete member:', id);
 };
 
 function editMember(item: Member) {
@@ -181,7 +179,6 @@ async function saveItem(item: Member) {
   originalPhone.value = null;
   await updateUserData(item.id, item.name, item.phone_no);
   dataFetcher(0);
-  console.log('Save item:', item);
 }
 
 function cancelEdit(item: Member) {
@@ -190,7 +187,6 @@ function cancelEdit(item: Member) {
   editingMember.value = null;
   originalName.value = null;
   originalPhone.value = null; 
-  console.log('Edit cancelled:', item);
 }
 
 function toggleDeleteColumn() {
@@ -199,7 +195,6 @@ function toggleDeleteColumn() {
 
 function navigateToNotes(item: Member) {
   router.push(`/notes-list/${item.id}`);
-  console.log('Navigate to notes for member:', item.id);
 }
 
 const dataFetcher = async (page: number) => {
@@ -241,13 +236,11 @@ const handleFilter = (role: string) => {
 };
 
 const refresh = async (newPage?: number) => {
-  console.log('Refreshing data...',newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }
   await dataFetcher(currentPage.value);
 
-  console.log(currentPage.value);
 };
 
 onMounted(() => {

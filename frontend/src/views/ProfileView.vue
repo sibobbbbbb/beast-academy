@@ -296,6 +296,7 @@ export default defineComponent({
       try {
         const response = await getProfileUsers()
         username.value = response.username
+        role.value = response.role
         name.value = response.name
         email.value = response.email
         phoneNumber.value = response.phone_no || ''
