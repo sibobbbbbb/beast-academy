@@ -1,7 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Define interfaces for your data structures
-interface NoteData {
+export interface NoteData {
   notes?: string;
   status?: 'active' | 'completed' | 'on-hold';
   memberId?: number | string;
