@@ -92,21 +92,21 @@ export const register = async (req, res) => {
             }
           });
 
-          if (role === 'member') {
-              // Create member record
-              const member = await prisma.members.create({
-                  data: {
-                      id_u: user.id, // menghubungkan record member ke record user yang sudah ada
-                      stat1: 50,   
-                      stat2: 50,
-                      stat3: 50,
-                      stat4: 50,
-                      stat5: 50
-                  }
-              });
+          // if (role === 'member') {
+          //     // Create member record
+          //     const member = await prisma.members.create({
+          //         data: {
+          //             id_u: user.id, // menghubungkan record member ke record user yang sudah ada
+          //             stat1: 50,   
+          //             stat2: 50,
+          //             stat3: 50,
+          //             stat4: 50,
+          //             stat5: 50
+          //         }
+          //     });
 
-              return { user, member };
-          }
+          //     return { user, member };
+          // }
 
           return { user };
       });
@@ -259,19 +259,19 @@ export const googleLogin = async (req, res) => {
           }
         });
         
-        // For new members, create an entry in the members table
-        if (user.role === 'member') {
-          member = await prisma.members.create({
-            data: {
-              id_u: user.id,
-              stat1: 50, // Default values
-              stat2: 50,
-              stat3: 50,
-              stat4: 50,
-              stat5: 50
-            }
-          });
-        }
+        // // For new members, create an entry in the members table
+        // if (user.role === 'member') {
+        //   member = await prisma.members.create({
+        //     data: {
+        //       id_u: user.id,
+        //       stat1: 50, // Default values
+        //       stat2: 50,
+        //       stat3: 50,
+        //       stat4: 50,
+        //       stat5: 50
+        //     }
+        //   });
+        // }
       } else {
         // Update existing user's Google information if needed
         if (user.provider !== 'google' || user.provider_id !== googleId) {
@@ -286,26 +286,26 @@ export const googleLogin = async (req, res) => {
         }
         
         // Check if the user is a member but doesn't have a member record
-        if (user.role === 'member') {
-          // Check if user already has a member record
-          const existingMemberRelation = await prisma.members.findFirst({
-            where: { id_u: user.id }
-          });
+        // if (user.role === 'member') {
+        //   // Check if user already has a member record
+        //   const existingMemberRelation = await prisma.members.findFirst({
+        //     where: { id_u: user.id }
+        //   });
           
-          if (!existingMemberRelation) {
-            // Create missing member record
-            member = await prisma.members.create({
-              data: {
-                id: user.id, // menghubungkan record member ke record user yang sudah ada
-                stat1: 50,
-                stat2: 50,
-                stat3: 50,
-                stat4: 50,
-                stat5: 50
-              }
-            });
-          }
-        }
+        //   if (!existingMemberRelation) {
+        //     // Create missing member record
+        //     member = await prisma.members.create({
+        //       data: {
+        //         id: user.id, // menghubungkan record member ke record user yang sudah ada
+        //         stat1: 50,
+        //         stat2: 50,
+        //         stat3: 50,
+        //         stat4: 50,
+        //         stat5: 50
+        //       }
+        //     });
+        //   }
+        // }
       }
       
       return { user, isNewUser, member };
@@ -425,20 +425,20 @@ export const googleCallback = async (req, res) => {
         
         console.log('Created new user from Google sign-in:', user.id);
         
-        if (user.role === 'member') {
-          member = await prisma.members.create({
-            data: {
-              id_u: user.id, 
-              stat1: 50,
-              stat2: 50,
-              stat3: 50,
-              stat4: 50,
-              stat5: 50
-            }
-          });
+        // if (user.role === 'member') {
+        //   member = await prisma.members.create({
+        //     data: {
+        //       id_u: user.id, 
+        //       stat1: 50,
+        //       stat2: 50,
+        //       stat3: 50,
+        //       stat4: 50,
+        //       stat5: 50
+        //     }
+        //   });
           
-          console.log('Created member record and linked to user:', member.id);
-        }
+        //   console.log('Created member record and linked to user:', member.id);
+        // }
       } else {
         if (user.provider !== 'google' || user.provider_id !== googleId) {
           user = await prisma.users.update({
@@ -459,20 +459,20 @@ export const googleCallback = async (req, res) => {
             where: { id: user.id }
           });
           
-          if (!existingMemberRelation) {
-            member = await prisma.members.create({
-              data: {
-                id_u: user.id, // menghubungkan record member ke record user yang sudah ada
-                stat1: 50,
-                stat2: 50,
-                stat3: 50,
-                stat4: 50,
-                stat5: 50
-              }
-            });
+          // if (!existingMemberRelation) {
+          //   member = await prisma.members.create({
+          //     data: {
+          //       id_u: user.id, // menghubungkan record member ke record user yang sudah ada
+          //       stat1: 50,
+          //       stat2: 50,
+          //       stat3: 50,
+          //       stat4: 50,
+          //       stat5: 50
+          //     }
+          //   });
               
-            console.log('Created missing member record for existing user:', member.id);
-          }
+          //   console.log('Created missing member record for existing user:', member.id);
+          // }
         }
       }
       

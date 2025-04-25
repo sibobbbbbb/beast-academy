@@ -1,5 +1,5 @@
 import express from 'express';
-import { addMemberControllers, getMemberControllers, getMemberByIdControllers ,deleteMemberControllers, updateMemberControllers, getProfileControllers, updateProfileControllers, checkPhoneNumberController } from '../controllers/memberController.js';
+import { addMemberControllers, getMemberControllers, getMemberByIdControllers ,deleteMemberControllers, updateMemberControllers, getProfileControllers, updateProfileControllers, checkPhoneNumberController, changePasswordController } from '../controllers/memberController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import { upload } from '../middlewares/multerMiddleware.js';
 import checkRole from '../middlewares/checkRoleMiddleware.js';
@@ -15,5 +15,6 @@ router.put('/update-member/:id', authMiddleware, checkRole(['admin']), updateMem
 router.get('/profile',authMiddleware ,getProfileControllers);
 router.put('/update-profile',authMiddleware ,upload ,updateProfileControllers);
 router.post('/check-phone',authMiddleware ,checkPhoneNumberController);
+router.post('/change-password', changePasswordController);
 
 export default router;

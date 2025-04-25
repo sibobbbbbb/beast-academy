@@ -169,3 +169,28 @@ export const getMemberById = async (memberId) => {
     throw error;
   }
 };
+
+export const changePassword = async (oldPassword: string, newPassword: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ oldPassword, newPassword }),
+      credentials: 'include'
+    });
+
+    // handler password lama salah
+    if (response.status === 400) {
+      throw new Error('Password lama salah');
+    } else if (!response.ok) {
+      throw new Error('Gagal mengubah password');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error changing password:', error);
+    throw error;
+  }
+}
