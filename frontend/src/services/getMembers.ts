@@ -42,7 +42,7 @@ export function useFetchMembers() {
         filterBy: filters.filterBy || "",
       });
 
-      const response = await fetch(`/api/members?${params.toString()}`);
+      const response = await fetch(`/api/members?${params.toString()}`);  
       if (!response.ok) throw new Error("Failed to fetch members");
 
       const data = await response.json();

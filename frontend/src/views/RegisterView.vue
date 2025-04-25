@@ -91,6 +91,18 @@
               required
             />
           </div>
+
+          <div class="!mb-2">
+            <label for="name" class="block text-sm font-medium mb-1" :style="{ color: 'var(--primary-blue)' }">Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              v-model="name" 
+              class="w-full px-3 py-2 bg-[var(--neutral-200)] border border-[var(--neutral-400)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] text-[var(--neutral-800)] text-sm"
+              placeholder="Enter your name"
+              required
+            />
+          </div>
           
           <div class="!mb-2">
             <label for="email" class="block text-sm font-medium mb-1" :style="{ color: 'var(--primary-blue)' }">Email</label>
@@ -217,6 +229,7 @@ interface ErrorResponse {
 const router = useRouter();
 const img_file = ref<File | null>(null);
 const username = ref('');
+const name = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -298,6 +311,7 @@ const handleRegister = async () => {
     formData.append('password', password.value);
     formData.append('role', role.value);
     formData.append('img_file', img_file.value);
+    formData.append('name', name.value);
 
 
     const response = await api.post('/auth/register', formData);

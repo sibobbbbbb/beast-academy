@@ -54,6 +54,18 @@
           </div>
 
           <div class="!mt-4 !space-y-3">
+            <!-- Username Field -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 !mb-1">Username <span class="text-red-600"> * </span></label>
+              <input
+                v-model="username"
+                type="text"
+                class="w-full p-2 border rounded-md focus:ring-2 focus:ring-[var(--primary-blue)] focus:outline-none text-gray-800 text-sm"
+                required
+              />
+              <p v-if="errors.username" class="!mt-1 text-xs text-red-500">{{ errors.username }}</p>
+            </div>
+
             <!-- Name Field -->
             <div>
               <label class="block text-xs font-medium text-gray-700 !mb-1">Name <span class="text-red-600"> * </span></label>
@@ -83,7 +95,7 @@
             </div>
 
             <!-- Phone Number Field -->
-            <div>
+            <div v-if ="role !== 'admin'">
               <label class="block text-xs font-medium text-gray-700 !mb-1">Phone Number</label>
               <div class="flex items-center p-2 border rounded-md">
                 <div class="flex-shrink-0 text-[var(--primary-blue)]">
@@ -104,6 +116,11 @@
               </div>
               <p v-if="errors.phone" class="!mt-1 text-xs text-red-500">{{ errors.phone }}</p>
             </div>
+          </div>
+
+          <!-- Link change password -->
+          <div class="mt-4">
+            <a href="#" @click.prevent="openPasswordModal" class="text-xs text-blue-600 hover:underline">Change Password</a>
           </div>
 
           <div class="pt-6">
@@ -137,18 +154,80 @@
             </button>
           </div>
         </form>
+
         <!-- Notification Messages -->
         <div v-if="notification.message" class="pb-3 text-center text-xs" :class="notification.type === 'success' ? 'text-green-500' : 'text-red-500'">
           {{ notification.message }}
         </div>
       </template>
     </div>
+
+    <!-- Modal Change Password -->
+    <div v-if="showPasswordModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-6 rounded-md w-80">
+        <h3 class="text-lg font-bold mb-4">Change Password</h3>
+        
+        <!-- Old Password Input with toggle icon -->
+        <div class="mb-3">
+          <label class="block text-xs font-medium text-gray-700 mb-1">Old Password</label>
+          <div class="relative">
+            <input
+              v-model="oldPassword"
+              :type="showOldPassword ? 'text' : 'password'"
+              class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-[var(--primary-blue)] focus:outline-none text-sm"
+              placeholder="Enter your current password"
+            />
+            <span class="absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer" @click="toggleOldPassword">
+              <svg v-if="showOldPassword" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 3a7 7 0 017 7 7 7 0 11-7-7z"/>
+                <path d="M10 5a5 5 0 00-5 5 5 5 0 007.906 3.468l1.564 1.563A7 7 0 0110 3z" fill-opacity="0.5"/>
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.707 3.293a1 1 0 00-1.414 1.414l16 16a1 1 0 001.414-1.414l-1.19-1.19A9.027 9.027 0 0119 10a9 9 0 00-14.416-7.299L3.707 3.293zM7.293 7.293l-.646.646A3 3 0 009.293 10l.353.353a3 3 0 01-.646.293l-2.707-2.707zM12 10a2 2 0 00-2-2 2 2 0 00-.787.137l1.63 1.63A1 1 0 0112 10z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        
+        <!-- New Password Input with toggle icon -->
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-1">New Password</label>
+          <div class="relative">
+            <input
+              v-model="newPassword"
+              :type="showNewPassword ? 'text' : 'password'"
+              class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-[var(--primary-blue)] focus:outline-none text-sm"
+              placeholder="Enter a new password"
+            />
+            <span class="absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer" @click="toggleNewPassword">
+              <svg v-if="showNewPassword" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 3a7 7 0 017 7 7 7 0 11-7-7z"/>
+                <path d="M10 5a5 5 0 00-5 5 5 5 0 007.906 3.468l1.564 1.563A7 7 0 0110 3z" fill-opacity="0.5"/>
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.707 3.293a1 1 0 00-1.414 1.414l16 16a1 1 0 001.414-1.414l-1.19-1.19A9.027 9.027 0 0119 10a9 9 0 00-14.416-7.299L3.707 3.293zM7.293 7.293l-.646.646A3 3 0 009.293 10l.353.353a3 3 0 01-.646.293l-2.707-2.707zM12 10a2 2 0 00-2-2 2 2 0 00-.787.137l1.63 1.63A1 1 0 0112 10z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Tampilkan pesan error password jika ada -->
+        <p v-if="passwordError" class="mb-4 text-xs text-red-500">{{ passwordError }}</p>
+
+        <div class="flex justify-end space-x-2">
+          <button @click="closePasswordModal" class="px-3 py-1 text-xs text-gray-700 hover:underline">Cancel</button>
+          <button @click="change_password" class="px-3 py-1 text-xs text-white bg-[var(--primary-blue)] rounded-md hover:bg-[var(--blue-dark)]">
+            Change Password
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, reactive } from 'vue'
-import { getProfileUsers, updateProfile, checkPhoneNumber } from '@/services/memberServices'
+import { getProfileUsers, updateProfile, checkPhoneNumber, changePassword } from '@/services/memberServices'
 import Navbar from '@/components/Navbar.vue'
 
 export default defineComponent({
@@ -159,12 +238,15 @@ export default defineComponent({
   setup() {
     
     // Form data
+    const username = ref('')
     const name = ref('')
     const email = ref('')
     const phoneNumber = ref('')
     const profilePhoto = ref('')
+    const role = ref('')
     const joinDate = ref<Date>()
     const originalData = reactive({
+      username: '',
       name: '',
       phoneNumber: '',
       profilePhoto: ''
@@ -189,21 +271,40 @@ export default defineComponent({
       name: '',
       phone: '',
       img: '',
-      general: ''
+      general: '',
+      username: ''
     })
 
+    // New Password Modal state and fields
+    const showPasswordModal = ref(false)
+    const oldPassword = ref('')
+    const newPassword = ref('')
+    const showOldPassword = ref(false)
+    const showNewPassword = ref(false)
+    const passwordError = ref('')
+
+    const toggleOldPassword = () => {
+      showOldPassword.value = !showOldPassword.value
+    }
+
+    const toggleNewPassword = () => {
+      showNewPassword.value = !showNewPassword.value
+    }
 
     // Load profile data
     onMounted(async () => {
       try {
         const response = await getProfileUsers()
+        username.value = response.username
+        role.value = response.role
         name.value = response.name
         email.value = response.email
         phoneNumber.value = response.phone_no || ''
-        profilePhoto.value = response.img_url
+        profilePhoto.value = response.avatar
         joinDate.value = new Date(response.created_at)
 
         // Store original values for comparison
+        originalData.username = username.value
         originalData.name = name.value
         originalData.phoneNumber = phoneNumber.value
         originalData.profilePhoto = profilePhoto.value
@@ -253,6 +354,7 @@ export default defineComponent({
 
     // Check if data has changed
     const isDataChanged = () => {
+      if (username.value !== originalData.username) return true
       if (name.value !== originalData.name) return true
       if (phoneNumber.value !== originalData.phoneNumber) return true
       if (isImageChange.value) return true
@@ -318,12 +420,14 @@ export default defineComponent({
 
       try {
         await updateProfile(
+          username.value,
           name.value, 
           isImageChange.value ? imgFile : null, 
           phoneNumber.value || ''
         )
         
         // Update original data
+        originalData.username = username.value
         originalData.name = name.value
         originalData.phoneNumber = phoneNumber.value
         originalData.profilePhoto = profilePhoto.value
@@ -357,6 +461,37 @@ export default defineComponent({
       }).format(date)
     }
 
+    
+    const openPasswordModal = () => {
+      showPasswordModal.value = true
+    }
+    
+    const closePasswordModal = () => {
+      showPasswordModal.value = false
+      oldPassword.value = ''
+      newPassword.value = ''
+    }
+    
+    const change_password = async () => {      
+      try {
+        await changePassword(oldPassword.value, newPassword.value)
+        notification.message = 'Password changed successfully!'
+        notification.type = 'success'
+        closePasswordModal()
+        passwordError.value = ''
+      } catch (error: unknown) {
+        console.error('Error changing password:', error)
+        let errMsg = 'Failed to change password. Please try again later.'
+        if (error instanceof Error) {
+          // Jika error merupakan AxiosError atau memiliki properti response, lakukan pengecekan optional
+          const typedError = error as Error & { response?: { data?: { message?: string } } }
+          errMsg = typedError.response?.data?.message || error.message || errMsg
+        }
+        passwordError.value = errMsg
+        notification.type = 'error'
+      } 
+    }
+
     return {
       name,
       email,
@@ -372,8 +507,20 @@ export default defineComponent({
       formatDate,
       handleImageUpload,
       triggerFileInput,
-      imageUploadRef
-
+      imageUploadRef,
+      role,
+      username,
+      showPasswordModal,
+      oldPassword,
+      newPassword,
+      openPasswordModal,
+      closePasswordModal,
+      change_password,
+      showOldPassword,
+      showNewPassword,
+      toggleOldPassword,
+      toggleNewPassword,
+      passwordError
     }
   }
 })
