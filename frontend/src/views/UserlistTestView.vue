@@ -182,9 +182,6 @@
       <button>Edit Member</button>
       <button>Export</button>
     </nav>
-    <h2>
-      A thick ass block of content lmao
-    </h2>
   </div>
 
   <!-- Overlay portal -->
