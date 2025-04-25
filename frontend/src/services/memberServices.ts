@@ -78,6 +78,7 @@ export const addNewMember = async (
   }
 }
 
+
 export const updateUserData = async (id: number, name: string, phone_no: string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/update-member/${id}`, {
@@ -157,3 +158,14 @@ export const checkPhoneNumber = async (phone_no: string) => {
     return null;
   }
 }
+
+export const getMemberById = async (memberId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get-member/${memberId}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching member:', error);
+    throw error;
+  }
+};

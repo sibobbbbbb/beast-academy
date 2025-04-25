@@ -114,21 +114,6 @@ export const addMemberControllers = [
             phone_no: phone || null,
           },
         });
-
-        if (role === "member") {
-          // Hubungkan member dengan user di tabel member_user
-          await prisma.members.create({
-            data: {
-              id_u: newUser.id,
-              stat1: 50,   
-              stat2: 50,
-              stat3: 50,
-              stat4: 50,
-              stat5: 50
-            },
-          });
-        }
-
         return { defaultPassword };
       });
 
@@ -146,11 +131,30 @@ export const addMemberControllers = [
   },
 ];
 
+
 // Get all members
 export const getMemberControllers = async (req, res) => {
   try {
-    const members = await prisma.users.findMany();
-    res.status(200).json(members);
+    // Ambil role dan userId dari token yang sudah diverifikasi
+    const { role, userId } = req.user;
+    
+    // Jika role adalah trainer, ambil member yang dilatih oleh trainer tersebut
+    if (role === "trainer") {
+      const members = await prisma.trained_by.findMany({
+        where: { trainer_id: parseInt(userId) },
+        include: {
+          users: true,
+        },
+      });
+      return res.status(200).json(members);
+    } else {
+      const members = await prisma.users.findMany({
+        orderBy: {
+          name: 'asc',
+        },
+      });
+      return res.status(200).json(members);
+    }
   } catch (error) {
     console.error(error);
     res

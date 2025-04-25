@@ -18,18 +18,6 @@ CREATE TABLE users (
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Membuat tabel members dengan struktur baru
-CREATE TABLE members (
-    id_m SERIAL PRIMARY KEY,
-    id_u INT NOT NULL UNIQUE,
-    stat1 INT CHECK (stat1 BETWEEN 1 AND 100),
-    stat2 INT CHECK (stat2 BETWEEN 1 AND 100),
-    stat3 INT CHECK (stat3 BETWEEN 1 AND 100),
-    stat4 INT CHECK (stat4 BETWEEN 1 AND 100),
-    stat5 INT CHECK (stat5 BETWEEN 1 AND 100),
-    FOREIGN KEY (id_u) REFERENCES users(id) ON DELETE CASCADE
-);
-
 -- Membuat tabel events
 CREATE TABLE events(
     id SERIAL PRIMARY KEY,
@@ -49,6 +37,33 @@ CREATE TABLE liked_by(
     FOREIGN KEY (e_id) REFERENCES events(id) ON DELETE CASCADE
 );
 
+CREATE TABLE trained_by(
+    trainer_id INT NOT NULL,
+    member_id INT NOT NULL,
+    stat1 INT CHECK (stat1 BETWEEN 1 AND 100),
+    stat2 INT CHECK (stat2 BETWEEN 1 AND 100),
+    stat3 INT CHECK (stat3 BETWEEN 1 AND 100),
+    stat4 INT CHECK (stat4 BETWEEN 1 AND 100),
+    stat5 INT CHECK (stat5 BETWEEN 1 AND 100),
+    PRIMARY KEY (trainer_id, member_id),
+    FOREIGN KEY (trainer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE training_assignments (
+    id SERIAL PRIMARY KEY,
+    trainer_id INTEGER NOT NULL,
+    member_id INTEGER NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    status VARCHAR(20) DEFAULT 'active',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES users(id),
+    FOREIGN KEY (member_id) REFERENCES users(id)
+);
+
 -- Memasukkan data users
 INSERT INTO users (role, username, password, email, name, avatar, phone_no)
 VALUES 
@@ -58,19 +73,7 @@ VALUES
 ('member', 'member2', 'hashedpassword4', 'bob@example.com', 'Bob', 'https://example.com/images/bob.jpg', '0987654321'),
 ('member', 'member3', 'hashedpassword5', 'charlie@example.com', 'Charlie', 'https://example.com/images/charlie.jpg', '1122334455');
 
--- Memasukkan user dengan social login
-INSERT INTO users (role, username, password, email, provider, provider_id, avatar)
-VALUES 
-('member', 'Google User', NULL, 'google.user@example.com', 'google', '123456789', 'https://example.com/images/google-avatar.jpg');
 
--- Memasukkan data members
--- Langsung terhubung dengan users melalui id_u
-INSERT INTO members (id_u, stat1, stat2, stat3, stat4, stat5)
-VALUES 
-(3, 80, 70, 90, 60, 85),  -- User 'member1' dengan id=3
-(4, 75, 65, 80, 70, 90),  -- User 'member2' dengan id=4
-(5, 85, 95, 70, 60, 80),  -- User 'member3' dengan id=5
-(6, 90, 80, 85, 75, 95);  -- User 'Google User' dengan id=6
 
 -- Memasukkan data events
 INSERT INTO events (title, images, description)
@@ -83,27 +86,3 @@ VALUES
 
 -- Memasukkan event tambahan (default values)
 INSERT INTO events DEFAULT VALUES;
-
--- Memasukkan data liked_by
-INSERT INTO liked_by (u_id, e_id)
-VALUES
-(3, 1),
-(4, 2),
-(5, 3),
-(6, 4),
-(3, 5),
-(4, 1),
-(5, 2),
-(6, 3);
-
--- Menampilkan contoh query join antara users dan members
--- Query ini akan menggantikan cara lama melalui member_user
-SELECT 
-    u.id, u.username, u.email, u.name,
-    m.id_m, m.stat1, m.stat2, m.stat3, m.stat4, m.stat5
-FROM 
-    users u
-JOIN 
-    members m ON u.id = m.id_u
-WHERE 
-    u.role = 'member';
