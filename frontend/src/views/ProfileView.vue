@@ -478,10 +478,14 @@ export default defineComponent({
         notification.type = 'success'
         closePasswordModal()
         passwordError.value = ''
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error changing password:', error)
-        // Ambil pesan error dari error.response jika tersedia, atau gunakan error.message
-        const errMsg = error.response?.data?.message || error.message || 'Failed to change password. Please try again later.'
+        let errMsg = 'Failed to change password. Please try again later.'
+        if (error instanceof Error) {
+          // Jika error merupakan AxiosError atau memiliki properti response, lakukan pengecekan optional
+          const typedError = error as Error & { response?: { data?: { message?: string } } }
+          errMsg = typedError.response?.data?.message || error.message || errMsg
+        }
         passwordError.value = errMsg
         notification.type = 'error'
       } 
