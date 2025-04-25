@@ -1,135 +1,306 @@
 <template>
-  <div class="notes-container">
-    <div class="back-button" @click="goBack">
-      <span class="back-arrow">←</span>
-    </div>
+  <div class="min-h-screen bg-[var(--neutral-200)]">
+    <Navbar />
     
-    <div class="notes-header">
-      <h1>Member Notes - {{ memberName }}</h1>
-      <button @click="showAddNoteModal = true" class="add-note-btn">Add New Note</button>
-    </div>
+    <div class="container !mx-auto !px-6 md:!px-12 !pt-24 !pb-16">
+      <!-- Header with tennis ball decoration -->
+      <div class="relative !mb-8">
+        <div class="absolute -top-6 -right-6 w-16 h-16 rounded-full hidden md:block" style="background: var(--primary-green); opacity: 0.2"></div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center !mb-8">
+          <div>
+            <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: var(--primary-blue)">Member Notes - {{ memberName }}</h1>
+            <p class="text-[var(--neutral-700)] max-w-xl">Manage and track notes for this member</p>
+          </div>
+          
+          <button 
+            @click="showAddNoteModal = true" 
+            class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Add New Note
+          </button>
+        </div>
+      </div>
 
-    <div v-if="loading" class="loading">
-      Loading notes...
-    </div>
-    
-    <div v-else-if="notes.length === 0" class="no-notes">
-      No notes found for this member. Add a new note to get started.
-    </div>
-    
-    <div v-else class="notes-grid">
-      <div v-for="note in notes" :key="note.id" class="note-card">
-        <div class="note-date">{{ formatDate(note.created_at) }}</div>
-        <div class="note-content">{{ note.notes }}</div>
-        <div class="note-footer">
-          <span class="note-status" :class="note.status">{{ note.status }}</span>
-          <div class="note-actions">
-            <button @click="editNote(note)" class="edit-btn">Edit</button>
-            <button @click="confirmDelete(note.id)" class="delete-btn">Delete</button>
+      <!-- Loading indicator -->
+      <div v-if="loading" class="flex justify-center !py-12">
+        <div class="relative">
+          <!-- Tennis ball loading spinner -->
+          <div class="w-16 h-16 rounded-full animate-ping absolute" style="background: var(--primary-green); opacity: 0.3"></div>
+          <div class="w-16 h-16 rounded-full animate-pulse" style="background: var(--primary-green); opacity: 0.6"></div>
+          <div class="w-16 h-16 rounded-full border-4 border-[var(--primary-blue)] border-t-transparent animate-spin"></div>
+        </div>
+      </div>
+      
+      <!-- Empty state -->
+      <div v-else-if="notes.length === 0" class="bg-white rounded-xl shadow-sm !p-12 text-center">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--neutral-300)] !mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--primary-blue)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-2xl !font-bold text-[var(--neutral-800)] !mb-3">No notes found</h3>
+        <p class="text-[var(--neutral-600)] !mb-6 max-w-md mx-auto">
+          No notes found for this member. Add a new note to get started!
+        </p>
+        <button 
+          @click="showAddNoteModal = true" 
+          class="bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-6 !py-3 rounded-lg inline-flex items-center !font-medium transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          Add New Note
+        </button>
+      </div>
+      
+      <!-- Notes grid -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 !gap-6">
+        <div v-for="note in notes" :key="note.id" class="w-full">
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg hover:scale-[1.02] border border-transparent transition-all duration-300">
+            <!-- Note header with date -->
+            <div class="p-4 border-b border-gray-100">
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                      :class="[
+                        note.status === 'active' ? 'bg-green-100 text-green-800' : 
+                        note.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
+                        'bg-orange-100 text-orange-800'
+                      ]">
+                  {{ note.status }}
+                </span>
+                <span class="text-xs text-[var(--neutral-600)]">{{ formatDate(note.created_at) }}</span>
+              </div>
+            </div>
+            
+            <!-- Note content -->
+            <div class="p-4">
+              <div class="text-[var(--neutral-800)] whitespace-pre-line h-24 overflow-hidden">
+                {{ note.notes }}
+              </div>
+            </div>
+            
+            <!-- Note actions -->
+            <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+              <button @click="editNote(note)" class="text-[var(--primary-blue)] hover:text-[var(--blue-dark)] text-sm font-medium">
+                Edit
+              </button>
+              <button @click="confirmDelete(note.id)" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Note Modal -->
+      <div v-if="showAddNoteModal" class="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-3">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col" @click.stop>
+          <!-- Header -->
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-[var(--primary-blue)]">Add New Note</h2>
+          </div>
+          
+          <!-- Form Content -->
+          <div class="p-6 overflow-y-auto">
+            <form @submit.prevent="addNote" class="!space-y-4">
+              <div>
+                <label for="noteContent" class="block text-sm font-medium text-gray-700 !mb-1">Note Content</label>
+                <textarea 
+                  id="noteContent" 
+                  v-model="newNote.notes" 
+                  rows="5" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]"
+                  placeholder="Enter your note here..."
+                  required
+                ></textarea>
+              </div>
+              
+              <div>
+                <label for="noteStatus" class="block text-sm font-medium text-gray-700 !mb-1">Status</label>
+                <select 
+                  id="noteStatus" 
+                  v-model="newNote.status"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]"
+                >
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="on-hold">On Hold</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Footer with actions -->
+          <div class="p-4 flex justify-end !space-x-2 border-t border-gray-200">
+            <button 
+              @click="showAddNoteModal = false" 
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="addNote" 
+              class="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[var(--blue-dark)] text-sm font-medium transition-colors"
+            >
+              Add Note
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Note Modal -->
+      <div v-if="showEditNoteModal" class="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-3">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col" @click.stop>
+          <!-- Header -->
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-[var(--primary-blue)]">Edit Note</h2>
+          </div>
+          
+          <!-- Form Content -->
+          <div class="p-6 overflow-y-auto">
+            <form @submit.prevent="saveNote" class="!space-y-4">
+              <div>
+                <label for="editNoteContent" class="block text-sm font-medium text-gray-700 !mb-1">Note Content</label>
+                <textarea 
+                  id="editNoteContent" 
+                  v-model="editingNote.notes" 
+                  rows="5" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]"
+                  placeholder="Enter your note here..."
+                  required
+                ></textarea>
+              </div>
+              
+              <div>
+                <label for="editNoteStatus" class="block text-sm font-medium text-gray-700 !mb-1">Status</label>
+                <select 
+                  id="editNoteStatus" 
+                  v-model="editingNote.status"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]"
+                >
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="on-hold">On Hold</option>
+                </select>
+              </div>
+              
+              <div v-if="editingNote.status === 'completed'">
+                <label for="endDate" class="block text-sm font-medium text-gray-700 !mb-1">End Date</label>
+                <input 
+                  type="date" 
+                  id="endDate" 
+                  v-model="editingNote.end_date"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)]"
+                >
+              </div>
+            </form>
+          </div>
+          
+          <!-- Footer with actions -->
+          <div class="p-4 flex justify-end !space-x-2 border-t border-gray-200">
+            <button 
+              @click="showEditNoteModal = false" 
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="saveNote" 
+              class="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[var(--blue-dark)] text-sm font-medium transition-colors"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteModal" class="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-3">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col" @click.stop>
+          <!-- Header -->
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-[var(--primary-blue)]">Confirm Delete</h2>
+          </div>
+          
+          <!-- Content -->
+          <div class="p-6">
+            <p class="text-[var(--neutral-700)]">Are you sure you want to delete this note? This action cannot be undone.</p>
+          </div>
+          
+          <!-- Footer with actions -->
+          <div class="p-4 flex justify-end !space-x-2 border-t border-gray-200">
+            <button 
+              @click="showDeleteModal = false" 
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="removeNote" 
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+            >
+              Delete
+            </button>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Add Note Modal -->
-    <div v-if="showAddNoteModal" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="showAddNoteModal = false">&times;</span>
-        <h2>Add New Note</h2>
-        <div class="form-group">
-          <label for="noteContent">Note Content:</label>
-          <textarea 
-            id="noteContent" 
-            v-model="newNote.notes" 
-            rows="5" 
-            placeholder="Enter your note here..."
-          ></textarea>
-        </div>
-        <div class="form-group">
-          <label for="noteStatus">Status:</label>
-          <select id="noteStatus" v-model="newNote.status">
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="on-hold">On Hold</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button @click="showAddNoteModal = false" class="cancel-btn">Cancel</button>
-          <button @click="addNote" class="submit-btn">Add Note</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Note Modal -->
-    <div v-if="showEditNoteModal" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="showEditNoteModal = false">&times;</span>
-        <h2>Edit Note</h2>
-        <div class="form-group">
-          <label for="editNoteContent">Note Content:</label>
-          <textarea 
-            id="editNoteContent" 
-            v-model="editingNote.notes" 
-            rows="5" 
-            placeholder="Enter your note here..."
-          ></textarea>
-        </div>
-        <div class="form-group">
-          <label for="editNoteStatus">Status:</label>
-          <select id="editNoteStatus" v-model="editingNote.status">
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="on-hold">On Hold</option>
-          </select>
-        </div>
-        <div class="form-group" v-if="editingNote.status === 'completed'">
-          <label for="endDate">End Date:</label>
-          <input 
-            type="date" 
-            id="endDate" 
-            v-model="editingNote.end_date"
-          >
-        </div>
-        <div class="form-actions">
-          <button @click="showEditNoteModal = false" class="cancel-btn">Cancel</button>
-          <button @click="saveNote" class="submit-btn">Save Changes</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal">
-      <div class="modal-content delete-modal">
-        <h2>Confirm Delete</h2>
-        <p>Are you sure you want to delete this note? This action cannot be undone.</p>
-        <div class="form-actions">
-          <button @click="showDeleteModal = false" class="cancel-btn">Cancel</button>
-          <button @click="removeNote" class="delete-btn">Delete</button>
-        </div>
-      </div>
-    </div>
+    
+    <!-- Tennis court decoration at bottom -->
+    <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   createNote, 
   updateNote as updateNoteService, 
   deleteNote as deleteNoteService, 
-  fetchMemberNotes, 
-  getNoteById 
+  fetchMemberNotes
 } from '@/services/noteServices';
+import Navbar from '@/components/Navbar.vue';
+
+// Import NoteData interface
+import type { NoteData } from '@/services/noteServices';
 
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
 
+interface Note {
+  id: number | string;
+  notes: string;
+  status: 'active' | 'completed' | 'on-hold';
+  created_at: string;
+  end_date: string | null;
+  // Add specific properties that might be used
+  memberId?: number | string;
+  trainer_id?: number | string;
+  updated_at?: string;
+}
+
+interface EditingNote {
+  id: number | string | null;
+  notes: string;
+  status: 'active' | 'completed' | 'on-hold';
+  end_date: string | null;
+}
+
+interface NewNote {
+  notes: string;
+  status: 'active' | 'completed' | 'on-hold';
+}
+
 const route = useRoute();
 const router = useRouter(); // Add router for navigation
-const memberId = route.params.id;
+const memberId = route.params.id as string; // Cast to string
 const memberName = ref('');
-const notes = ref([]);
+const notes = ref<Note[]>([]); // Specify the type as Note[]
 const loading = ref(true);
 
 // Modal states
@@ -138,19 +309,19 @@ const showEditNoteModal = ref(false);
 const showDeleteModal = ref(false);
 
 // Note data
-const newNote = ref({
+const newNote = ref<NewNote>({
   notes: '',
   status: 'active',
 });
 
-const editingNote = ref({
+const editingNote = ref<EditingNote>({
   id: null,
   notes: '',
-  status: '',
+  status: 'active',
   end_date: null
 });
 
-const noteIdToDelete = ref(null);
+const noteIdToDelete = ref<number | string | null>(null);
 
 // Back button function
 const goBack = () => {
@@ -158,7 +329,7 @@ const goBack = () => {
 };
 
 // Format date to display
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
   if (!dateString) return "Tanggal tidak tersedia";
   
   // Validasi tanggal
@@ -202,7 +373,7 @@ const addNote = async () => {
     }
     
     // Use the service function
-    const createdNote = await createNote(memberId, newNote.value.notes, newNote.value.status);
+    await createNote(memberId, newNote.value.notes, newNote.value.status);
     
     showAddNoteModal.value = false;
     newNote.value = { notes: '', status: 'active' };
@@ -214,7 +385,7 @@ const addNote = async () => {
 };
 
 // Open edit modal with note data
-const editNote = (note) => {
+const editNote = (note: Note) => {
   editingNote.value = {
     id: note.id,
     notes: note.notes,
@@ -232,14 +403,16 @@ const saveNote = async () => {
       return;
     }
     
-    const noteData = {
+    const noteData: NoteData = {
       notes: editingNote.value.notes,
       status: editingNote.value.status,
       end_date: editingNote.value.status === 'completed' ? editingNote.value.end_date : null
     };
     
     // Use the service function
-    await updateNoteService(editingNote.value.id, noteData);
+    if (editingNote.value.id) {
+      await updateNoteService(editingNote.value.id, noteData);
+    }
     
     showEditNoteModal.value = false;
     await fetchNotes();
@@ -250,7 +423,7 @@ const saveNote = async () => {
 };
 
 // Show delete confirmation
-const confirmDelete = (id) => {
+const confirmDelete = (id: number | string) => {
   noteIdToDelete.value = id;
   showDeleteModal.value = true;
 };
@@ -259,7 +432,9 @@ const confirmDelete = (id) => {
 const removeNote = async () => {
   try {
     // Use the service function
-    await deleteNoteService(noteIdToDelete.value);
+    if (noteIdToDelete.value) {
+      await deleteNoteService(noteIdToDelete.value);
+    }
     
     showDeleteModal.value = false;
     noteIdToDelete.value = null;
@@ -274,266 +449,3 @@ onMounted(() => {
   fetchNotes();
 });
 </script>
-
-<style scoped>
-.notes-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  position: relative;
-}
-
-/* Back Button Styles */
-.back-button {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  transition: background-color 0.2s, transform 0.2s;
-  z-index: 100;
-}
-
-.back-button:hover {
-  transform: scale(1.10);
-}
-
-.back-arrow {
-  font-size: 35px;
-  font-weight: bold;
-  color: var(--color-text, #070707);
-}
-
-.notes-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.add-note-btn {
-  background-color: var(--color-primary, #4caf50);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.add-note-btn:hover {
-  background-color: var(--color-primary-dark, #388e3c);
-}
-
-.loading, .no-notes {
-  text-align: center;
-  margin: 50px 0;
-  font-size: 18px;
-  color: var(--color-text-secondary, #666);
-}
-
-.notes-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-@media (max-width: 1200px) {
-  .notes-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .notes-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .notes-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.note-card {
-  background-color: var(--color-background-soft, #f9f9f9);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 200px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.note-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.note-date {
-  font-size: 14px;
-  color: var(--color-text-light, #888);
-  margin-bottom: 10px;
-}
-
-.note-content {
-  flex-grow: 1;
-  margin-bottom: 15px;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-}
-
-.note-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-}
-
-.note-status {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.note-status.active {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-}
-
-.note-status.completed {
-  background-color: #e3f2fd;
-  color: #1565c0;
-}
-
-.note-status.on-hold {
-  background-color: #fff3e0;
-  color: #e65100;
-}
-
-.note-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.edit-btn, .delete-btn {
-  background: none;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.edit-btn {
-  color: var(--color-primary, #2196f3);
-}
-
-.edit-btn:hover {
-  background-color: rgba(33, 150, 243, 0.1);
-}
-
-.delete-btn {
-  color: var(--color-error, #f44336);
-}
-
-.delete-btn:hover {
-  background-color: rgba(244, 67, 54, 0.1);
-}
-
-/* Modal Styles */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 25px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  position: relative;
-}
-
-.delete-modal {
-  max-width: 400px;
-  text-align: center;
-}
-
-.close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.form-group textarea, 
-.form-group select,
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  font-family: inherit;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.cancel-btn, .submit-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.cancel-btn {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  color: #333;
-}
-
-.submit-btn {
-  background-color: var(--color-primary, #4caf50);
-  border: none;
-  color: white;
-}
-
-.submit-btn:hover {
-  background-color: var(--color-primary-dark, #388e3c);
-}
-</style>

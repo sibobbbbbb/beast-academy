@@ -118,6 +118,11 @@
             </div>
           </div>
 
+          <!-- Link change password -->
+          <div class="!mt-4">
+            <a href="#" @click.prevent="openPasswordModal" class="text-xs text-[var(--primary-blue)] hover:underline focus:outline-none cursor-pointer">Change Password</a>
+          </div>
+
           <div class="pt-6">
             <button
               type="submit"
@@ -126,7 +131,7 @@
             >
               <svg
                 v-if="isSaving"
-                class="animate-spin h-4 w-4 mr-2 text-white"
+                class="animate-spin h-4 w-4 !mr-2 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -149,18 +154,131 @@
             </button>
           </div>
         </form>
+
         <!-- Notification Messages -->
         <div v-if="notification.message" class="pb-3 text-center text-xs" :class="notification.type === 'success' ? 'text-green-500' : 'text-red-500'">
           {{ notification.message }}
         </div>
       </template>
     </div>
+
+    <!-- Modal Change Password -->
+    <!-- Modal Change Password -->
+<div v-if="showPasswordModal" class="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-3" @click="closePasswordModal">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col" @click.stop>
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-[var(--primary-blue)]">Change Password</h2>
+    </div>
+    
+    <!-- Modal Content -->
+    <div class="p-6 overflow-y-auto">
+      <form @submit.prevent="change_password" class="!space-y-4">
+        <!-- Old Password Input with toggle icon -->
+        <div>
+          <label for="oldPassword" class="block text-sm font-medium text-gray-700 !mb-1">Old Password</label>
+          <div class="relative">
+            <input
+              v-model="oldPassword"
+              :type="showOldPassword ? 'text' : 'password'"
+              id="oldPassword"
+              class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
+              placeholder="Enter your current password"
+              required
+            />
+            <button 
+              type="button"
+              @click="toggleOldPassword" 
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer"
+            >
+              <svg v-if="showOldPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- New Password Input with toggle icon -->
+        <div>
+          <label for="newPassword" class="block text-sm font-medium text-gray-700 !mb-1">New Password</label>
+          <div class="relative">
+            <input
+              v-model="newPassword"
+              :type="showNewPassword ? 'text' : 'password'"
+              id="newPassword"
+              class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
+              placeholder="Enter a new password"
+              required
+            />
+            <button 
+              type="button"
+              @click="toggleNewPassword" 
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 focus:outline-none cursor-pointer"
+            >
+              <svg v-if="showNewPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Password Confirmation Requirements -->
+        <div class="text-xs text-gray-600 !mt-2">
+          <p>Password must:</p>
+          <ul class="list-disc pl-5 !space-y-1 !mt-1">
+            <li>Be at least 8 characters long</li>
+            <li>Include at least one uppercase letter</li>
+            <li>Include at least one number</li>
+          </ul>
+        </div>
+
+        <!-- Show error message if there is one -->
+        <div v-if="passwordError" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="!ml-3">
+              <p class="text-sm">{{ passwordError }}</p>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Footer with actions -->
+    <div class="p-4 flex justify-end !space-x-2 border-t border-gray-200">
+      <button 
+        @click="closePasswordModal" 
+        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors cursor-pointer"
+      >
+        Cancel
+      </button>
+      <button 
+        @click="change_password" 
+        class="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[var(--blue-dark)] text-sm font-medium transition-colors cursor-pointer"
+      >
+        Change Password
+      </button>
+    </div>
+  </div>
+</div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, reactive } from 'vue'
-import { getProfileUsers, updateProfile, checkPhoneNumber } from '@/services/memberServices'
+import { getProfileUsers, updateProfile, checkPhoneNumber, changePassword } from '@/services/memberServices'
 import Navbar from '@/components/Navbar.vue'
 
 export default defineComponent({
@@ -208,12 +326,28 @@ export default defineComponent({
       username: ''
     })
 
+    // New Password Modal state and fields
+    const showPasswordModal = ref(false)
+    const oldPassword = ref('')
+    const newPassword = ref('')
+    const showOldPassword = ref(false)
+    const showNewPassword = ref(false)
+    const passwordError = ref('')
+
+    const toggleOldPassword = () => {
+      showOldPassword.value = !showOldPassword.value
+    }
+
+    const toggleNewPassword = () => {
+      showNewPassword.value = !showNewPassword.value
+    }
 
     // Load profile data
     onMounted(async () => {
       try {
         const response = await getProfileUsers()
         username.value = response.username
+        role.value = response.role
         name.value = response.name
         email.value = response.email
         phoneNumber.value = response.phone_no || ''
@@ -378,6 +512,37 @@ export default defineComponent({
       }).format(date)
     }
 
+    
+    const openPasswordModal = () => {
+      showPasswordModal.value = true
+    }
+    
+    const closePasswordModal = () => {
+      showPasswordModal.value = false
+      oldPassword.value = ''
+      newPassword.value = ''
+    }
+    
+    const change_password = async () => {      
+      try {
+        await changePassword(oldPassword.value, newPassword.value)
+        notification.message = 'Password changed successfully!'
+        notification.type = 'success'
+        closePasswordModal()
+        passwordError.value = ''
+      } catch (error: unknown) {
+        console.error('Error changing password:', error)
+        let errMsg = 'Failed to change password. Please try again later.'
+        if (error instanceof Error) {
+          // Jika error merupakan AxiosError atau memiliki properti response, lakukan pengecekan optional
+          const typedError = error as Error & { response?: { data?: { message?: string } } }
+          errMsg = typedError.response?.data?.message || error.message || errMsg
+        }
+        passwordError.value = errMsg
+        notification.type = 'error'
+      } 
+    }
+
     return {
       name,
       email,
@@ -396,6 +561,17 @@ export default defineComponent({
       imageUploadRef,
       role,
       username,
+      showPasswordModal,
+      oldPassword,
+      newPassword,
+      openPasswordModal,
+      closePasswordModal,
+      change_password,
+      showOldPassword,
+      showNewPassword,
+      toggleOldPassword,
+      toggleNewPassword,
+      passwordError
     }
   }
 })

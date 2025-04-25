@@ -1,6 +1,6 @@
 import { prisma } from "../db/prisma/prisma.js";
 import { body, validationResult } from "express-validator";
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 import { upload } from "../middlewares/multerMiddleware.js";
 import cloudinary from "../config/cloudinary.js";
 import bcrypt from "bcryptjs";
@@ -55,7 +55,9 @@ export const addMemberControllers = [
         });
 
         if (existingPhoneNo) {
-          return res.status(409).json({ message: "Nomor telepon sudah digunakan" });
+          return res
+            .status(409)
+            .json({ message: "Nomor telepon sudah digunakan" });
         }
       }
 
@@ -131,13 +133,12 @@ export const addMemberControllers = [
   },
 ];
 
-
 // Get all members
 export const getMemberControllers = async (req, res) => {
   try {
     // Ambil role dan userId dari token yang sudah diverifikasi
     const { role, userId } = req.user;
-    
+
     // Jika role adalah trainer, ambil member yang dilatih oleh trainer tersebut
     if (role === "trainer") {
       const members = await prisma.trained_by.findMany({
@@ -150,7 +151,7 @@ export const getMemberControllers = async (req, res) => {
     } else {
       const members = await prisma.users.findMany({
         orderBy: {
-          name: 'asc',
+          name: "asc",
         },
       });
       return res.status(200).json(members);
@@ -297,7 +298,7 @@ export const updateProfileControllers = async (req, res) => {
 
   const role = decoded.role;
   try {
-    if (role === "member" || role === "trainer") {
+    if (role === "member" || role === "trainer" || role === "admin") {
       // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
       if (phone_no) {
         const existingPhoneNo = await prisma.users.findUnique({
@@ -347,10 +348,20 @@ export const updateProfileControllers = async (req, res) => {
         const lastMemberData = await prisma.users.findFirst({
           where: { id: decoded.userId },
         });
-        const folder = decoded.role === "trainer" ? "trainers" : "members";
-
+        var folder;
+        if (decoded.role === "trainer") {
+          folder = "trainers";
+        } else if (decoded.role === "admin") {
+          folder = "admin";
+        } else if (decoded.role === "member") {
+          folder = "members";
+        } else {
+          return res.status(403).json({ message: "Forbidden" });
+        }
         const lastImgUrl = lastMemberData.avatar;
-        if ( lastImgUrl && lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)
+        if (
+          lastImgUrl &&
+          lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)
         ) {
           try {
             console.log("Deleting old image from Cloudinary:", lastImgUrl);
@@ -396,35 +407,6 @@ export const updateProfileControllers = async (req, res) => {
         });
       }
       res.status(200).json({ message: "Profile berhasil diupdate" });
-    } else if (role === "trainer" || role === "admin") {
-      if (name?.length > 100) {
-        return res
-          .status(400)
-          .json({ error: "Request Tidak Valid" });
-      }
-
-      if (phone_no) {
-        return res
-          .status(400)
-          .json({ error: "Request Tidak Valid" });
-      }
-
-      if (!name) {
-        return res.status(400).json({ message: "Request Tidak Valid" });
-      }
-
-      if (!img_file) {
-        await prisma.users.update({
-          where: { id: decoded.userId },
-          data: {
-            username: name,
-            phone_no: phone_no === "" ? null : phone_no,
-          },
-        });
-      } else {
-        res.status(400).json({ message: "Request Tidak Valid" });
-      }
-      res.status(200).json({ message: "Profile berhasil diupdate" });
     } else {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -459,5 +441,46 @@ export const checkPhoneNumberController = async (req, res) => {
     res
       .status(500)
       .json({ message: "Terjadi kesalahan saat memeriksa nomor telepon." });
+  }
+};
+
+export const changePasswordController = async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    // Cek apakah password lama sesuai
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Password lama tidak sesuai" });
+    }
+
+    // Hash password baru
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password di database
+    await prisma.users.update({
+      where: { id: decoded.userId },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: "Password berhasil diubah" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mengubah password" });
   }
 };

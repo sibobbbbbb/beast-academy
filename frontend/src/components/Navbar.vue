@@ -21,7 +21,7 @@
       
       <!-- Daftar Anggota navigation item - only visible for admin and trainer -->
       <router-link 
-        v-if="authStore.isLoggedIn && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
+        v-if="authStore.isLoggedIn && authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
         to="/userlisttest"
         class="text-white text-sm lg:text-base hover:text-[var(--primary-green)] transition-colors"
       >
@@ -84,7 +84,7 @@
             <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="profileDropdownOpen = false">Settings</router-link>
             <!-- Daftar Anggota menu item for admin and trainer in dropdown -->
             <router-link 
-              v-if="authStore.user.role === 'admin' || authStore.user.role=== 'trainer'"
+              v-if="authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
               to="/userlisttest" 
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
               @click="profileDropdownOpen = false"
@@ -128,7 +128,7 @@
       
       <!-- Daftar Anggota - Mobile menu item for admin and trainer -->
       <router-link 
-        v-if="authStore.isLoggedIn && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
+        v-if="authStore.isLoggedIn && authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
         to="/userlisttest"
         class="py-3 text-white hover:text-[var(--primary-green)] transition-colors !font-medium text-base border-b border-white/10"
         @click="closeMobileMenu"

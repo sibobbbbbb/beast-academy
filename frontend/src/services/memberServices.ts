@@ -18,6 +18,7 @@ export const deleteMemberById = async (id: number) => {
   try {
     const response = await fetch(`${API_BASE_URL}/delete-member/${id}`, {
       method: 'DELETE',
+      credentials: 'include',
     });
     if (!response.ok) {
       throw new Error('Gagal menghapus member');
@@ -50,6 +51,7 @@ export const addNewMember = async (
     }
     const response = await fetch(`${API_BASE_URL}/add-member`, {
       method: 'POST',
+      credentials: 'include',
       body: form,
     })
 
@@ -83,6 +85,7 @@ export const updateUserData = async (id: number, name: string, phone_no: string)
   try {
     const response = await fetch(`${API_BASE_URL}/update-member/${id}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -159,7 +162,7 @@ export const checkPhoneNumber = async (phone_no: string) => {
   }
 }
 
-export const getMemberById = async (memberId) => {
+export const getMemberById = async (memberId: string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/get-member/${memberId}`);
     const data = await response.json();
@@ -169,3 +172,28 @@ export const getMemberById = async (memberId) => {
     throw error;
   }
 };
+
+export const changePassword = async (oldPassword: string, newPassword: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ oldPassword, newPassword }),
+      credentials: 'include'
+    });
+
+    // handler password lama salah
+    if (response.status === 400) {
+      throw new Error('Password lama salah');
+    } else if (!response.ok) {
+      throw new Error('Gagal mengubah password');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error changing password:', error);
+    throw error;
+  }
+}
