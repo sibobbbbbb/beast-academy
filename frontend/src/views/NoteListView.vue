@@ -122,7 +122,7 @@ import {
 } from '@/services/noteServices';
 
 // Import NoteData interface
-import type { NoteData } from '@/types';
+import type { NoteData } from '@/services/noteServices';
 
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
