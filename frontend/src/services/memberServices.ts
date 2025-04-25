@@ -58,7 +58,7 @@ export const addNewMember = async (
     const data = await response.json()
     
     if (!response.ok) {
-      var erroMessage = ""
+      let erroMessage = ""
       if (data.message) {
         erroMessage = data.message || 'Validation error. Please check your input.'
       } 

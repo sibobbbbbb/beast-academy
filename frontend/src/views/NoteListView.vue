@@ -12,6 +12,10 @@
             <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: var(--primary-blue)">Member Notes - {{ memberName }}</h1>
             <p class="text-[var(--neutral-700)] max-w-xl">Manage and track notes for this member</p>
           </div>
+          <button @click="(_) => {exportTrainerNotes(notes)}" 
+            class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"> 
+            Export 
+          </button>
           
           <button 
             @click="showAddNoteModal = true" 
@@ -257,7 +261,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { 
   createNote, 
   updateNote as updateNoteService, 
@@ -299,7 +303,7 @@ interface NewNote {
 }
 
 const route = useRoute();
-const router = useRouter(); // Add router for navigation
+// const router = useRouter(); // Add router for navigation
 const memberId = route.params.id as string; // Cast to string
 const memberName = ref('');
 const notes = ref<Note[]>([]); // Specify the type as Note[]
@@ -326,9 +330,9 @@ const editingNote = ref<EditingNote>({
 const noteIdToDelete = ref<number | string | null>(null);
 
 // Back button function
-const goBack = () => {
-  router.push({ name: 'userlisttest' });
-};
+// const goBack = () => {
+//   router.push({ name: 'userlisttest' });
+// };
 
 // Format date to display
 const formatDate = (dateString: string): string => {
