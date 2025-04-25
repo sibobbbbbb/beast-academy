@@ -291,7 +291,7 @@ const router = useRouter();
 
 async function fetchLikedEvents() {
   try {
-    const response = await eventLikedById(userID.value);
+    const response = await eventLikedById(Number(userID.value));
     if (response.data) {
       response.data.forEach((event: EventData) => {
         likedEvents.value[event.id] = true;
@@ -436,11 +436,12 @@ function viewEventDetails(event: EventData) {
 // Open create form
 function openCreateForm() {
   currentEvent.value = {
-    id: '',
+    id: 0,
     title: '',
     images: '',
     description: '',
-    posted_at: ''
+    posted_at: '',
+    joinform: ''
   } as EventData;
   showCreateForm.value = true;
 }
