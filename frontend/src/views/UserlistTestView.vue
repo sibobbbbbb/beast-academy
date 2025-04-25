@@ -201,7 +201,7 @@
 
 <script setup lang="ts">
 import SortableHeader from '@/components/SortableHeader.vue';
-import { ref, onMounted, watch} from 'vue';
+import { ref, onMounted, watch, nextTick, onUnmounted, computed} from 'vue';
 import { deleteMemberById, updateUserData } from '../services/memberServices';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
@@ -374,10 +374,16 @@ function navigateToNotes(item: Member) {
   console.log('Navigate to notes for member:', item.id);
 }
 
-const dataFetcher = async (page: number) => {
+async function dataFetcher(page: number, append = false) {
   try {
     const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
-    lastFetch.value = response.data;
+    
+    if (append) {
+      lastFetch.value = [...lastFetch.value, ...response.data]; // append mode
+    } else {
+      lastFetch.value = response.data; // reset mode
+    }
+  
     totalPages.value = response.pagination.totalPages;
 
     // Cek apakah ini halaman terakhir
@@ -412,12 +418,12 @@ const handleFilter = (role: string) => {
   refresh(0);
 };
 
-const refresh = async (newPage?: number) => {
+const refresh = async (newPage?: number, append = false) => {
   console.log('Refreshing data...',newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }
-  await dataFetcher(currentPage.value);
+  await dataFetcher(currentPage.value, append);
 
   console.log(currentPage.value);
 };
