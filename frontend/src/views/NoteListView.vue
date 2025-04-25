@@ -121,37 +121,39 @@ import {
   fetchMemberNotes
 } from '@/services/noteServices';
 
+// Import NoteData interface
+import type { NoteData } from '@/types';
+
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
 
 interface Note {
   id: number | string;
   notes: string;
-  status: string;
+  status: 'active' | 'completed' | 'on-hold';
   created_at: string;
   end_date: string | null;
   // Add specific properties that might be used
   memberId?: number | string;
   trainer_id?: number | string;
   updated_at?: string;
-  // Instead of using [key: string]: any
 }
 
 interface EditingNote {
   id: number | string | null;
   notes: string;
-  status: string;
+  status: 'active' | 'completed' | 'on-hold';
   end_date: string | null;
 }
 
 interface NewNote {
   notes: string;
-  status: string;
+  status: 'active' | 'completed' | 'on-hold';
 }
 
 const route = useRoute();
 const router = useRouter(); // Add router for navigation
-const memberId = route.params.id;
+const memberId = route.params.id as string; // Cast to string
 const memberName = ref('');
 const notes = ref<Note[]>([]); // Specify the type as Note[]
 const loading = ref(true);
@@ -170,7 +172,7 @@ const newNote = ref<NewNote>({
 const editingNote = ref<EditingNote>({
   id: null,
   notes: '',
-  status: '',
+  status: 'active',
   end_date: null
 });
 
@@ -256,7 +258,7 @@ const saveNote = async () => {
       return;
     }
     
-    const noteData = {
+    const noteData: NoteData = {
       notes: editingNote.value.notes,
       status: editingNote.value.status,
       end_date: editingNote.value.status === 'completed' ? editingNote.value.end_date : null
