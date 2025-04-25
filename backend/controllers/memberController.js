@@ -461,3 +461,42 @@ export const checkPhoneNumberController = async (req, res) => {
       .json({ message: "Terjadi kesalahan saat memeriksa nomor telepon." });
   }
 };
+
+export const changePasswordController = async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    // Cek apakah password lama sesuai
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Password lama tidak sesuai" });
+    }
+
+    // Hash password baru
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password di database
+    await prisma.users.update({
+      where: { id: decoded.userId },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: "Password berhasil diubah" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan saat mengubah password" });
+  }
+};
