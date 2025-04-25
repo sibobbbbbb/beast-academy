@@ -11,7 +11,7 @@
       
       <div class="w-full md:w-1/2 text-center md:text-left !mb-8 sm:!mb-10 md:!mb-0 md:!pr-6 lg:!pr-12">
         <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl !font-bold text-white leading-tight !mb-4 sm:!mb-5 md:!mb-6">
-          Connect with Tennis Players Near You
+          Bandung Tennis Enthusiasts
         </h2>
         <p class="text-base sm:text-lg md:text-xl text-white/90 !mb-6 sm:!mb-7 md:!mb-8 max-w-lg mx-auto md:mx-0">
           Join the largest tennis community platform. Find matches, improve your skills, and connect with players at your level.

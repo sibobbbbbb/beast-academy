@@ -237,14 +237,40 @@
     
     <!-- Tennis court decoration at bottom -->
     <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
-    <div v-if="showLoginPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="showLoginPrompt = false">
-      <div class="bg-white p-6 rounded-lg shadow-md" @click.stop>
-        <p class="mb-4">Anda ingin like event ini? Yuk login dulu</p>
-        <button @click="router.push('/login')" class="bg-[var(--primary-blue)] text-white px-4 py-2 rounded">
-          Login
-        </button>
+    <div v-if="showLoginPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4" @click.stop>
+    <!-- Tennis ball decoration -->
+    <div class="absolute -top-4 -right-4 w-10 h-10 rounded-full hidden md:block" style="background: var(--primary-green); opacity: 0.5"></div>
+    
+    <div class="text-center !mb-5">
+      <div class="w-12 h-12 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center mx-auto !mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color: var(--primary-blue)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
       </div>
+      <h3 class="text-xl font-bold !mb-2 text-[var(--neutral-800)]">Login Required</h3>
+      <p class="text-[var(--neutral-700)] mb-6">Would you like to like this event? Please login first to access this feature.</p>
     </div>
+    
+    <div class="flex flex-col sm:flex-row justify-center gap-3">
+      <button 
+        @click="closeLoginPrompt" 
+        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors cursor-pointer"
+      >
+        Cancel
+      </button>
+      <button 
+        @click="router.push('/login')" 
+        class="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[var(--blue-dark)] text-sm font-medium transition-colors cursor-pointer"
+      >
+        Login
+      </button>
+    </div>
+    
+    <!-- Tennis court decoration at bottom -->
+    <div class="h-1 w-full !mt-6" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
+  </div>
+</div>
   </div>
 </template>
 
@@ -489,6 +515,10 @@ async function handleCreateEvent(event: EventData) {
     isFormProcessing.value = false;
   }
 }
+
+const closeLoginPrompt = () => {
+  showLoginPrompt.value = false;
+};
 
 // Handle edit event
 async function handleEditEvent(eventData: EventData) {
