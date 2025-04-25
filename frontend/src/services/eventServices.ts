@@ -1,13 +1,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export interface EventData {
-  id: string
-  title: string
-  images: string
-  description: string
-  posted_at: string
-  imageFile?: File
-} 
+  id: number;             // ID event sebagai number (bukan string)
+  title: string;
+  images: string;
+  description: string;
+  posted_at: string;
+  joinform: string;       // Tambahkan properti joinform
+  imageFile?: File;       // Opsional, untuk file yang diupload
+}
 
 export interface ApiResponse<T> {
   data?: T
