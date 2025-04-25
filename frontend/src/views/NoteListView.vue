@@ -324,9 +324,9 @@ const editingNote = ref<EditingNote>({
 const noteIdToDelete = ref<number | string | null>(null);
 
 // Back button function
-const goBack = () => {
-  router.push({ name: 'userlisttest' });
-};
+// const goBack = () => {
+//   router.push({ name: 'userlisttest' });
+// };
 
 // Format date to display
 const formatDate = (dateString: string): string => {
