@@ -478,7 +478,7 @@ export default defineComponent({
         notification.type = 'success'
         closePasswordModal()
         passwordError.value = ''
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error changing password:', error)
         // Ambil pesan error dari error.response jika tersedia, atau gunakan error.message
         const errMsg = error.response?.data?.message || error.message || 'Failed to change password. Please try again later.'
