@@ -1,5 +1,6 @@
 -- Membuat type yang dibutuhkan
 CREATE TYPE user_role as ENUM ('admin','trainer','member');
+CREATE TYPE activity_type as ENUM ('tournament','class','friendlies','other');
 
 -- Membuat tabel users (struktur tetap sama)
 CREATE TABLE users (

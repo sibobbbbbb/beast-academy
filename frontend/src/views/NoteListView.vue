@@ -12,6 +12,10 @@
             <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: var(--primary-blue)">Member Notes - {{ memberName }}</h1>
             <p class="text-[var(--neutral-700)] max-w-xl">Manage and track notes for this member</p>
           </div>
+          <button @click="(_) => {exportTrainerNotes(notes)}" 
+            class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"> 
+            Export 
+          </button>
           
           <button 
             @click="showAddNoteModal = true" 
@@ -272,8 +276,10 @@ import type { NoteData } from '@/services/noteServices';
 
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
+import {exportTrainerNotes} from '../utils/trainerNotesExport'
 
-interface Note {
+
+export interface Note {
   id: number | string;
   notes: string;
   status: 'active' | 'completed' | 'on-hold';
