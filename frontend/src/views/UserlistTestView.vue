@@ -88,7 +88,7 @@
       <details>
     <summary>
       <label style="font-size: 1.5rem;">Display:</label>
-      <span v-if="mobileDisplayTag.length === 0" style="margin-left: 0.5rem;">(None)</span>
+      <span v-if="mobileDisplayTag.length === 0" style="margin-left: 0.5rem; display: inline-block;">(None)</span>
       <span
   v-for="tag in mobileTagSelected"
     :key="tag"
@@ -129,19 +129,19 @@
         <!-- non-primary slots -->
         <template #x1 v-if="mobileTagSelected[0]">
           <label>
-            Skill
+            {{mobileTagText[mobileTagSelected[0]]}}
           </label>
           {{ item[mobileTagSelected[0]] }}
         </template>
         <template #x2 v-if="mobileTagSelected[1]">
           <label>
-            Skill
+            {{mobileTagText[mobileTagSelected[1]]}}
           </label>
           {{ item[mobileTagSelected[1]] }}
         </template>
         <template #x3 v-if="mobileTagSelected[2]">
           <label>
-            Skill
+            {{mobileTagText[mobileTagSelected[3]]}}
           </label>
           {{ item[mobileTagSelected[2]] }}
         </template>
@@ -158,8 +158,9 @@
         margin: 0.2rem auto;
         align-self: center;
       ">
-      <button>Do Something</button>
-      <button>Do Else</button>
+      <button>Add Member</button>
+      <button>Edit Member</button>
+      <button>Export</button>
     </nav>
     <h2>
       A thick ass block of content lmao
