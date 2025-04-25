@@ -1,5 +1,19 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import { useDeviceModeStore } from './stores/deviceMode'
+import { onMounted, onUnmounted } from 'vue'
+
+const deviceStore = useDeviceModeStore()
+
+onMounted(() => {
+  deviceStore.updateMode()
+  deviceStore.startListener()
+})
+
+onUnmounted(() => {
+  deviceStore.stopListener()
+})
+
 </script>
 
 <template>

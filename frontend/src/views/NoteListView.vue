@@ -262,6 +262,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+// import { useRoute, useRouter } from 'vue-router';
 import { 
   createNote, 
   updateNote as updateNoteService, 
@@ -303,7 +304,7 @@ interface NewNote {
 }
 
 const route = useRoute();
-// const router = useRouter(); // Add router for navigation
+// const router = useRouter(); 
 const memberId = route.params.id as string; // Cast to string
 const memberName = ref('');
 const notes = ref<Note[]>([]); // Specify the type as Note[]

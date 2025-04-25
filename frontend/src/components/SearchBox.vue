@@ -6,9 +6,20 @@ const emit = defineEmits<{
   (e: 'search', query: string): void;
 }>();
 
-const onSearch = () => {
-  emit('search', searchQuery.value);
+const searchDelay : number = 1000;
+
+let searchDelayTimeout: ReturnType<typeof setTimeout>;
+
+
+function onSearch() {
+  if (searchDelayTimeout){
+    clearTimeout(searchDelayTimeout)
+  }
+  searchDelayTimeout = setTimeout(() => {
+    emit('search', searchQuery.value);
+  }, searchDelay)
 };
+
 </script>
 
 <template>
