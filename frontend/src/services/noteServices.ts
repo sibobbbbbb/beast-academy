@@ -1,10 +1,18 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// Define interfaces for your data structures
+interface NoteData {
+  notes?: string;
+  status?: 'active' | 'completed' | 'on-hold';
+  [key: string]: any; // For any additional properties
+}
+
 /**
  * Fetch all notes for a specific member
  * @param {number} memberId - ID of the member to fetch notes for
  * @returns {Promise} - Promise with notes data
  */
-export const fetchMemberNotes = async (memberId) => {
+export const fetchMemberNotes = async (memberId: number | string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/notes/member/${memberId}`, {
       credentials: 'include'
@@ -25,7 +33,7 @@ export const fetchMemberNotes = async (memberId) => {
  * @param {string} status - The status of the note (active, completed, on-hold)
  * @returns {Promise} - Promise with created note data
  */
-export const createNote = async (memberId, notes, status = 'active') => {
+export const createNote = async (memberId: number | string, notes: string, status: string = 'active') => {
   try {
     const response = await fetch(`${API_BASE_URL}/notes`,
        {
@@ -54,7 +62,7 @@ export const createNote = async (memberId, notes, status = 'active') => {
  * @param {Object} noteData - Object containing note data to update
  * @returns {Promise} - Promise with updated note data
  */
-export const updateNote = async (noteId, noteData) => {
+export const updateNote = async (noteId: number | string, noteData: NoteData) => {
   try {
     const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
       method: 'PUT',
@@ -77,7 +85,7 @@ export const updateNote = async (noteId, noteData) => {
  * @param {number} noteId - ID of the note to delete
  * @returns {Promise} - Promise with response data
  */
-export const deleteNote = async (noteId) => {
+export const deleteNote = async (noteId: number | string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
       credentials: 'include',
@@ -96,7 +104,7 @@ export const deleteNote = async (noteId) => {
  * @param {number} noteId - ID of the note to fetch
  * @returns {Promise} - Promise with note data
  */
-export const getNoteById = async (noteId) => {
+export const getNoteById = async (noteId: number | string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/notes/${noteId}`,
       {

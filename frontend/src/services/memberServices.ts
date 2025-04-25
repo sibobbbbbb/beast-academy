@@ -159,7 +159,7 @@ export const checkPhoneNumber = async (phone_no: string) => {
   }
 }
 
-export const getMemberById = async (memberId) => {
+export const getMemberById = async (memberId: number) => {
   try {
     const response = await fetch(`${API_BASE_URL}/get-member/${memberId}`);
     const data = await response.json();

@@ -124,11 +124,33 @@ import {
 // We need to import a service function for fetching member details
 import { getMemberById } from '@/services/memberServices';
 
+// Define interfaces for type safety
+interface Note {
+  id: number | string;
+  notes: string;
+  status: string;
+  created_at: string;
+  end_date: string | null;
+  [key: string]: any; // For any additional properties
+}
+
+interface EditingNote {
+  id: number | string | null;
+  notes: string;
+  status: string;
+  end_date: string | null;
+}
+
+interface NewNote {
+  notes: string;
+  status: string;
+}
+
 const route = useRoute();
 const router = useRouter(); // Add router for navigation
 const memberId = route.params.id;
 const memberName = ref('');
-const notes = ref([]);
+const notes = ref<Note[]>([]); // Specify the type as Note[]
 const loading = ref(true);
 
 // Modal states
@@ -137,19 +159,19 @@ const showEditNoteModal = ref(false);
 const showDeleteModal = ref(false);
 
 // Note data
-const newNote = ref({
+const newNote = ref<NewNote>({
   notes: '',
   status: 'active',
 });
 
-const editingNote = ref({
+const editingNote = ref<EditingNote>({
   id: null,
   notes: '',
   status: '',
   end_date: null
 });
 
-const noteIdToDelete = ref(null);
+const noteIdToDelete = ref<number | string | null>(null);
 
 // Back button function
 const goBack = () => {
@@ -157,7 +179,7 @@ const goBack = () => {
 };
 
 // Format date to display
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
   if (!dateString) return "Tanggal tidak tersedia";
   
   // Validasi tanggal
@@ -213,7 +235,7 @@ const addNote = async () => {
 };
 
 // Open edit modal with note data
-const editNote = (note) => {
+const editNote = (note: Note) => {
   editingNote.value = {
     id: note.id,
     notes: note.notes,
@@ -238,7 +260,9 @@ const saveNote = async () => {
     };
     
     // Use the service function
-    await updateNoteService(editingNote.value.id, noteData);
+    if (editingNote.value.id) {
+      await updateNoteService(editingNote.value.id, noteData);
+    }
     
     showEditNoteModal.value = false;
     await fetchNotes();
@@ -249,7 +273,7 @@ const saveNote = async () => {
 };
 
 // Show delete confirmation
-const confirmDelete = (id) => {
+const confirmDelete = (id: number | string) => {
   noteIdToDelete.value = id;
   showDeleteModal.value = true;
 };
@@ -258,7 +282,9 @@ const confirmDelete = (id) => {
 const removeNote = async () => {
   try {
     // Use the service function
-    await deleteNoteService(noteIdToDelete.value);
+    if (noteIdToDelete.value) {
+      await deleteNoteService(noteIdToDelete.value);
+    }
     
     showDeleteModal.value = false;
     noteIdToDelete.value = null;
