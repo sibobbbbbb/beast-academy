@@ -18,6 +18,7 @@ export const deleteMemberById = async (id: number) => {
   try {
     const response = await fetch(`${API_BASE_URL}/delete-member/${id}`, {
       method: 'DELETE',
+      credentials: 'include',
     });
     if (!response.ok) {
       throw new Error('Gagal menghapus member');
@@ -50,6 +51,7 @@ export const addNewMember = async (
     }
     const response = await fetch(`${API_BASE_URL}/add-member`, {
       method: 'POST',
+      credentials: 'include',
       body: form,
     })
 
@@ -83,6 +85,7 @@ export const updateUserData = async (id: number, name: string, phone_no: string)
   try {
     const response = await fetch(`${API_BASE_URL}/update-member/${id}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
