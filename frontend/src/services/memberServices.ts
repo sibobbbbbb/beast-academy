@@ -38,34 +38,33 @@ export const addNewMember = async (
 ) => {
   try {
     const form = new FormData()
+    form.append('username', formData.username)
     form.append('name', formData.name)
     form.append('email', formData.email)
+    form.append('role', formData.role)
     if (formData.img_file) {
       form.append('img_file', formData.img_file);
     }
     if (formData.phone) {
       form.append('phone', formData.phone);
     }
-
     const response = await fetch(`${API_BASE_URL}/add-member`, {
       method: 'POST',
       body: form,
     })
 
     const data = await response.json()
-
+    
     if (!response.ok) {
-      if (data.errors) {
-        data.errors.forEach((err: { param: keyof FormErrors; msg: string }) => {
-          errors[err.param] = err.msg
-        })
-      } else if (data.error) {
-        apiError.value = data.error
-      } else if (response.status === 409) {
-        apiError.value = 'A user with this name, email, or phone number already exists'
-      } else {
-        apiError.value = 'An unexpected error occurred. Please try again.'
+      var erroMessage = ""
+      if (data.message) {
+        erroMessage = data.message || 'Validation error. Please check your input.'
+      } 
+      else {
+        erroMessage = 'An unexpected error occurred. Please try again.'
       }
+
+      throw new Error(erroMessage)
     } else {
       formSubmitted.value = true
       formData.name = ''
@@ -73,13 +72,12 @@ export const addNewMember = async (
       formData.email = ''
       formData.phone = ''
     }
+    return data;
   } catch (error) {
-    apiError.value = 'Network error. Please check your connection and try again.'
-    console.error('Error submitting form:', error)
-  } finally {
-    isSubmitting.value = false
+    throw error
   }
 }
+
 
 export const updateUserData = async (id: number, name: string, phone_no: string) => {
   try {
@@ -115,9 +113,10 @@ export const getProfileUsers = async () => {
   }
 }
 
-export const updateProfile = async (name: string, img_file: File | null, phone_no: string) => {
+export const updateProfile = async (username:string, name: string, img_file: File | null, phone_no: string) => {
   try {
     const formData = new FormData();
+    formData.append('username', username);
     formData.append('name', name);
     if (img_file) {
       formData.append('img_file', img_file);
@@ -159,3 +158,14 @@ export const checkPhoneNumber = async (phone_no: string) => {
     return null;
   }
 }
+
+export const getMemberById = async (memberId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get-member/${memberId}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching member:', error);
+    throw error;
+  }
+};

@@ -1,20 +1,26 @@
 <template>
-  <header
-    style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
-    <img :src=logoImage style="height: 8dvh; display: inline-block; margin-right: 1%;">
-    <h1 style="font-weight: 600; font-size: 2rem; display: inline-block;">BEAST Admin Page | {{ deviceStore.currentMode
-      }}</h1>
-  </header>
+  <header style="height: 12dvh; padding: 0 2%; margin: 1%; display: flex; align-items: center; justify-content: flex-start;">
+  <!-- Back button to home page -->
+  <router-link to="/" class="back-button" style="margin-right: 15px; display: flex; align-items: center; text-decoration: none; color: var(--primary-blue, #0066cc); font-weight: 500;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+  </router-link>
+  
+  <img :src="logoImage" style="height: 8dvh; display: inline-block; margin-right: 1%;">
+  <h1 style="font-weight: 600; font-size: 3rem; display: inline-block;">B.E.A.S.T. Academy Admin Utils</h1>
+</header>
   <hr>
   <div class="content" v-if="!mobileMode">
     <span style="display: flex;">
-      <FilterDropdown @filter="handleFilter" />
-      <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;" />
-      <button @click="() => { refresh(0); }" id="refresh-button">Refresh!</button>
+      <FilterDropdown v-if="userRole == 'admin'" @filter="handleFilter" />
+      <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
+      <button @click="() => {refresh(0);}" id="refresh-button">Refresh!</button>
     </span>
-    <button @click="showAddOverlay = true">Add Member</button>
-    <button v-if="!showDeleteColumn" @click="toggleDeleteColumn">Delete Member</button>
-    <button v-if="showDeleteColumn" @click="toggleDeleteColumn">Cancel</button>
+    <button v-if="userRole == 'admin'" @click="showAddOverlay = true">Add Member</button>
+    <button v-if="!showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Delete Member</button>
+    <button v-if="showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Cancel</button>
     <button @click="(_) => { exportToFile() }"> Export </button>
     <table>
       <thead>
@@ -28,7 +34,8 @@
           <th class="shead" style="width: 6rem;">
             <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
           </th>
-          <th>Edit Button</th>
+          <th v-if="userRole == 'admin'">Edit Button</th>
+          <th v-if="userRole == 'trainer'"> Add Notes</th>
           <th class="shead">
             <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
           </th>
@@ -49,8 +56,9 @@
               :checked="selectedMembersMap.has(item.id)" />
           </td>
           <td>{{ item.id }}</td>
-          <td>
-            <button @click="editMember(item)">Edit</button>
+          <td v-if="userRole === 'admin' || userRole === 'trainer'">
+            <button v-if="userRole === 'admin'" @click="editMember(item)">Edit</button>
+            <button v-if="userRole === 'trainer'" @click="navigateToNotes(item)"> + </button>
           </td>
           <td>
             <span v-if="editingMember !== item.id">{{ item.name }}</span>
@@ -64,7 +72,7 @@
             <span v-if="editingMember !== item.id">{{ item.phone_no }}</span>
             <input v-else v-model="item.phone_no" @keyup.enter="saveItem(item)" @keyup.esc="cancelEdit(item)" />
           </td>
-          <td v-if="showDeleteColumn">
+          <td v-if="showDeleteColumn && userRole === 'admin'">
             <button @click="deleteMember(item.id)">Delete</button>
           </td>
         </tr>
@@ -192,55 +200,77 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-
-import logoImage from '@/assets/beastLogo.png'
-import SortableHeader from '@/components/SortableHeader.vue'
-import SearchBox from '@/components/SearchBox.vue'
-import FilterDropdown from '@/components/FilterDropdown.vue'
-import Pagination from '@/components/PaginationApp.vue'
-
-import { selectedMembersMap, selectMember, deselectMember, exportToFile } from '@/utils/memberSelection'
-import { useMemberTable } from '@/utils/memberTable'
+import SortableHeader from '@/components/SortableHeader.vue';
+import { ref, onMounted, watch} from 'vue';
+import { deleteMemberById, updateUserData } from '../services/memberServices';
+import SearchBox from '@/components/SearchBox.vue';
+import FilterDropdown from '@/components/FilterDropdown.vue';
+import { fetchMembers } from '@/services/templateServices';
+import Pagination from '@/components/PaginationApp.vue';
+import { useRouter } from 'vue-router';
+import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
+import { type Member } from '@/types/member';
+import logoImage from '@/assets/beastLogo.png';
 import { useDeviceModeStore } from '@/stores/deviceMode'
 import MobileListItem from './MobileListItem.vue'
 import AddMemberForm from '../components/AddMembersForm.vue'
 
-import dummyMobileItems from '@/utils/dummy.json'
+const perPage = ref(10);
+const currentPage = ref(0);
+const lastFetch = ref<Member[]>([]);
+const maxPage = ref(false);
+const sortBy = ref("id");
+const order = ref("asc");
+const searchQuery = ref("");
+const selectedRole = ref("");
+const totalPages = ref(1);
+const router = useRouter();
 
-const router = useRouter()
-const {
-  perPage,
-  currentPage,
-  lastFetch,
-  maxPage,
-  sortBy,
-  order,
-  searchQuery,
-  selectedRole,
-  totalPages,
-  editingMember,
-  showDeleteColumn,
-  refresh,
-  deleteMember,
-  editMember,
-  saveItem,
-  cancelEdit,
-  toggleDeleteColumn,
-  handleSort,
-  handleSearch,
-  handleFilter,
-} = useMemberTable()
+const editingMember = ref<number | null>(null);
+const originalName = ref<string | null>(null);
+const originalPhone = ref<string | null>(null);
+const showDeleteColumn = ref(false);
 
+const userRole = ref("");
+
+const getUserRole = async () => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // Mengambil role dari API endpoint /me
+    const response = await fetch(`${API_BASE_URL}/auth/me`, 
+      {
+        credentials: 'include',
+      }
+    );
+    
+    // Response berisi data user termasuk role
+    const userData = await response.json();
+    console.log(userData)
+    // Set role ke variabel userRole
+    userRole.value = userData.role || '';
+    
+    // Opsional: Simpan data user lainnya jika diperlukan
+    // userId.value = userData.id;
+    // username.value = userData.username;
+    // dll.
+    console.log("User role:", userRole.value);
+    return userData.role;
+  } catch (error) {
+    console.error("Failed to get user role from API:", error);
+    
+    // Jika error, set role kosong
+    userRole.value = '';
+    return '';
+  }
+};
 
 // ONE-TIME mode check so chanigng window size doesnt change mobile mode
 const deviceStore = useDeviceModeStore()
 const mobileMode   = ref(false)
 
 onMounted(() => {
-  refresh(0)
-
+  refresh(0);
+  getUserRole();
   mobileMode.value = deviceStore.currentMode === 'mobile'
 
   // set up the observer exactly once
@@ -301,6 +331,100 @@ function toggleTag(key: string) {
   }
 }
 
+
+const deleteMember = async (id: number) => {
+  const confirmed = confirm('Are you sure you want to delete this member?');
+  if (confirmed) {
+    await deleteMemberById(id);
+    dataFetcher(0); // Refresh data after deletion
+  }
+  console.log('Delete member:', id);
+};
+
+function editMember(item: Member) {
+  editingMember.value = item.id;
+  originalName.value = item.name;
+  originalPhone.value = item.phone_no;
+}
+
+async function saveItem(item: Member) {
+  editingMember.value = null;
+  originalName.value = null;
+  originalPhone.value = null;
+  await updateUserData(item.id, item.name, item.phone_no);
+  dataFetcher(0);
+  console.log('Save item:', item);
+}
+
+function cancelEdit(item: Member) {
+  item.name = originalName.value ?? '';
+  item.phone_no = originalPhone.value ?? '';
+  editingMember.value = null;
+  originalName.value = null;
+  originalPhone.value = null; 
+  console.log('Edit cancelled:', item);
+}
+
+function toggleDeleteColumn() {
+  showDeleteColumn.value = !showDeleteColumn.value;
+}
+
+function navigateToNotes(item: Member) {
+  router.push(`/notes-list/${item.id}`);
+  console.log('Navigate to notes for member:', item.id);
+}
+
+const dataFetcher = async (page: number) => {
+  try {
+    const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
+    lastFetch.value = response.data;
+    totalPages.value = response.pagination.totalPages;
+
+    // Cek apakah ini halaman terakhir
+    maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
+  } catch (error) {
+    console.error("Failed to fetch members:", error);
+  }
+};
+
+//On perpage change
+watch(perPage, async () => {
+  currentPage.value = 0;
+  await dataFetcher(0);
+});
+
+// Fungsi untuk menangani sorting dari SortableHeader
+const handleSort = (column: string, reverse: boolean) => {
+  sortBy.value = column;
+  order.value = reverse ? "desc" : "asc";
+  refresh(0);
+};
+
+// Fungsi untuk menangani pencarian
+const handleSearch = (query: string) => {
+  searchQuery.value = query;
+  refresh(0);
+};
+
+// Fungsi untuk menangani filter role
+const handleFilter = (role: string) => {
+  selectedRole.value = role;
+  refresh(0);
+};
+
+const refresh = async (newPage?: number) => {
+  console.log('Refreshing data...',newPage);
+  if (newPage !== undefined) {
+    currentPage.value = newPage;
+  }
+  await dataFetcher(currentPage.value);
+
+  console.log(currentPage.value);
+};
+
+onMounted(() => {
+  refresh(0);
+});
 
 </script>
 

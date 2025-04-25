@@ -1,11 +1,13 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export interface EventData {
-  id: string
-  title: string
-  images: string
-  description: string
-  posted_at: string
+  id: number;             // ID event sebagai number (bukan string)
+  title: string;
+  images: string;
+  description: string;
+  posted_at: string;
+  joinform: string;       // Tambahkan properti joinform
+  imageFile?: File;       // Opsional, untuk file yang diupload
 }
 
 export interface ApiResponse<T> {
@@ -64,15 +66,29 @@ export const deleteEvents = async (id: string): Promise<ApiResponse<DeleteEventR
 
 export const editEvents = async (id: string, eventData: EventData): Promise<ApiResponse<EventData>> => {
   try {
-    // Make sure we're sending the expected fields based on backend requirements
-    const { title, images, description } = eventData
+    // Validate required fields as the backend does
+    if (!eventData.title || !eventData.description) {
+      throw new Error("Title and description are required fields")
+    }
+
+    console.log("Event data to be sent:", eventData)
+    
+    // FORM DATA
+    const formData = new FormData();
+    formData.append('title', eventData.title || '');
+    formData.append('description', eventData.description || '');
+
+    if (eventData.imageFile) {
+      formData.append('img_file', eventData.imageFile);
+    }
+
+    if (eventData.images) {
+      formData.append('images', eventData.images);
+    }
 
     const response = await fetch(`${API_BASE_URL}/events/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, images, description }),
+      body: formData,
     })
 
     if (!response.ok) {
@@ -89,20 +105,23 @@ export const editEvents = async (id: string, eventData: EventData): Promise<ApiR
 
 export const createEvents = async (eventData: Partial<EventData>): Promise<ApiResponse<EventData>> => {
   try {
-    // Make sure we're sending the expected fields based on backend requirements
-    const { title, images, description } = eventData
-
     // Validate required fields as the backend does
-    if (!title || !description) {
+    if (!eventData.title || !eventData.description) {
       throw new Error("Title and description are required fields")
     }
+    
+    // FORM DATA
+    const formData = new FormData();
+    formData.append('title', eventData.title || '');
+    formData.append('description', eventData.description || '');
 
+    if (eventData.imageFile) {
+      formData.append('img_file', eventData.imageFile);
+    }
+    
     const response = await fetch(`${API_BASE_URL}/events`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, images, description }),
+      body: formData,
     })
 
     if (!response.ok) {
@@ -135,5 +154,68 @@ export const fetchEventDetails = async (id: string): Promise<ApiResponse<EventDa
   } catch (error) {
     console.error(`Failed to fetch event with id ${id}:`, error)
     throw error
+  }
+}
+
+export async function likeEvent(eventId: number, userId: number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/likeEvent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ event_id: eventId, user_id: userId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error liking event: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to like event:", error);
+    throw error;
+  }
+}
+
+export async function unlikeEvent(eventId: number, userId: number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/unlikeEvent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ event_id: eventId, user_id: userId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error unliking event: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to unlike event:", error);
+    throw error;
+  }
+}
+
+export async function eventLikedById(userId: number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/likedEvents/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error checking if event is liked: ${response.statusText}`);
+    }
+
+    const data: ApiResponse<EventData[]> = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to check if event is liked:", error);
+    throw error;
   }
 }

@@ -10,6 +10,10 @@ const props = defineProps({
   title: {
     type: String,
     default: 'Event Form'
+  },
+  isProcessing: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -17,11 +21,12 @@ const emit = defineEmits(['save', 'cancel']);
 
 // Form data
 const formData = ref<EventData>({
-  id: '',
+  id: 0,
   title: '',
   images: '',
   description: '',
-  posted_at: ''
+  posted_at: '',
+  joinform: ''
 });
 
 // Form validation
@@ -101,10 +106,11 @@ function handleImageChange(event: Event) {
       if (fileNameElement) {
         fileNameElement.textContent = file.name;
       }
-
-      // In a real app, you would upload this file to a server
-      // For now, we'll just create a local URL for preview
+      // Create a local URL for the image PREVIEW
       formData.value.images = URL.createObjectURL(file);
+
+      // Store the file in formData for upload
+      formData.value.imageFile = file;
     }
   }
 }
@@ -150,11 +156,9 @@ function handleImageChange(event: Event) {
             <p v-if="errors.description" class="!mt-1 text-xs text-red-600">{{ errors.description }}</p>
           </div>
           
-          <!-- Image input - Simplified -->
+          <!-- Image input section (tetap sama) -->
           <div>
             <label for="image" class="block text-sm font-medium text-gray-700 !mb-1">Event Image</label>
-            
-            <!-- Image preview (compact) -->
             <div v-if="formData.images" class="!mb-2 rounded-lg overflow-hidden shadow-sm">
               <div class="flex items-center">
                 <img :src="formData.images" alt="Preview" class="h-20 w-20 object-cover" />
@@ -170,8 +174,6 @@ function handleImageChange(event: Event) {
                 </div>
               </div>
             </div>
-            
-            <!-- File upload (simplified) -->
             <div class="flex items-center !mt-2 border border-gray-300 rounded-lg p-2 bg-gray-50">
               <label for="image" class="inline-block px-3 py-1 bg-[var(--primary-blue)] text-white rounded text-xs cursor-pointer hover:bg-[#007aa3]">
                 Choose File
@@ -183,20 +185,23 @@ function handleImageChange(event: Event) {
                   class="hidden"
                 />
               </label>
-              <span class="!ml-2 text-xs text-gray-600 truncate max-w-[150px]" id="file-name">
+              <span class="!ml-2 text-xs text-gray-600 truncate max-w-[150px]">
                 No file chosen
               </span>
             </div>
-            
-            <!-- Image URL input -->
+          </div>
+          
+          <!-- Input Google Form URL -->
+          <div>
+            <label for="googleForm" class="block text-sm font-medium text-gray-700 !mb-1">Join Form URL</label>
             <div class="!mt-2">
               <div class="flex items-center">
                 <input
-                  id="imageUrl"
-                  v-model="formData.images"
+                  id="googleForm"
+                  v-model="formData.joinform"
                   type="text"
                   class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] focus:border-transparent"
-                  placeholder="Or enter image URL..."
+                  placeholder="Enter Google Form URL..."
                 />
               </div>
             </div>
@@ -204,7 +209,7 @@ function handleImageChange(event: Event) {
         </form>
       </div>
       
-      <!-- Footer with Actions -->
+      <!-- Footer dengan actions -->
       <div class="p-4 flex justify-end !space-x-2 !mt-auto">
         <button
           type="button"
@@ -215,9 +220,17 @@ function handleImageChange(event: Event) {
         </button>
         <button
           @click="handleSubmit"
-          class="px-4 py-1.5 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[#007aa3] text-sm font-medium transition-colors cursor-pointer"
+          :disabled="isProcessing"
+          class="px-4 py-1.5 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[#007aa3] text-sm font-medium transition-colors cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          Save
+          <span v-if="isProcessing" class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Saving...
+          </span>
+          <span v-else>Save</span>
         </button>
       </div>
     </div>

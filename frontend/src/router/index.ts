@@ -7,6 +7,7 @@ import ProfileView from '@/views/ProfileView.vue'
 import EventView from '@/views/EventView.vue'
 import EventDetails from '@/views/EventDetails.vue'
 import api from '@/utils/axios'
+import NoteListView from '@/views/NoteListView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,6 +61,14 @@ const router = createRouter({
       name: 'event-details',
       component: EventDetails,
     },
+    {
+      path: '/notes-list/:id',
+      name: 'notes-list',
+      component: NoteListView,
+      meta: { requiresAuth: true }
+      
+    }
+
   ],
 })
 

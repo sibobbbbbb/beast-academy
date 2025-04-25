@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 export const getMembers = async (req, res) => {
   try {
     const { search = "", sortBy = "created_at", order = "asc", page = "1", limit = "10", filterBy = "" } = req.query;
+    // Ambil role dan userId dari token yang sudah diverifikasi
+    const { role, userId } = req.user;
 
     // Field yang valid untuk sorting
     const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name", "id"];
@@ -22,19 +24,13 @@ export const getMembers = async (req, res) => {
     const offset = (pageNumber - 1) * limitNumber;
 
     // Membuat kondisi pencarian dan filter
-    const whereCondition = {};
+    let whereCondition = {};
 
     // Filter berdasarkan role (via relasi many-to-many dengan users)
     if (filterBy) {
-      whereCondition.member_user = {
-        some: {
-          users: {
-            role: filterBy,
-          },
-        },
-      };
+      whereCondition.role = filterBy;
     }
-
+    
     // Pencarian berdasarkan name, email, atau phone_no
     if (search) {
       whereCondition.OR = [
@@ -44,24 +40,58 @@ export const getMembers = async (req, res) => {
       ];
     }
 
+    // Jika role adalah trainer, filter member yang dilatih oleh trainer tersebut
+    if (role === "trainer") {
+      // Kita perlu menambahkan filter untuk trainer
+      const trainerFilter = {
+        trained_by_trained_by_member_idTousers: {
+          some: {
+            trainer_id: parseInt(userId)
+          }
+        }
+      };
+    
+      // Gabungkan dengan whereCondition yang sudah ada
+      if (whereCondition.OR) {
+        // Jika sudah ada OR condition (dari search), kita perlu mempertahankannya
+        // dan menambahkan filter trainer pada level atas
+        whereCondition = {
+          AND: [
+            { OR: whereCondition.OR },
+            trainerFilter
+          ]
+        };
+      } else {
+        // Jika tidak ada OR condition, cukup gabungkan objek filter
+        whereCondition = {
+          ...whereCondition,
+          ...trainerFilter
+        };
+      }
+    }
+    
     // Query untuk mendapatkan daftar members
-    // console.log(pageNumber, limitNumber, offset, "GET METRICS");
-    const members = await prisma.members.findMany({
+    const members = await prisma.users.findMany({
       where: whereCondition,
       orderBy: { [sortBy]: order },
       skip: offset,
       take: limitNumber,
       include: {
-        member_user: {
+        trained_by_trained_by_member_idTousers: {
           include: {
-            users: true, // Menyertakan data users dalam hasil query
+            users_trained_by_trainer_idTousers: true, // Include trainer data
+          },
+        },
+        trained_by_trained_by_trainer_idTousers: {
+          include: {
+            users_trained_by_member_idTousers: true, // Include member data
           },
         },
       },
     });
 
-    // Menghitung total members
-    const totalMembers = await prisma.members.count({
+    // Menghitung total members yang memenuhi kondisi
+    const totalMembers = await prisma.users.count({
       where: whereCondition,
     });
 
