@@ -98,23 +98,66 @@
               <p class="text-[var(--neutral-700)] !mb-4 line-clamp-2">{{ event.description }}</p>
               
               <!-- Action buttons -->
-              <div class="flex justify-end items-center">
+              <div class="flex justify-between items-center w-full">
+                <!-- Tombol JOIN -->
+                <div>
+                  <button 
+                    @click.stop="openJoinForm(event)" 
+                    class="px-4 py-1 rounded-full bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--blue-dark)] transition-colors"
+                    title="Join Event"
+                  >
+                    JOIN
+                  </button>
+                </div>
+
                 <div class="flex space-x-2">
+                  <!-- Like button -->
+                  <button 
+                    @click.stop="likedEvents[event.id] ? toggleUnlike(event) : toggleLike(event)" 
+                    class="p-2 rounded-full cursor-pointer"
+                    title="Like Event"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      :class="[
+                        'h-5', 
+                        'w-5', 
+                        likedEvents[event.id] 
+                          ? 'fill-red-500 stroke-red-500' 
+                          : 'fill-white stroke-gray-500'
+                      ]" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" 
+                      />
+                    </svg>
+                  </button>
+
+                  <!-- Edit button -->
                   <button 
                     @click.stop="openEditForm(event)" 
-                    class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
+                    class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] cursor-pointer"
+                    title="Edit Event"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
+                      />
                     </svg>
                   </button>
                   
+                  <!-- Delete button -->
                   <button 
                     @click.stop="openDeleteConfirm(event)" 
-                    class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] z-10 cursor-pointer"
+                    class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] cursor-pointer"
+                    title="Delete Event"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                      />
                     </svg>
                   </button>
                 </div>
@@ -194,16 +237,25 @@
     
     <!-- Tennis court decoration at bottom -->
     <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
+    <div v-if="showLoginPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="showLoginPrompt = false">
+      <div class="bg-white p-6 rounded-lg shadow-md" @click.stop>
+        <p class="mb-4">Anda ingin like event ini? Yuk login dulu</p>
+        <button @click="router.push('/login')" class="bg-[var(--primary-blue)] text-white px-4 py-2 rounded">
+          Login
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData } from '@/services/eventServices.ts';
+import { fetchEvents, deleteEvents, editEvents, createEvents, type EventData, likeEvent, unlikeEvent, eventLikedById } from '@/services/eventServices.ts';
 import EventForm from '../components/EventFrom.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import Navbar from '@/components/Navbar.vue';
+import api from '@/utils/axios.ts';
 
 // State management
 const events = ref<EventData[]>([]);
@@ -229,12 +281,40 @@ const currentEvent = ref<EventData>({
   posted_at: ''
 });
 const error = ref<string | null>(null);
+const likedEvents = ref<Record<string, boolean>>({});
+const isLoggedIn = ref(false);
+const userID = ref('');
+const showLoginPrompt = ref(false);
+
+const router = useRouter();
+
+async function fetchLikedEvents() {
+  try {
+    const response = await eventLikedById(userID.value);
+    if (response.data) {
+      response.data.forEach((event: EventData) => {
+        likedEvents.value[event.e_id] = true;
+      });
+    }
+  } catch (err) {
+    console.error("Failed to fetch liked events:", err);
+  }
+}
+
+function openJoinForm(event: EventData) {
+  if (event.joinform) {
+    window.open(event.joinform, "_blank");
+  } else {
+    // Jika joinform kosong, Anda bisa tampilkan pesan atau lakukan alternatif
+    alert("Join form not available for this event.");
+  }
+}
 
 
 // Load initial events
 onMounted(async () => {
   await loadEvents();
-  
+
   // Set up intersection observer for infinite scrolling
   const observer = new IntersectionObserver(handleIntersect, {
     rootMargin: '100px',
@@ -243,6 +323,20 @@ onMounted(async () => {
   const sentinel = document.querySelector('#sentinel');
   if (sentinel) {
     observer.observe(sentinel);
+  }
+
+  try {
+    const response = await api.get('/auth/me', {
+      withCredentials: true
+    });
+    if (response.data) {
+      isLoggedIn.value = true;
+      userID.value = response.data.id;
+      await fetchLikedEvents(userID.value);
+    }
+  } catch {
+    console.log('User not logged in');
+    isLoggedIn.value = false;
   }
 });
 
@@ -285,9 +379,34 @@ function handleIntersect(entries: IntersectionObserverEntry[]) {
   }
 }
 
-// Handle search input
 function handleSearch() {
   // This function is triggered on every input change in the search bar
+}
+
+async function toggleLike(event: EventData) {
+  if (!isLoggedIn.value) {
+    showLoginPrompt.value = true;
+    return;
+  }
+  try {
+    await likeEvent(event.id, userID.value);
+    likedEvents.value[event.id] = true;
+  } catch (err) {
+    console.error("Error liking event:", err);
+  }
+}
+
+async function toggleUnlike(event: EventData) {
+  if (!isLoggedIn.value) {
+    showLoginPrompt.value = true;
+    return;
+  }
+  try {
+    await unlikeEvent(event.id, userID.value);
+    likedEvents.value[event.id] = false;
+  } catch (err) {
+    console.error("Error unliking event:", err);
+  }
 }
 
 // Format date
@@ -308,13 +427,10 @@ function handleImageError(e: Event) {
   target.src = ''; // You can set a default image here
   target.classList.add('bg-[var(--neutral-300)]');
 }
-const router = useRouter();
 
 function viewEventDetails(event: EventData) {
-  // Navigate to the event details page
   router.push(`/event-details/${event.id}`);
 }
-
 
 // Open create form
 function openCreateForm() {
@@ -345,6 +461,8 @@ async function handleCreateEvent(event: EventData) {
   try {
     isFormProcessing.value = true;
     error.value = null;
+
+    console.log('Creating event:', event);
     
     const response = await createEvents(event);
     

@@ -8,44 +8,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model member_user {
-  u_id    Int
-  m_id    Int
-  members members @relation(fields: [m_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users   users   @relation(fields: [u_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([u_id, m_id])
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model members {
-  id            Int           @id @default(autoincrement())
-  name          String        @db.VarChar(100)
-  img_url       String        @default("")
-  phone_no      String?       @unique @db.VarChar(15)
-  email         String        @unique @db.VarChar(100)
-  created_at    DateTime?     @default(now()) @db.Timestamp(6)
-  last_activity DateTime?     @default(now()) @db.Timestamp(6)
-  stat1         Int?
-  stat2         Int?
-  stat3         Int?
-  stat4         Int?
-  stat5         Int?
-  member_user   member_user[]
+enum user_role {
+  admin
+  trainer
+  member
 }
 
 model users {
-  id          Int           @id @default(autoincrement())
-  role        user_role
-  username    String        @db.VarChar(100)
-  password    String?       @db.VarChar(255)  // Made nullable for social logins
-  email       String        @unique @db.VarChar(100)
-  provider    String?       @db.VarChar(20)   // 'google', 'facebook', etc.
-  provider_id String?       @db.VarChar(100)  // ID from the provider
-  avatar      String?       // Profile picture URL
-  created_at  DateTime?     @default(now()) @db.Timestamp(6)
-  updated_at  DateTime?     @default(now()) @updatedAt @db.Timestamp(6)
-  member_user member_user[]
+  id            Int       @id @default(autoincrement())
+  role          user_role
+  username      String    @db.VarChar(100)
+  password      String?   @db.VarChar(255)
+  email         String    @unique @db.VarChar(100)
+  provider      String?   @db.VarChar(20)
+  provider_id   String?   @db.VarChar(100)
+  avatar        String    // sesuai dengan default di DB (TEXT NOT NULL DEFAULT '')
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  name          String?   @db.VarChar(100)
+  phone_no      String?   @unique @db.VarChar(15)
+  last_activity DateTime? @default(now()) @db.Timestamp(6)
+
+  // Jika tidak ada tabel member_user, relasi ini bisa dihapus atau dibiarkan terpisah
+  member       members?      @relation("UserMember")
+}
+
+model members {
+  // Primary key sesuai DB: id_m SERIAL PRIMARY KEY
+  id_m        Int   @id @default(autoincrement())
+  // id_u adalah foreign key ke users(id) dan harus UNIQUE
+  id_u        Int   @unique
+  stat1       Int?  // CHECK (stat1 BETWEEN 1 AND 100)
+  stat2       Int?  // CHECK (stat2 BETWEEN 1 AND 100)
+  stat3       Int?  // CHECK (stat3 BETWEEN 1 AND 100)
+  stat4       Int?  // CHECK (stat4 BETWEEN 1 AND 100)
+  stat5       Int?  // CHECK (stat5 BETWEEN 1 AND 100)
+  
+  // Relasi ke users
+  user        users @relation("UserMember", fields: [id_u], references: [id], onDelete: Cascade)
 }
 
 model events {
@@ -54,10 +54,11 @@ model events {
   images      String    @default("")
   description String?   @default("Description here") @db.VarChar(200)
   posted_at   DateTime? @default(now()) @db.Timestamp(6)
+  joinform    String    @default("https://example.com/join-form") @db.VarChar(200)
 }
 
-enum user_role {
-  admin
-  trainer
-  member
+model liked_by {
+  id   Int @id @default(autoincrement())
+  u_id Int       
+  e_id Int
 }

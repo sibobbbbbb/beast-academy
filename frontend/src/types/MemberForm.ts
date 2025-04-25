@@ -1,4 +1,5 @@
 export interface FormDataMember {
+  username: string
   name: string
   img_file: File | null
   email: string
@@ -7,6 +8,7 @@ export interface FormDataMember {
 }
 
 export interface FormErrors {
+  username?: string
   name?: string
   img_file?: string
   email?: string

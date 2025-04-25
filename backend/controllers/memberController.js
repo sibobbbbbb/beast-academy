@@ -1,9 +1,9 @@
 import { prisma } from "../db/prisma/prisma.js";
 import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
-import { upload } from '../middlewares/multerMiddleware.js';
-import cloudinary  from "../config/cloudinary.js";
-import bcrypt from 'bcryptjs';
+import { upload } from "../middlewares/multerMiddleware.js";
+import cloudinary from "../config/cloudinary.js";
+import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 
 // Add a new member
@@ -25,9 +25,10 @@ export const addMemberControllers = [
         .isIn(["member", "trainer"])
         .withMessage("Role tidak valid")
         .run(req),
-      body("name")
+      body("name").notEmpty().withMessage("Nama tidak boleh kosong").run(req),
+      body("username")
         .notEmpty()
-        .withMessage("Nama tidak boleh kosong")
+        .withMessage("Username tidak boleh kosong")
         .run(req),
     ]);
 
@@ -36,30 +37,30 @@ export const addMemberControllers = [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, phone, role, email } = req.body;
+    const { username, name, phone, role, email } = req.body;
     const img_file = req.file;
     try {
       // Cek jika email atau nomor hp sudah ada
-      const existingEmail = await prisma.members.findUnique({
+      const existingEmail = await prisma.users.findUnique({
         where: { email },
       });
 
       if (existingEmail) {
-        return res.status(409).json({ message: "Request Tidak Valid" });
+        return res.status(409).json({ message: "Email sudah digunakan" });
       }
 
       if (phone) {
-        const existingPhoneNo = await prisma.members.findUnique({
+        const existingPhoneNo = await prisma.users.findUnique({
           where: { phone_no: phone },
         });
 
         if (existingPhoneNo) {
-          return res.status(409).json({ message: "Request Tidak Valid" });
+          return res.status(409).json({ message: "Nomor telepon sudah digunakan" });
         }
       }
 
       if (!img_file) {
-        return res.status(400).json({ message: "Request Tidak Valid" });
+        return res.status(400).json({ message: "Image Wajib ada" });
       }
 
       const folder = role === "trainer" ? "trainers" : "members";
@@ -68,83 +69,76 @@ export const addMemberControllers = [
       let cloudinaryUrl = null;
       try {
         const uploadResult = await new Promise((resolve, reject) => {
-          cloudinary.v2.uploader.upload_stream(
-            { 
-              folder: folder, 
-              transformation: [
-                { quality: "auto", fetch_format: "auto" }
-              ]
-            }, 
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          ).end(img_file.buffer);
+          cloudinary.v2.uploader
+            .upload_stream(
+              {
+                folder: folder,
+                transformation: [{ quality: "auto", fetch_format: "auto" }],
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            )
+            .end(img_file.buffer);
         });
 
         cloudinaryUrl = uploadResult.secure_url;
       } catch (uploadError) {
-        console.error('Cloudinary Upload Error:', uploadError);
+        console.error("Cloudinary Upload Error:", uploadError);
         return res.status(400).json({ message: "Gagal mengunggah gambar" });
       }
 
       // Buat user baru
       const result = await prisma.$transaction(async (prisma) => {
-        if (role === "member")
-        {
-          // Buat member baru
-          var newMember = await prisma.members.create({
+        // generate default password
+        const uniqueId = uuidv4().substring(0, 6);
+
+        // Password default: nama (lowercase, tanpa spasi) + 6 karakter acak
+        const defaultPassword = `${name
+          .toLowerCase()
+          .replace(/\s+/g, "")}${uniqueId}`;
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+        // Buat user baru dengan password default
+        const newUser = await prisma.users.create({
+          data: {
+            username: username,
+            name: name,
+            email: email,
+            password: hashedPassword,
+            avatar: cloudinaryUrl,
+            role: role,
+            phone_no: phone || null,
+          },
+        });
+
+        if (role === "member") {
+          // Hubungkan member dengan user di tabel member_user
+          await prisma.members.create({
             data: {
-              name,
-              img_url: cloudinaryUrl,
-              phone_no: phone || null,
-              email,
+              id_u: newUser.id,
+              stat1: 50,   
+              stat2: 50,
+              stat3: 50,
+              stat4: 50,
+              stat5: 50
             },
           });
         }
 
-        // generate default password
-        const uniqueId = uuidv4().substring(0, 6);
-        
-        // Password default: nama (lowercase, tanpa spasi) + 6 karakter acak
-        const defaultPassword = `${name.toLowerCase().replace(/\s+/g, '')}${uniqueId}`;
-        
-        // Hash password
-        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-        
-        // Buat user baru dengan password default
-        const newUser = await prisma.users.create({
-          data: {
-            username: name,
-            email,
-            password: hashedPassword,
-            avatar: cloudinaryUrl,
-            role: role,
-          },
-        });
-        
-        if (role === "member")
-        {
-          // Hubungkan member dengan user di tabel member_user
-          await prisma.member_user.create({
-            data: {
-              m_id: newMember.id,
-              u_id: newUser.id,
-            },
-          });
-        }
-        
         return { defaultPassword };
-      
       });
-        
-        // Member berhasil ditambahkan
-        res.status(201).json({ 
-          message: "Member berhasil ditambahkan", 
-          defaultPassword: result.defaultPassword 
-        });
-      } catch (error) {
-        console.error(error);
+
+      // Member berhasil ditambahkan
+      res.status(201).json({
+        message: "Member berhasil ditambahkan",
+        defaultPassword: result.defaultPassword,
+      });
+    } catch (error) {
+      console.error(error);
       res
         .status(500)
         .json({ message: "Terjadi kesalahan saat menambahkan member" });
@@ -155,7 +149,7 @@ export const addMemberControllers = [
 // Get all members
 export const getMemberControllers = async (req, res) => {
   try {
-    const members = await prisma.members.findMany();
+    const members = await prisma.users.findMany();
     res.status(200).json(members);
   } catch (error) {
     console.error(error);
@@ -169,7 +163,7 @@ export const getMemberControllers = async (req, res) => {
 export const getMemberByIdControllers = async (req, res) => {
   const { id } = req.params;
   try {
-    const member = await prisma.members.findUnique({
+    const member = await prisma.users.findUnique({
       where: { id: parseInt(id) },
     });
     res.status(200).json(member);
@@ -185,7 +179,28 @@ export const getMemberByIdControllers = async (req, res) => {
 export const deleteMemberControllers = async (req, res) => {
   const { id } = req.params;
   try {
-    await prisma.members.delete({
+    // Cek apakah member ada
+    const user = await prisma.users.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    // Hapus Avatar dari Cloudinary
+    const folder = user.role === "trainer" ? "trainers" : "members";
+    const lastImgUrl = user.avatar;
+    if (lastImgUrl && lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)) {
+      try {
+        console.log("Deleting old image from Cloudinary:", lastImgUrl);
+        const publicId = lastImgUrl.split("/").pop().split(".")[0];
+        await cloudinary.v2.uploader.destroy(`${folder}/${publicId}`);
+      } catch (deleteError) {
+        console.error("Failed to delete old image:", deleteError);
+      }
+    }
+
+    await prisma.users.delete({
       where: { id: parseInt(id) },
     });
     res.status(200).json({ message: "Member berhasil dihapus" });
@@ -204,7 +219,7 @@ export const updateMemberControllers = async (req, res) => {
   try {
     // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
     if (phone_no) {
-      const existingPhoneNo = await prisma.members.findUnique({
+      const existingPhoneNo = await prisma.users.findUnique({
         where: { phone_no },
       });
 
@@ -215,7 +230,7 @@ export const updateMemberControllers = async (req, res) => {
       }
     }
 
-    await prisma.members.update({
+    await prisma.users.update({
       where: { id: parseInt(id) },
       data: {
         name,
@@ -237,16 +252,18 @@ export const getProfileControllers = async (req, res) => {
   if (!token) return res.status(401).json({ error: "Unauthorized" });
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const role = decoded.role;
+
+  // Cek apakah role adalah member, trainer, atau admin
   try {
-    const id_member = await prisma.member_user.findFirst({
-      where: { u_id: decoded.userId },
-    });
-
-    const member = await prisma.members.findUnique({
-      where: { id: id_member.m_id },
-    });
-
-    res.status(200).json(member);
+    if (role === "trainer" || role === "admin" || role === "member") {
+      const data = await prisma.users.findUnique({
+        where: { id: decoded.userId },
+      });
+      res.status(200).json(data);
+    } else {
+      return res.status(403).json({ message: "Forbidden" });
+    }
   } catch (error) {
     console.error(error);
     res
@@ -271,115 +288,142 @@ export const updateProfileControllers = async (req, res) => {
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  const { name, phone_no } = req.body;
+  const { username, name, phone_no } = req.body;
   const img_file = req.file;
 
+  const role = decoded.role;
   try {
-    const m_id = await prisma.member_user.findFirst({
-      where: { u_id: decoded.userId },
-    });
-    // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
-    if (phone_no) {
-      const existingPhoneNo = await prisma.members.findUnique({
-        where: { phone_no },
-      });
-
-      if (existingPhoneNo && existingPhoneNo.id !== m_id.m_id) {
-        return res
-          .status(409)
-          .json({ message: "Nomor telepon sudah digunakan oleh member lain" });
-      }
-    }
-
-    if (name?.length > 100) {
-      return res
-        .status(400)
-        .json({ error: "Nama tidak boleh lebih dari 100 karakter" });
-    }
-
-    if (phone_no?.length > 15) {
-      return res
-        .status(400)
-        .json({ error: "Nomor telepon tidak boleh lebih dari 15 karakter" });
-    }
-
-    if (!name) {
-      return res.status(400).json({ message: "Request Tidak Valid" });
-    }
-
-    if (!img_file) {
-      await prisma.members.update({
-        where: { id: m_id.m_id },
-        data: {
-          name,
-          phone_no: phone_no === "" ? null : phone_no,
-        },
-      });
-      await prisma.users.update({
-        where: { id: decoded.userId },
-        data: {
-          username: name,
-        },
-      });
-    } else {
-      // Delete last image from Cloudinary
-      const lastMemberData = await prisma.members.findFirst({
-        where: { id: m_id.m_id },
-      });
-
-      const lastImgUrl = lastMemberData.img_url;
-      if (!lastImgUrl || !lastImgUrl.includes('https://res.cloudinary.com/duemu25rz/image/upload/'))
-      {
-        try {
-          const publicId = lastImgUrl.split("/").pop().split(".")[0];
-          await cloudinary.v2.uploader.destroy(`members/${publicId}`);
-        } catch (deleteError) {
-          console.error("Failed to delete old image:", deleteError);
-        }
-      }
-        
-      // Upload image to Cloudinary
-      let cloudinaryUrl = null;
-      try {
-        const uploadResult = await new Promise((resolve, reject) => {
-          cloudinary.v2.uploader.upload_stream(
-            { 
-              folder: 'members', 
-              transformation: [
-                { quality: "auto", fetch_format: "auto" }
-              ]
-            }, 
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          ).end(img_file.buffer);
+    if (role === "member" || role === "trainer") {
+      // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
+      if (phone_no) {
+        const existingPhoneNo = await prisma.users.findUnique({
+          where: { phone_no },
         });
 
-        cloudinaryUrl = uploadResult.secure_url;
-      } catch (uploadError) {
-        console.error('Cloudinary Upload Error:', uploadError);
-        return res.status(400).json({ message: "Gagal mengunggah gambar" });
+        if (existingPhoneNo && existingPhoneNo.id !== decoded.userId) {
+          return res.status(409).json({
+            message: "Nomor telepon sudah digunakan oleh member lain",
+          });
+        }
       }
-      
-      await prisma.members.update({
-        where: { id: m_id.m_id },
-        data: {
-          name,
-          img_url: cloudinaryUrl,
-          phone_no: phone_no === "" ? null : phone_no,
-        },
-      });
 
-      await prisma.users.update({
-        where: { id: decoded.userId },
-        data: {
-          username: name,
-          avatar: cloudinaryUrl,
-        },
-      });
+      if (name?.length > 100) {
+        return res
+          .status(400)
+          .json({ error: "Nama tidak boleh lebih dari 100 karakter" });
+      }
+
+      if (username?.length > 100) {
+        return res
+          .status(400)
+          .json({ error: "Username tidak boleh lebih dari 100 karakter" });
+      }
+
+      if (phone_no?.length > 15) {
+        return res
+          .status(400)
+          .json({ error: "Nomor telepon tidak boleh lebih dari 15 karakter" });
+      }
+
+      if (!name || !username) {
+        return res.status(400).json({ message: "Request Tidak Valid" });
+      }
+
+      if (!img_file) {
+        await prisma.users.update({
+          where: { id: decoded.userId },
+          data: {
+            username: username,
+            name: name,
+            phone_no: phone_no === "" ? null : phone_no,
+          },
+        });
+      } else {
+        // Delete last image from Cloudinary
+        const lastMemberData = await prisma.users.findFirst({
+          where: { id: decoded.userId },
+        });
+        const folder = decoded.role === "trainer" ? "trainers" : "members";
+
+        const lastImgUrl = lastMemberData.avatar;
+        if ( lastImgUrl && lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)
+        ) {
+          try {
+            console.log("Deleting old image from Cloudinary:", lastImgUrl);
+            const publicId = lastImgUrl.split("/").pop().split(".")[0];
+            await cloudinary.v2.uploader.destroy(`${folder}/${publicId}`);
+          } catch (deleteError) {
+            console.error("Failed to delete old image:", deleteError);
+          }
+        }
+
+        // Upload image to Cloudinary
+        let cloudinaryUrl = null;
+        try {
+          const uploadResult = await new Promise((resolve, reject) => {
+            cloudinary.v2.uploader
+              .upload_stream(
+                {
+                  folder: folder,
+                  transformation: [{ quality: "auto", fetch_format: "auto" }],
+                },
+                (error, result) => {
+                  if (error) reject(error);
+                  else resolve(result);
+                }
+              )
+              .end(img_file.buffer);
+          });
+
+          cloudinaryUrl = uploadResult.secure_url;
+        } catch (uploadError) {
+          console.error("Cloudinary Upload Error:", uploadError);
+          return res.status(400).json({ message: "Gagal mengunggah gambar" });
+        }
+
+        await prisma.users.update({
+          where: { id: decoded.userId },
+          data: {
+            username: username,
+            name: name,
+            avatar: cloudinaryUrl,
+            phone_no: phone_no === "" ? null : phone_no,
+          },
+        });
+      }
+      res.status(200).json({ message: "Profile berhasil diupdate" });
+    } else if (role === "trainer" || role === "admin") {
+      if (name?.length > 100) {
+        return res
+          .status(400)
+          .json({ error: "Request Tidak Valid" });
+      }
+
+      if (phone_no) {
+        return res
+          .status(400)
+          .json({ error: "Request Tidak Valid" });
+      }
+
+      if (!name) {
+        return res.status(400).json({ message: "Request Tidak Valid" });
+      }
+
+      if (!img_file) {
+        await prisma.users.update({
+          where: { id: decoded.userId },
+          data: {
+            username: name,
+            phone_no: phone_no === "" ? null : phone_no,
+          },
+        });
+      } else {
+        res.status(400).json({ message: "Request Tidak Valid" });
+      }
+      res.status(200).json({ message: "Profile berhasil diupdate" });
+    } else {
+      return res.status(403).json({ message: "Forbidden" });
     }
-    res.status(200).json({ message: "Profile berhasil diupdate" });
   } catch (error) {
     console.error(error);
     res
@@ -397,15 +441,11 @@ export const checkPhoneNumberController = async (req, res) => {
   const { phone_no } = req.body;
 
   try {
-    const existingPhoneNo = await prisma.members.findUnique({
+    const existingPhoneNo = await prisma.users.findUnique({
       where: { phone_no },
     });
 
-    const m_id = await prisma.member_user.findFirst({
-      where: { u_id: decoded.userId },
-    });
-
-    if (existingPhoneNo && existingPhoneNo.id !== m_id.m_id) {
+    if (existingPhoneNo && existingPhoneNo.id !== decoded.userId) {
       return res.status(409).json({ isUsed: true });
     }
 
