@@ -1,4 +1,4 @@
-test('dummy test - always pass', () => {
+test('dummy test pipeline - always pass', () => {
     expect(true).toBe(true)
   })
   
