@@ -6,7 +6,6 @@ stages:
 lint:
   tags:
     - do-runner
-  image: node:20
   stage: lint
   before_script:
     - cd frontend || exit 1
@@ -19,7 +18,6 @@ lint:
 test:
   tags:
     - do-runner
-  image: node:20
   stage: test
   before_script:
     - cd backend || exit 1
@@ -33,7 +31,6 @@ test:
 build:
   tags:
     - do-runner
-  image: node:20
   stage: build
   before_script:
     - cd frontend || exit 1
