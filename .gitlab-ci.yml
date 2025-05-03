@@ -5,7 +5,7 @@ stages:
 
 lint:
   tags:
-    - do-runner
+    - do-runner-new
   stage: lint
   before_script:
     - cd frontend || exit 1
@@ -17,7 +17,7 @@ lint:
 
 test:
   tags:
-    - do-runner
+    - do-runner-new
   stage: test
   before_script:
     - cd backend || exit 1
@@ -30,7 +30,7 @@ test:
 
 build:
   tags:
-    - do-runner
+    - do-runner-new
   stage: build
   before_script:
     - cd frontend || exit 1
