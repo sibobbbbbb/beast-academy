@@ -49,16 +49,26 @@ deploy-backend:
   tags:
     - do-runner-new
   stage: deploy
+  before_script:
+    - git config --global --add safe.directory /var/www/beast-academy
   script:
-    - /var/www/beast-academy/deploy-backend.sh
+    - cd /var/www/beast-academy
+    - chmod +x deploy-backend.sh
+    - ./deploy-backend.sh
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+  when: manual
+  allow_failure: false
 
 deploy-frontend:
   tags:
-    - do-runner
+    - do-runner-new
   stage: deploy
   script:
-    - /var/www/beast-academy/deploy-frontend.sh
+    - cd /var/www/beast-academy
+    - chmod +x deploy-frontend.sh
+    - ./deploy-frontend.sh
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+  when: manual
+  allow_failure: false
