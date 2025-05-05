@@ -28,6 +28,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  filters: {
+    type: String,
+    required: false,
+  },
 });
 
 async function dataFetcher(page: number, append = false) {
@@ -44,17 +48,26 @@ async function dataFetcher(page: number, append = false) {
 
     // Cek apakah ini halaman terakhir
     maxPage.value = response.pagination.totalPages <= currentPage.value + 1;
-  } catch (error) {
-    console.error("Failed to fetch members:", error);
+  } 
+    catch (e: unknown) {
+      console.error("Failed to fetch members:", e);
+    if (e instanceof Error) {
+      reportError(e.message);
+    } else if (typeof e === 'string') {
+      reportError(e);
+    } else {
+      reportError('An unknown error occurred');
+    }
   }
 };
 
 
 const refresh = async (newPage?: number, append = false) => {
-  console.log('Refreshing data...',newPage);
+  console.log('Refreshing data...', newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }
+
   await dataFetcher(currentPage.value, append);
 
 };
@@ -78,14 +91,6 @@ const handleFilter = (role: string) => {
   refresh(0);
 };
 
-// State management for search and filters
-const search = ref('')
-const selectedCategory = ref('all')
-const selectedFilter = ref('none')
-
-// This is kept to preserve mobile interactions
-const tapContext = ref<'default' | 'custom'>("default")
-
 // Watchers to react to changes in search/filter
 // watch(search, (newSearch) => {
 //   memberStore.filterMembers({ search: newSearch, category: selectedCategory.value, filter: selectedFilter.value })
@@ -106,6 +111,11 @@ onMounted(() => {
       refresh(currentPage.value + 1, true)
     }
   }, { threshold: 1.0 })
+
+  if (props.filters) {
+    selectedRole.value = props.filters
+  }
+
   refresh(0);
 })
 
@@ -144,9 +154,6 @@ onUnmounted(() => {
 const mobileTagSelected = ref<string[]>([]);
 
 const mobileTagText: Record<string, string> = {
-  // "x1": "Skill",
-  // "x2": "Skill2",
-  // "x3": "Join Date",
   "email" : "E-Mail",
   "phone_no" : "Phone no.",
   "created_at" : "Created at",
@@ -169,6 +176,15 @@ function processSelectedMembers() {
 
 function processSingleMember(member: Member) {
   emit('processMembers', member);
+}
+
+const errorTitle = ref("");
+const errorMessage = ref("");
+
+function reportError(title : string, message?: string) {
+  // do something
+  errorTitle.value = title;
+  errorMessage.value = message || "";
 }
 
 </script>
@@ -324,7 +340,51 @@ function processSingleMember(member: Member) {
       <button>Export</button> -->
     </nav>
   </section>
+  <Teleport to="body">
+    <div v-if="errorMessage || errorTitle" class="error-overlay">
+      <div class="error-content">
+        <h3>{{ errorTitle }}</h3>
+        <p>{{ errorMessage }}</p>
+        <button @click="{errorMessage = '' ; errorTitle = ''}">Close</button>
+      </div>
+    </div>
+  </Teleport>
 </template>
+
+<style>
+.error-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.error-content {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+.error-content button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.error-content button:hover {
+  background: darkred;
+}
+</style>
 
 <style>
 @media (min-width: 1024px) {

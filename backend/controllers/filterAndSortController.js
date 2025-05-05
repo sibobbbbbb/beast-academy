@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient ,  Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -104,8 +104,21 @@ export const getMembers = async (req, res) => {
         totalPages: Math.ceil(totalMembers / limitNumber),
       },
     });
-  } catch (error) {
-    console.error("Error fetching members:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+ } catch (error) {
+    console.error("Error fetching members:", error)
+  
+    if (
+      error instanceof Prisma.PrismaClientValidationError ||
+      error.name === "PrismaClientValidationError"
+    ) {
+      return res.status(400).json({
+        message: "Invalid query parameters",
+        detail: error.message,
+      })
+    }
+  
+    res.status(500).json({ message: "Internal Server Error" })
   }
 };
+
+
