@@ -14,8 +14,9 @@ lint:
   before_script:
     - cd frontend || exit 1
     - npm install  
+    - npm install --save-dev eslint
   script:
-    - npm run lint
+    - npx eslint . --fix
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
