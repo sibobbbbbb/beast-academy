@@ -10,6 +10,8 @@ deploy-backend:
   stage: deploy
   script:
     - cd /home/deploy/app/beast-academy-app
+    - git reset --hard
+    - git clean -fd
     - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
     - git pull origin main
     - cd backend
@@ -28,6 +30,8 @@ deploy-frontend:
   stage: deploy
   script:
     - cd /home/deploy/app/beast-academy-app
+    - git reset --hard
+    - git clean -fd
     - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
     - git pull origin main
     - cd frontend
