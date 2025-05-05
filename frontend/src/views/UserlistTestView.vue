@@ -243,7 +243,7 @@ import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@
 import { type Member } from '@/types/member';
 import logoImage from '@/assets/beastLogo.png';
 import { useDeviceModeStore } from '@/stores/deviceMode'
-import MobileListItem from './MobileListItem.vue'
+import MobileListItem from '@/components/MobileListItem.vue'
 import AddMemberForm from '../components/AddMembersForm.vue'
 
 const perPage = ref(10);
