@@ -35,8 +35,14 @@ deploy-frontend:
     - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
     - git pull origin main
     - cd frontend
+    
+    # Gunakan npm ci untuk instalasi yang lebih konsisten (jika ada package-lock.json)
     - npm ci || npm install
+    
+    # Instal semua devDependencies yang diperlukan
     - npm install --save-dev vue-tsc typescript npm-run-all @vue/tsconfig
+    
+    # Skip type checking dan langsung build
     - NODE_ENV=production npm run build-only || npm run vite build || npx vite build
     
     - sudo -u deploy pm2 restart beast-frontend || sudo -u deploy pm2 start "serve -s dist -l 5173" --name "beast-frontend"
