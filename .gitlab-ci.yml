@@ -1,51 +1,19 @@
 stages:
   - deploy
 
-variables:
-  NODE_ENV: production
-
-deploy-backend:
+deploy:
   tags:
     - runner-beast-new
   stage: deploy
   script:
-    - cd /home/deploy/app/beast-academy-app
-    - git reset --hard
-    - git clean -fd
-    - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
-    - git pull origin main
-    - cd backend
-    - npm install
-    - npx prisma generate --schema=./db/prisma/schema.prisma
-    - sudo -u deploy pm2 restart beast-backend || sudo -u deploy pm2 start index.js --name "beast-backend"
-    - sudo -u deploy pm2 save
+    # Tambahkan credentials Git
+    - git config --global credential.helper store
+    - echo "https://${GIT_ACCESS_TOKEN}:@gitlab.informatika.org" > ~/.git-credentials
+    
+    # Jalankan script deployment sebagai user deploy
+    - sudo -u deploy /home/deploy/deploy-app.sh
+    
+    # Bersihkan credentials
+    - rm ~/.git-credentials
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-  allow_failure: false
-
-deploy-frontend:
-  tags:
-    - runner-beast-new
-  stage: deploy
-  script:
-    - cd /home/deploy/app/beast-academy-app
-    - git reset --hard
-    - git clean -fd
-    - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
-    - git pull origin main
-    - cd frontend
-    
-    # Gunakan npm ci untuk instalasi yang lebih konsisten (jika ada package-lock.json)
-    - npm ci || npm install
-    
-    # Instal semua devDependencies yang diperlukan
-    - npm install --save-dev vue-tsc typescript npm-run-all @vue/tsconfig
-    
-    # Skip type checking dan langsung build
-    - NODE_ENV=production npm run build-only || npm run vite build || npx vite build
-    
-    - sudo -u deploy pm2 restart beast-frontend || sudo -u deploy pm2 start "serve -s dist -l 5173" --name "beast-frontend"
-    - sudo -u deploy pm2 save
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-  allow_failure: false
