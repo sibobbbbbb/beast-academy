@@ -14,9 +14,9 @@ lint:
   before_script:
     - cd frontend || exit 1
     - npm install  
-    - npm install --save-dev eslint
+    - npm install --save-dev jiti typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin
   script:
-    - npx eslint . --fix
+    - npm run lint
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
