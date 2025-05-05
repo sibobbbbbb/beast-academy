@@ -4,9 +4,12 @@ stages:
   - build
   - deploy
 
+variables:
+  NODE_ENV: production
+
 lint:
   tags:
-    - do-runner-new
+    - runner-beast-new
   stage: lint
   before_script:
     - cd frontend || exit 1
@@ -18,7 +21,7 @@ lint:
 
 test:
   tags:
-    - do-runner-new
+    - runner-beast-new
   stage: test
   before_script:
     - cd backend || exit 1  
@@ -31,7 +34,7 @@ test:
 
 build:
   tags:
-    - do-runner-new
+    - runner-beast-new
   stage: build
   before_script:
     - cd frontend || exit 1
@@ -47,14 +50,18 @@ build:
 
 deploy-backend:
   tags:
-    - do-runner-new
+    - runner-beast-new
   stage: deploy
   before_script:
-    - git config --global --add safe.directory /var/www/beast-academy
+    - git config --global --add safe.directory /home/deploy/app/beast-academy-app
   script:
-    - cd /var/www/beast-academy
-    - chmod +x deploy-backend.sh
-    - ./deploy-backend.sh
+    - cd /home/deploy/app/beast-academy-app
+    - git pull origin main
+    - cd backend
+    - npm install
+    - npx prisma generate --schema=./db/prisma/schema.prisma
+    - sudo -u deploy pm2 restart beast-backend || sudo -u deploy pm2 start index.js --name "beast-backend"
+    - sudo -u deploy pm2 save
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   when: manual
@@ -62,12 +69,16 @@ deploy-backend:
 
 deploy-frontend:
   tags:
-    - do-runner-new
+    - runner-beast-new
   stage: deploy
   script:
-    - cd /var/www/beast-academy
-    - chmod +x deploy-frontend.sh
-    - ./deploy-frontend.sh
+    - cd /home/deploy/app/beast-academy-app
+    - git pull origin main
+    - cd frontend
+    - npm install
+    - npm run build
+    - sudo -u deploy pm2 restart beast-frontend || sudo -u deploy pm2 start "serve -s dist -l 5173" --name "beast-frontend"
+    - sudo -u deploy pm2 save
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   when: manual
