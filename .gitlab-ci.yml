@@ -8,10 +8,9 @@ deploy-backend:
   tags:
     - runner-beast-new
   stage: deploy
-  before_script:
-    - git config --global --add safe.directory /home/deploy/app/beast-academy-app
   script:
     - cd /home/deploy/app/beast-academy-app
+    - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
     - git pull origin main
     - cd backend
     - npm install
@@ -29,6 +28,7 @@ deploy-frontend:
   stage: deploy
   script:
     - cd /home/deploy/app/beast-academy-app
+    - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
     - git pull origin main
     - cd frontend
     - npm install
