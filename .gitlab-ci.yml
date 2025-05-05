@@ -6,11 +6,14 @@ deploy:
     - runner-beast-new
   stage: deploy
   script:
-    # Tambahkan credentials Git
+    # Konfigurasi git credential helper
     - git config --global credential.helper store
     - echo "https://${GIT_ACCESS_TOKEN}:@gitlab.informatika.org" > ~/.git-credentials
     
-    # Jalankan script deployment sebagai user deploy
+    # Fix permissions sebelum menjalankan script
+    - sudo chown -R deploy:deploy /home/deploy/app/beast-academy-app/
+    
+    # Jalankan script deployment
     - sudo -u deploy /home/deploy/deploy-app.sh
     
     # Bersihkan credentials
