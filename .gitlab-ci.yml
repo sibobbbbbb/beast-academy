@@ -18,10 +18,10 @@ lint:
     - node -v
     - npm install --save-dev eslint typescript jiti @typescript-eslint/parser @typescript-eslint/eslint-plugin
   script:
-    - echo '{"extends": "eslint:recommended"}' > .eslintrc.json
+    - echo '{"extends":"eslint:recommended"}' > .eslintrc.json
     - npm run lint || true
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
 
 test:
   tags:
@@ -34,7 +34,7 @@ test:
   script:
     - npm run test
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
 
 build:
   tags:
@@ -50,7 +50,7 @@ build:
       - frontend/dist
     expire_in: 1 week
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
 
 deploy-backend:
   tags:
@@ -67,7 +67,7 @@ deploy-backend:
     - sudo -u deploy pm2 restart beast-backend || sudo -u deploy pm2 start index.js --name "beast-backend"
     - sudo -u deploy pm2 save
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
   when: manual
   allow_failure: false
 
@@ -84,6 +84,6 @@ deploy-frontend:
     - sudo -u deploy pm2 restart beast-frontend || sudo -u deploy pm2 start "serve -s dist -l 5173" --name "beast-frontend"
     - sudo -u deploy pm2 save
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
   when: manual
   allow_failure: false
