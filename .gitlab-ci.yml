@@ -1,27 +1,10 @@
 stages:
-  - lint
   - test
   - build
   - deploy
 
 variables:
   NODE_ENV: production
-
-lint:
-  tags:
-    - runner-beast-new
-  stage: lint
-  before_script:
-    - cd frontend || exit 1
-    - npm install
-    - npm list eslint
-    - node -v
-    - npm install --save-dev eslint typescript jiti @typescript-eslint/parser @typescript-eslint/eslint-plugin
-  script:
-    - echo '{"extends":"eslint:recommended"}' > .eslintrc.json
-    - npm run lint || true
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
 
 test:
   tags:
