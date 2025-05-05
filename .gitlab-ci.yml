@@ -35,9 +35,10 @@ deploy-frontend:
     - git remote set-url origin https://oauth2:${GIT_ACCESS_TOKEN}@gitlab.informatika.org/FarhanRaditya/beast-academy.git
     - git pull origin main
     - cd frontend
-    - npm install
-    - npm install --save-dev npm-run-all vue-tsc
-    - npm run build
+    - npm ci || npm install
+    - npm install --save-dev vue-tsc typescript npm-run-all @vue/tsconfig
+    - NODE_ENV=production npm run build-only || npm run vite build || npx vite build
+    
     - sudo -u deploy pm2 restart beast-frontend || sudo -u deploy pm2 start "serve -s dist -l 5173" --name "beast-frontend"
     - sudo -u deploy pm2 save
   rules:
