@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { fetchMembers } from '@/services/templateServices';
 import { type Member } from '@/types/member';
 import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
 import SortableHeader from '@/components/SortableHeader.vue';
 import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
+import { useDeviceModeStore } from '@/stores/deviceMode'
+import MobileListItem from '@/components/MobileListItem.vue'
 
+const deviceStore = useDeviceModeStore()
 
 const perPage = ref(10);
 const currentPage = ref(0);
@@ -17,6 +20,15 @@ const order = ref("asc");
 const searchQuery = ref("");
 const selectedRole = ref("");
 const totalPages = ref(1);
+
+const mobileMode = ref(false);
+
+const props = defineProps({
+  multiSelect: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 async function dataFetcher(page: number, append = false) {
   try {
@@ -84,13 +96,86 @@ const tapContext = ref<'default' | 'custom'>("default")
 // })
 
 onMounted(() => {
+  mobileMode.value = deviceStore.currentMode === 'mobile'
+  console.log(mobileMode.value , deviceStore.currentMode)
+
+  // set up the observer exactly once
+  observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting && !maxPage.value) {
+      console.log('🌀 load more…', currentPage.value+1)
+      refresh(currentPage.value + 1, true)
+    }
+  }, { threshold: 1.0 })
   refresh(0);
+})
+
+// Mobile utils
+
+const loadMoreRef = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver
+
+// Function to toggle tag
+function toggleTag(key: string) {
+  const index = mobileTagSelected.value.indexOf(key);
+
+  if (index > -1) {
+    // Immutable removal to avoid Vue reactivity glitches
+    mobileTagSelected.value = mobileTagSelected.value.filter(k => k !== key);
+  } else if (mobileTagSelected.value.length < 3) {
+    mobileTagSelected.value = [...mobileTagSelected.value, key];
+  }
+}
+
+
+// when sentinel becomes visible only in mobile mode
+
+watch(loadMoreRef, async el => {
+  if (mobileMode.value && el) {
+    await nextTick()
+    observer.observe(el)
+  }
+}, { immediate: true })
+
+// Infinite scroll
+onUnmounted(() => {
+  if (loadMoreRef.value) observer.unobserve(loadMoreRef.value)
+})
+
+const mobileTagSelected = ref<string[]>([]);
+
+const mobileTagText: Record<string, string> = {
+  // "x1": "Skill",
+  // "x2": "Skill2",
+  // "x3": "Join Date",
+  "email" : "E-Mail",
+  "phone_no" : "Phone no.",
+  "created_at" : "Created at",
+  "last_activity" : "Last activity",
+};
+
+const mobileDisplayTag = computed(() => {
+  return mobileTagSelected.value.map(key => mobileTagText[key]);
 });
+
+// Emits for parent
+const emit = defineEmits<{
+  (event: 'processMembers', members: Member | Member[]): void;
+}>();
+
+function processSelectedMembers() {
+  const selectedMembers = Array.from(selectedMembersMap.value.values());
+  emit('processMembers', selectedMembers);
+}
+
+function processSingleMember(member: Member) {
+  emit('processMembers', member);
+}
 
 </script>
 
 <template>
-  <section class="userlist-wrapper">
+  <h1> {{ mobileMode }} || {{ deviceStore.currentMode }} </h1>
+  <section v-if="!mobileMode">
     <!-- Search and Filter UI -->
     <div class="controls">
     <SearchBox @search="handleSearch" style="flex-grow: 1; margin: 0 2%;"/>
@@ -110,7 +195,7 @@ onMounted(() => {
     <table>
       <thead>
         <tr>
-          <th>
+          <th v-show="props.multiSelect">
             <svg style="width: 2rem;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
               <path style=" color: white"
                 d="M64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16L64 80zM0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM200 344l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
@@ -133,7 +218,7 @@ onMounted(() => {
 
       <tbody>
         <tr v-for="item in lastFetch" :key="item.id" :class="{ selected: selectedMembersMap.has(item.id) }">
-          <td>
+          <td v-show="props.multiSelect">
             <input type="checkbox"
               @change="($event) => ($event.target as HTMLInputElement).checked ? selectMember(item) : deselectMember(item)"
               :checked="selectedMembersMap.has(item.id)" />
@@ -153,6 +238,91 @@ onMounted(() => {
       </tbody>
     </table>
 
+  </section>
+
+  <section v-else>
+    <nav
+      style="position: sticky; top: 0rem; background-color: rgba(190, 100, 180, 0.6); padding: 0.25rem 0.5rem; padding-top: 0.5rem;">
+      <details>
+        <summary>
+          <label style="font-size: 1.5rem;">Display:</label>
+          <span v-if="mobileDisplayTag.length === 0" style="margin-left: 0.5rem; display: inline-block;">(None)</span>
+          <span v-for="tag in mobileTagSelected" :key="tag" class="tag-pill" @click.stop.prevent="toggleTag(tag)">
+            {{ mobileTagText[tag] }}
+          </span>
+        </summary>
+
+        <div class="tag-buttons">
+          <button v-for="(label, key) in mobileTagText" :key="key" @click="toggleTag(key)"
+            :class="{ selected: mobileTagSelected.includes(key) }">
+            {{ label }}
+          </button>
+        </div>
+      </details>
+    </nav>
+    <span class="search_bar">
+      <SearchBox @search="handleSearch" style="flex-grow: 1;" />
+    </span>
+    <table class="mobile_list">
+      <!-- <thead>
+        Search bar
+      </thead> -->
+      <tbody>
+        <MobileListItem v-for="item in lastFetch" :key="item.id" @click="() => {processSingleMember(item)}">
+          <!-- primary slot, main text -->
+          <template #main>
+            {{ item.name }}
+          </template>
+          <!-- Sub slot -->
+          <template #sub>
+            ID : {{ item.id }}
+          </template>
+          <!-- non-primary slots -->
+          <template #x1 v-if="mobileTagSelected[0]">
+            <label>
+              {{ mobileTagText[mobileTagSelected[0]] }}
+            </label>
+            {{ (item as Record<string, any>)[mobileTagSelected[0]] }}
+          </template>
+          <template #x2 v-if="mobileTagSelected[1]">
+            <label>
+              {{ mobileTagText[mobileTagSelected[1]] }}
+            </label>
+            {{ (item as Record<string, any>)[mobileTagSelected[1]] }}
+          </template>
+          <template #x3 v-if="mobileTagSelected[2]">
+            <label>
+              {{ mobileTagText[mobileTagSelected[2]] }}
+            </label>
+            {{ (item as Record<string, any>)[mobileTagSelected[2]] }}
+          </template>
+        </MobileListItem>
+                  <!-- Infinite scroll trigger sentinel -->
+        <tr v-if="!maxPage" ref="loadMoreRef">
+          <td colspan="4" style="text-align: center; padding: 1rem;">Loading more...</td>
+        </tr>
+        <tr v-else>
+          <td colspan="4" style="text-align: center; padding: 1rem;">No more to display</td>
+        </tr>
+      </tbody>
+    </table>
+    <nav
+      style="position: sticky; bottom: 0; background-color: rgba(190, 100, 180, 0.6); text-align: center; padding-top: 0.025rem;">
+      <hr style="
+        width: 25%;
+        height: 4px;
+        background-color: #999;
+        border: none;
+        border-radius: 2px;
+        margin: 0.2rem auto;
+        align-self: center;
+      ">
+      <!-- toggle the overlay -->
+      <!-- <button @click="showAddOverlay = true">Add Member</button>
+      <button @click="() => {toggleActionContext(mobileActions.Edit)}" :class="{ 'editting': isAction(mobileActions.Edit), 'edit': !isAction(mobileActions.Edit) }">Edit</button>
+      <button @click="() => {toggleActionContext(mobileActions.Delete)}" :class="{ 'deleting': isAction(mobileActions.Delete), 'delete': !isAction(mobileActions.Delete) }">Delete</button>
+      <button>Export</button> -->
+    </nav>
   </section>
 </template>
 
