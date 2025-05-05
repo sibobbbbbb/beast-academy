@@ -21,7 +21,6 @@ deploy-backend:
     - sudo -u deploy pm2 save
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-  when: manual
   allow_failure: false
 
 deploy-frontend:
@@ -49,5 +48,4 @@ deploy-frontend:
     - sudo -u deploy pm2 save
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-  when: manual
   allow_failure: false
