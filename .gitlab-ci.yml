@@ -1,25 +1,8 @@
 stages:
-  - build
   - deploy
 
 variables:
   NODE_ENV: production
-
-build:
-  tags:
-    - runner-beast-new
-  stage: build
-  before_script:
-    - cd frontend || exit 1
-    - npm install
-  script:
-    - npm run build
-  artifacts:
-    paths:
-      - frontend/dist
-    expire_in: 1 week
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
 
 deploy-backend:
   tags:
