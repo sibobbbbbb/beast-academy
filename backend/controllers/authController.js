@@ -351,7 +351,7 @@ export const googleCallback = async (req, res) => {
     }
     
     // Exchange code for tokens
-    const redirectUri = "http://localhost:5173/auth/google/callback";
+    const redirectUri = `${process.env.FRONTEND_URL}/auth/google/callback`;
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

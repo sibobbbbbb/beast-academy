@@ -135,7 +135,7 @@ const error = ref<string | null>(null);
 
 const fetchEventDetails = async (id: string) => {
   try {
-    const response = await fetch(`http://localhost:3000/api/eventDetails/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/eventDetails/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
