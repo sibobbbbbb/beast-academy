@@ -1,6 +1,5 @@
-import { PrismaClient ,  Prisma } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma/prisma.js";
 
 export const getMembers = async (req, res) => {
   try {
