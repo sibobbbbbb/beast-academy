@@ -40,9 +40,9 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/userlist',
-      name: 'userlist',
-      component: () => import('../views/UserlistView.vue'),
+      path: '/trainer-assignment',
+      name: 'Trainer asignment menu',
+      component: () => import('../views/TrainerAssignView.vue'),
       meta: { requiresAuth: true }
     },
     {

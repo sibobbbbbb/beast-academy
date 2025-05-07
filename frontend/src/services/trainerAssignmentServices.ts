@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { type Member } from "@/types/member";
 
 export const assignTrainer = async (trainerId: number, memberIds: number[]) => {
   try {
@@ -38,14 +39,14 @@ export const removeStudents = async (trainerId: number, memberIds: number[]) => 
   }
 };
 
-export const getStudents = async (trainerId: number) => {
+export const getStudents = async (trainerId: number) : Promise<Member[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/trainer/students/${trainerId}`, {
       credentials: 'include',
     });
 
     if (!response.ok) throw new Error("Failed to fetch students");
-    return await response.json();
+    return await response.json() as Member[];
   } catch (error) {
     console.error("Error fetching students:", error);
     throw error;

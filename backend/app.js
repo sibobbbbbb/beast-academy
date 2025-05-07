@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import path from 'path';
 import eventRoutes from './routes/eventRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
+import trainerAssRoutes from './routes/trainerAssigntmentRoutes.js'
 
 const app = express();
 
@@ -37,5 +38,6 @@ app.use('/api', templateRoutes);
 app.use('/api', memberRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', eventRoutes);
+app.use('/api',trainerAssRoutes);
 
 export default app;

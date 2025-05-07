@@ -52,13 +52,19 @@ export const removeStudents = async (req, res) => {
 // Fetch all students assigned to a trainer
 export const getStudents = async (req, res) => {
     const { trainerId } = req.params;
-
+    
     try {
-      const students = await prisma.trained_by.findMany({
-        where: { trainer_id: parseInt(trainerId) },
-        include: {
-          users: true, // Assuming this joins to the `users` model
-        },
+      const trainerFilter = {
+        trained_by_trained_by_member_idTousers: {
+          some: {
+            trainer_id: parseInt(trainerId)
+          }
+        }
+      };
+
+
+      const students = await prisma.users.findMany({
+        where: trainerFilter,
       });
 
       res.status(200).json(students);

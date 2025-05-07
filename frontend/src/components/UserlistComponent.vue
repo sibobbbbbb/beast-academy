@@ -229,7 +229,8 @@ watch(
 
 // Emits for parent
 const emit = defineEmits<{
-  (event: 'processMembers', members: Member | Member[]): void;
+  (event: 'processMember', members: Member): void;
+  (event: 'processMemberList', members: Member[]): void;
   (event: 'memberlistOperation', memberlistop: memberlistOp) : void;
 }>();
 
@@ -250,12 +251,12 @@ function toggleSelect(item : Member, intendedOperation : Boolean = selectedMembe
 
 function processSelectedMembers() : Member[] {
   const selectedMembers = Array.from(selectedMembersMap.value.values());
-  emit('processMembers', selectedMembers);
+  emit('processMemberList', selectedMembers);
   return selectedMembers;
 }
 
 function processSingleMember(member: Member) : Member {
-  emit('processMembers', member);
+  emit('processMember', member);
   return member
 }
 
