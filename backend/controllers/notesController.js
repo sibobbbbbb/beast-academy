@@ -237,6 +237,10 @@ export const checkTrainerAccess = async (req, res, next) => {
     if (role === 'admin') {
       return next();
     }
+
+    if (role === 'member' && memberId == parseInt(userId)) {
+      return next();
+    }
     
     // Check if the trainer has access to this member
     if (role === 'trainer') {

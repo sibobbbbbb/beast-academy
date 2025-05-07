@@ -12,12 +12,12 @@
             <h1 class="text-3xl md:text-4xl !font-bold !mb-2" style="color: var(--primary-blue)">Member Notes - {{ memberName }}</h1>
             <p class="text-[var(--neutral-700)] max-w-xl">Manage and track notes for this member</p>
           </div>
-          <button @click="(_) => {exportTrainerNotes(notes)}" 
+          <button v-if="userRole === 'trainer'" @click="(_) => {exportTrainerNotes(notes)}" 
             class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"> 
             Export 
           </button>
           
-          <button 
+          <button v-if="userRole === 'trainer'" 
             @click="showAddNoteModal = true" 
             class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
           >
@@ -50,7 +50,7 @@
         <p class="text-[var(--neutral-600)] !mb-6 max-w-md mx-auto">
           No notes found for this member. Add a new note to get started!
         </p>
-        <button 
+        <button v-if="userRole === 'trainer'"
           @click="showAddNoteModal = true" 
           class="bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-6 !py-3 rounded-lg inline-flex items-center !font-medium transition-colors"
         >
@@ -88,7 +88,7 @@
             </div>
             
             <!-- Note actions -->
-            <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+            <div v-if="userRole === 'trainer'" class="px-4 py-3 bg-gray-50 flex justify-between items-center">
               <button @click="editNote(note)" class="text-[var(--primary-blue)] hover:text-[var(--blue-dark)] text-sm font-medium">
                 Edit
               </button>
@@ -452,7 +452,38 @@ const removeNote = async () => {
   }
 };
 
+const userRole = ref("");
+
+const getUserRole = async () => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // Mengambil role dari API endpoint /me
+    const response = await fetch(`${API_BASE_URL}/auth/me`, 
+      {
+        credentials: 'include',
+      }
+    );
+    
+    // Response berisi data user termasuk role
+    const userData = await response.json();
+    // Set role ke variabel userRole
+    console.log(userData);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user role');
+    }
+    userRole.value = userData.role || '';
+    console.log(userRole.value);
+    return userData.role;
+  } catch (error) {
+    console.error("Failed to get user role from API:", error);
+    userRole.value = '';
+    return '';
+  }
+};
+
 onMounted(() => {
+  // Fetch user role
+  getUserRole();
   fetchNotes();
 });
 </script>
