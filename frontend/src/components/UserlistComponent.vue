@@ -8,8 +8,62 @@ import SearchBox from '@/components/SearchBox.vue';
 import FilterDropdown from '@/components/FilterDropdown.vue';
 import { useDeviceModeStore } from '@/stores/deviceMode'
 import MobileListItem from '@/components/MobileListItem.vue'
+import NormalHeader from './NormalHeader.vue';
+import { type memberlistOp } from '@/types/memberlistOperation';
+import Pagination from '@/components/PaginationApp.vue';
 
 const deviceStore = useDeviceModeStore()
+
+/*
+  ##  GUIDE
+  This component is made to allow userlist to act as a component that purely allows and assists in
+  member operation, however this makes it overengineered, this guide aims to help understand that
+
+  #General Idea
+  The userlistcomponent handles "selecting multiple members" operation when given the prop multiSelect
+  In PC version it enables the multiselect collumn, in Mobile, tapping a member instead selects it
+  
+  <UserlistComponent multiSelect/>
+
+  ##  Single Member operations
+  # PC Ver :
+  Since PC userlisttest does not have a way to trigger the process-member emit, you are required to
+  use slotProps to make scoped actions to process singular items
+
+  import UserlistComponent, { type SlotProps } from '@/components/UserlistComponent.vue';
+
+  <template>
+    <UserlistComponent v-slot="{ item }: SlotProps">
+        <button @click="doSomethingWithMember(item)">Edit</button>
+    </UserlistComponent>
+  </template>
+
+  where item is Member object
+
+  # Mobile Ver :
+  Simply use the @process-members emit
+  <UserlistComponent @process-members="(member) => {console.log(member)}">
+
+  ## Multi Member operation
+  # PC and Mobile Ver :
+  Use the defineExpose function to trigger processSelectedMembers(), at this point it does trigger the
+  emit and you can catch the value at the emit, however it also returns member list, do what suits ya
+
+  const ulistRef = ref(null);
+    
+  function doStuff() {
+    if (ulistRef.value) {
+        ulistRef.value.processSelectedMembers();
+    }
+  }
+  <UserlistComponent ref="ulistRef" multiSelect>
+  
+  ## memberlistOp
+  # Also, if that is not enough, to make a more live modifications, memberlistOp is added
+
+  memberlist op has two kinds : add and remove to selection
+  self explanatory, see the type
+*/
 
 const perPage = ref(10);
 const currentPage = ref(0);
@@ -28,7 +82,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  filters: {
+  roleFilter: {
     type: String,
     required: false,
   },
@@ -91,15 +145,6 @@ const handleFilter = (role: string) => {
   refresh(0);
 };
 
-// Watchers to react to changes in search/filter
-// watch(search, (newSearch) => {
-//   memberStore.filterMembers({ search: newSearch, category: selectedCategory.value, filter: selectedFilter.value })
-// })
-
-// watch([selectedCategory, selectedFilter], () => {
-//   memberStore.filterMembers({ search: search.value, category: selectedCategory.value, filter: selectedFilter.value })
-// })
-
 onMounted(() => {
   mobileMode.value = deviceStore.currentMode === 'mobile'
   console.log(mobileMode.value , deviceStore.currentMode)
@@ -112,8 +157,8 @@ onMounted(() => {
     }
   }, { threshold: 1.0 })
 
-  if (props.filters) {
-    selectedRole.value = props.filters
+  if (props.roleFilter) {
+    selectedRole.value = props.roleFilter
   }
 
   refresh(0);
@@ -136,6 +181,13 @@ function toggleTag(key: string) {
   }
 }
 
+// Pagination
+
+//On perpage change
+watch(perPage, async () => {
+  currentPage.value = 0;
+  await dataFetcher(0);
+});
 
 // when sentinel becomes visible only in mobile mode
 
@@ -164,18 +216,47 @@ const mobileDisplayTag = computed(() => {
   return mobileTagSelected.value.map(key => mobileTagText[key]);
 });
 
+// Watch role prop for changes
+watch(
+  () => props.roleFilter,
+  (newRole) => {
+    if (newRole !== undefined) {
+      handleFilter(newRole);
+    }
+  },
+  { immediate: true } // Optional: if you want to run the filter on component mount
+);
+
 // Emits for parent
 const emit = defineEmits<{
   (event: 'processMembers', members: Member | Member[]): void;
+  (event: 'memberlistOperation', memberlistop: memberlistOp) : void;
 }>();
 
-function processSelectedMembers() {
-  const selectedMembers = Array.from(selectedMembersMap.value.values());
-  emit('processMembers', selectedMembers);
+// intendedOperation is false for deselecting, and true for selecting
+function toggleSelect(item : Member, intendedOperation : Boolean = selectedMembersMap.value.has(item.id)) {
+  if (intendedOperation === true) {
+    deselectMember(item)
+    emit('memberlistOperation',
+      {member : item, operation : "remove"} as memberlistOp
+    )
+  } else {
+    selectMember(item)
+    emit('memberlistOperation',
+      {member : item, operation : "add"} as memberlistOp
+    )
+  }
 }
 
-function processSingleMember(member: Member) {
+function processSelectedMembers() : Member[] {
+  const selectedMembers = Array.from(selectedMembersMap.value.values());
+  emit('processMembers', selectedMembers);
+  return selectedMembers;
+}
+
+function processSingleMember(member: Member) : Member {
   emit('processMembers', member);
+  return member
 }
 
 const errorTitle = ref("");
@@ -186,6 +267,18 @@ function reportError(title : string, message?: string) {
   errorTitle.value = title;
   errorMessage.value = message || "";
 }
+
+export interface ChildComponentExpose {
+  processSelectedMembers: () => Member;
+}
+
+export interface SlotProps {
+  item?: Member;
+}
+
+defineExpose({
+  processSelectedMembers
+})
 
 </script>
 
@@ -205,6 +298,19 @@ function reportError(title : string, message?: string) {
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
       </select> Filters -->
+    <span style="float: right; margin-top: 1%;">
+    <h3>Showing
+      <select v-model="perPage">
+        <option :value="1">1</option>
+        <option :value="10">10</option>
+        <option :value="20">20</option>
+        <option :value="50">50</option>
+      </select>
+      per page
+    </h3>
+    </span>
+
+    <button @click="refresh(currentPage)">Refresh</button>
     </div>
 
     <!-- Member List Display -->
@@ -223,6 +329,9 @@ function reportError(title : string, message?: string) {
           <th class="shead">
             <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
           </th>
+          <th class="shead" v-if="$slots.default">
+            <NormalHeader>Action</NormalHeader>
+          </th>
           <th class="shead">
             <SortableHeader sortid="created_at" @sort="handleSort">Joined</SortableHeader>
           </th>
@@ -236,12 +345,17 @@ function reportError(title : string, message?: string) {
         <tr v-for="item in lastFetch" :key="item.id" :class="{ selected: selectedMembersMap.has(item.id) }">
           <td v-show="props.multiSelect">
             <input type="checkbox"
-              @change="($event) => ($event.target as HTMLInputElement).checked ? selectMember(item) : deselectMember(item)"
+              @change="($event) => {let operation : boolean = !($event.target as HTMLInputElement).checked; toggleSelect(item, operation)}"
               :checked="selectedMembersMap.has(item.id)" />
           </td>
           <td>{{ item.id }}</td>
           <td>
             <span>{{ item.name }}</span>
+          </td>
+          <td v-if="$slots.default">
+            <slot :item="item">
+              <!-- Context actions if any-->
+            </slot>
           </td>
           <td>{{ new Date(item.created_at).toLocaleString('en-GB', {
             year: 'numeric', month: '2-digit', day: '2-digit',
@@ -253,6 +367,13 @@ function reportError(title : string, message?: string) {
         </tr>
       </tbody>
     </table>
+    <span id="pagination" class="pagination-container">
+      <button class="pageButton" @click="currentPage > 0 ? refresh(currentPage - 1) : console.log('Already min!')"> Prev
+      </button>
+      <Pagination :current-page="currentPage" @go-to-page="refresh" :page-count="totalPages" />
+      <button class="pageButton" @click="!maxPage ? refresh(currentPage + 1) : console.log('Already max!')"> Next
+      </button>
+    </span>
 
   </section>
 
@@ -284,7 +405,7 @@ function reportError(title : string, message?: string) {
         Search bar
       </thead> -->
       <tbody>
-        <MobileListItem v-for="item in lastFetch" :key="item.id" @click="() => {processSingleMember(item)}">
+        <MobileListItem v-for="item in lastFetch" :key="item.id" @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)" :class="{ selected: selectedMembersMap.has(item.id) }">
           <!-- primary slot, main text -->
           <template #main>
             {{ item.name }}
@@ -333,11 +454,9 @@ function reportError(title : string, message?: string) {
         margin: 0.2rem auto;
         align-self: center;
       ">
-      <!-- toggle the overlay -->
-      <!-- <button @click="showAddOverlay = true">Add Member</button>
-      <button @click="() => {toggleActionContext(mobileActions.Edit)}" :class="{ 'editting': isAction(mobileActions.Edit), 'edit': !isAction(mobileActions.Edit) }">Edit</button>
-      <button @click="() => {toggleActionContext(mobileActions.Delete)}" :class="{ 'deleting': isAction(mobileActions.Delete), 'delete': !isAction(mobileActions.Delete) }">Delete</button>
-      <button>Export</button> -->
+      <slot>
+        <!-- Context actions if any-->
+      </slot>
     </nav>
   </section>
   <Teleport to="body">
