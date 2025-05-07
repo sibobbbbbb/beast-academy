@@ -1,22 +1,47 @@
 stages:
-  - deploy
+  - lint
+  - test
+  - build
 
-deploy:
+lint:
   tags:
-    - runner-beast-new
-  stage: deploy
+    - runner-beast
+  image: node:20
+  stage: lint
+  before_script:
+    - cd frontend; if (-not $?) { exit 1 }
+    - npm install  
   script:
-    # Konfigurasi git credential helper
-    - git config --global credential.helper store
-    - echo "https://${GIT_ACCESS_TOKEN}:@gitlab.informatika.org" > ~/.git-credentials
-    
-    # Fix permissions sebelum menjalankan script
-    - sudo chown -R deploy:deploy /home/deploy/app/beast-academy-app/
-    
-    # Jalankan script deployment
-    - sudo -u deploy /home/deploy/deploy-app.sh
-    
-    # Bersihkan credentials
-    - rm ~/.git-credentials
+    - npm run lint
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+test:
+  tags:
+    - runner-beast
+  image: node:20
+  stage: test
+  before_script:
+    - cd backend; if (-not $?) { exit 1 }  
+    - npm install  
+    - npx prisma generate --schema=./db/prisma/schema.prisma
+  script:
+    - npm run test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+build:
+  tags:
+    - runner-beast
+  image: node:20
+  stage: build
+  before_script:
+    - cd frontend; if (-not $?) { exit 1 }  
+    - npm install 
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
