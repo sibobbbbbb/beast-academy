@@ -57,11 +57,11 @@ deploy_backend:
     - cd backend; if (-not $?) { exit 1 }
     - echo "Deploying backend to Railway..."
     - mkdir -Force $env:USERPROFILE\.railway
-    - $configJson = @"
+    - '$configJson = @"
 {
   "token": "$RAILWAY_TOKEN"
 }
-"@
+"@'
     - $configJson | Out-File -FilePath "$env:USERPROFILE\.railway\config.json" -Encoding UTF8
     - npx railway whoami
     - npx railway link "$RAILWAY_PROJECT_ID"
