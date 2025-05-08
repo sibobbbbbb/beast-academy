@@ -1,76 +1,47 @@
 stages:
-#   - lint
-#   - test
-#   - build
-  - deploy 
+  - lint
+  - test
+  - build
 
-# lint:
-#   tags:
-#     - runner-beast
-#   image: node:20
-#   stage: lint
-#   before_script:
-#     - cd frontend; if (-not $?) { exit 1 }
-#     - npm install  
-#   script:
-#     - npm run lint
-#   rules:
-#     - if: '$CI_COMMIT_BRANCH == "main"'
-
-# test:
-#   tags:
-#     - runner-beast
-#   image: node:20
-#   stage: test
-#   before_script:
-#     - cd backend; if (-not $?) { exit 1 }  
-#     - npm install  
-#     - npx prisma generate --schema=./db/prisma/schema.prisma
-#   script:
-#     - npm run test
-#   rules:
-#     - if: '$CI_COMMIT_BRANCH == "main"'
-
-# build:
-#   tags:
-#     - runner-beast
-#   image: node:20
-#   stage: build
-#   before_script:
-#     - cd frontend; if (-not $?) { exit 1 }  
-#     - npm install 
-#   script:
-#     - npm run build
-#   artifacts:
-#     paths:
-#       - frontend/dist
-#   rules:
-#     - if: '$CI_COMMIT_BRANCH == "main"'
-
-deploy_backend:
+lint:
   tags:
     - runner-beast
   image: node:20
-  stage: deploy
+  stage: lint
+  before_script:
+    - cd frontend; if (-not $?) { exit 1 }
+    - npm install  
   script:
-    - npm install -g @railway/cli
-    - cd backend; if (-not $?) { exit 1 }
-    - echo "Deploying backend to Railway..."
-    - mkdir -Force $env:USERPROFILE\.railway
-    - '$configJson = @"
-{
-  "token": "$RAILWAY_TOKEN"
-}
-"@'
-    - $configJson | Out-File -FilePath "$env:USERPROFILE\.railway\config.json" -Encoding UTF8
-    - npx railway whoami
-    - npx railway link "$RAILWAY_PROJECT_ID"
-    - npx railway up
-  environment:
-    name: production
-  variables:
-    RAILWAY_TOKEN: $RAILWAY_TOKEN
-    RAILWAY_PROJECT_ID: $RAILWAY_PROJECT_ID
-    RAILWAY_SERVICE_ID: $RAILWAY_SERVICE_ID
+    - npm run lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+test:
+  tags:
+    - runner-beast
+  image: node:20
+  stage: test
+  before_script:
+    - cd backend; if (-not $?) { exit 1 }  
+    - npm install  
+    - npx prisma generate --schema=./db/prisma/schema.prisma
+  script:
+    - npm run test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+build:
+  tags:
+    - runner-beast
+  image: node:20
+  stage: build
+  before_script:
+    - cd frontend; if (-not $?) { exit 1 }  
+    - npm install 
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
