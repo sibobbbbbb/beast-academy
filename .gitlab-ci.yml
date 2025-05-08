@@ -56,9 +56,11 @@ deploy_backend:
     - npm install -g @railway/cli
     - cd backend; if (-not $?) { exit 1 }
     - echo "Deploying backend to Railway..."
+    - '[System.Environment]::SetEnvironmentVariable("RAILWAY_TOKEN", "$RAILWAY_TOKEN", "Process")'
+    - Get-ChildItem env:RAILWAY_TOKEN
+    - npx railway login --browserless --token="$RAILWAY_TOKEN"
     - npx railway whoami
-    - npx railway link --project=$RAILWAY_PROJECT_ID
-    - npx railway status
+    - npx railway link --project="$RAILWAY_PROJECT_ID"
     - npx railway up
   environment:
     name: production
