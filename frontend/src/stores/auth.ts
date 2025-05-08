@@ -36,6 +36,7 @@ export const useAuthStore = defineStore('auth', {
         });
         this.user = res.data.user;
         this.token = res.data.token;
+        console.log('Login successful:', this.token);
         this.error = null;
         return true;
       } catch (error) {
