@@ -60,8 +60,8 @@ deploy_backend:
   environment:
     name: production
   variables:
-    RAILWAY_TOKEN: "fe4ccbb1-7705-47bb-ad23-01f21ee226e2"
-    RAILWAY_PROJECT_ID: "b817b5e2-210e-472f-b38f-16875f8eaec8"
-    RAILWAY_SERVICE_ID: "f256a2e1-4cba-4682-921d-5dd45f304dd8"
+    RAILWAY_TOKEN: $RAILWAY_TOKEN
+    RAILWAY_PROJECT_ID: $RAILWAY_PROJECT_ID
+    RAILWAY_SERVICE_ID: $RAILWAY_SERVICE_ID
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
