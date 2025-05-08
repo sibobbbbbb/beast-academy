@@ -183,8 +183,12 @@ export const login = async (req, res) => {
 
 // Logout User
 export const logout = (req, res) => {
-    res.clearCookie('token', { httpOnly: true, sameSite: 'none' }); // Kalo beda misal fe vercel be railway
-    res.json({ message: 'Logout successful' });
+  res.clearCookie('token', { 
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none' // Kalo beda misal fe vercel be railway
+});
+res.json({ message: 'Logout successful' });
 };
 
 // Update this method in your authController.js file
