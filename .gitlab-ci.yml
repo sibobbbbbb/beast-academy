@@ -56,9 +56,8 @@ deploy_backend:
     - npm install -g @railway/cli
     - cd backend; if (-not $?) { exit 1 }
     - echo "Deploying backend to Railway..."
-    - echo $RAILWAY_TOKEN | npx railway login --browserless
-    - npx railway link $RAILWAY_PROJECT_ID
-    - npx railway up --service=$RAILWAY_SERVICE_ID
+    - $env:RAILWAY_TOKEN="$RAILWAY_TOKEN"
+    - npx railway up --service=$RAILWAY_SERVICE_ID --environment=production
   environment:
     name: production
   variables:
