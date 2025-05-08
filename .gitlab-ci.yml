@@ -57,8 +57,6 @@ deploy_backend:
     - cd backend; if (-not $?) { exit 1 }
     - echo "Deploying backend to Railway..."
     - railway up --service=$RAILWAY_SERVICE_ID
-  only:
-    - main
   environment:
     name: production
   variables:
