@@ -56,8 +56,15 @@ deploy_backend:
     - npm install -g @railway/cli
     - cd backend; if (-not $?) { exit 1 }
     - echo "Deploying backend to Railway..."
-    - $env:RAILWAY_TOKEN="$RAILWAY_TOKEN"
-    - npx railway up --service=$RAILWAY_SERVICE_ID --environment=production
+    - New-Item -Path "$HOME/.railway" -ItemType Directory -Force
+    - $configContent = @"
+{
+  "token": "$RAILWAY_TOKEN"
+}
+"@
+    - Set-Content -Path "$HOME/.railway/config.json" -Value $configContent
+    - npx railway whoami
+    - npx railway up --service=$RAILWAY_SERVICE_ID
   environment:
     name: production
   variables:
