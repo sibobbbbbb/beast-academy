@@ -2,6 +2,7 @@ stages:
   - lint
   - test
   - build
+  - deploy 
 
 lint:
   tags:
@@ -43,5 +44,26 @@ build:
   artifacts:
     paths:
       - frontend/dist
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy_backend:
+  tags:
+    - runner-beast
+  image: node:20
+  stage: deploy
+  script:
+    - npm install -g @railway/cli
+    - cd backend; if (-not $?) { exit 1 }
+    - echo "Deploying backend to Railway..."
+    - railway up --service=$RAILWAY_SERVICE_ID
+  only:
+    - main
+  environment:
+    name: production
+  variables:
+    RAILWAY_TOKEN: $RAILWAY_TOKEN
+    RAILWAY_PROJECT_ID: $RAILWAY_PROJECT_ID
+    RAILWAY_SERVICE_ID: $RAILWAY_SERVICE_ID
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
