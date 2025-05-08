@@ -12,7 +12,6 @@ interface User {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
-    token: '' as string | null,
     isLoading: false,
     error: null as Error | null
   }),
@@ -35,8 +34,6 @@ export const useAuthStore = defineStore('auth', {
           withCredentials: true
         });
         this.user = res.data.user;
-        this.token = res.data.token;
-        console.log('Login successful:', res.data.token);
         this.error = null;
         return true;
       } catch (error) {
@@ -55,7 +52,6 @@ export const useAuthStore = defineStore('auth', {
           withCredentials: true
         });
         this.user = null;
-        this.token = null;
         this.error = null;
         return true;
       } catch (error) {
@@ -98,7 +94,6 @@ export const useAuthStore = defineStore('auth', {
           withCredentials: true
         });
         this.user = res.data.user;
-        this.token = res.data.token;
         this.error = null;
         return true;
       } catch (error) {
