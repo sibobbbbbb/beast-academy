@@ -129,8 +129,8 @@ describe('EventController', () => {
     });
   });
 
-  // Test for GET /eventDetails/:id
-  describe('GET /eventDetails/:id', () => {
+  // Test for GET /event/:id
+  describe('GET /event/:id', () => {
     test('should return event details by ID', async () => {
       prismaInstance.events.findUnique.mockResolvedValue({
         id: 1,
@@ -141,7 +141,7 @@ describe('EventController', () => {
         joinform: 'https://forms.example.com/1'
       });
 
-      const res = await request(app).get('/eventDetails/1');
+      const res = await request(app).get('/event/1');
       
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('success', true);
@@ -156,7 +156,7 @@ describe('EventController', () => {
     test('should return 404 for non-existent event', async () => {
       prismaInstance.events.findUnique.mockResolvedValue(null);
 
-      const res = await request(app).get('/eventDetails/999');
+      const res = await request(app).get('/event/999');
       
       expect(res.status).toBe(404);
       expect(res.body).toHaveProperty('success', false);
