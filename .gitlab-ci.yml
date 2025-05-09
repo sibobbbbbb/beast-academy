@@ -75,32 +75,21 @@ deploy:
     - if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
     - mkdir -Force $tempDir
     - cd $tempDir
-    
     # Clone GitHub repository using SSH
     - git clone "git@github.com:$env:GITHUB_USERNAME/$env:GITHUB_REPO.git" github_repo
-    
     # Get GitLab repository content
     - $gitlabDir = "$env:CI_PROJECT_DIR"
-    
     # Clear GitHub repo content except .git directory
     - Get-ChildItem -Path ".\github_repo" -Exclude .git | Remove-Item -Recurse -Force
-    
     # Copy all content from GitLab project to GitHub repo directory
     - Copy-Item -Path "$gitlabDir\*" -Destination ".\github_repo\" -Recurse -Force -Exclude @("github_repo", ".git")
-    
     # Navigate to GitHub repo directory and commit changes
     - cd github_repo
-    
     # Remove GitLab CI file (optional)
     - if (Test-Path .gitlab-ci.yml) { Remove-Item -Force .gitlab-ci.yml }
-    
     # Commit and push to GitHub
     - git add .
-    - git commit -m "Auto-sync from GitLab CI: $env:CI_COMMIT_SHORT_SHA" -m "Synced at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    - if ($LASTEXITCODE -eq 0) { 
-        git push origin main 
-      } else { 
-        Write-Host "No changes to commit" 
-      }
+    - 'git commit -m "Auto-sync from GitLab CI"'
+    - 'if ($LASTEXITCODE -eq 0) { git push origin main } else { Write-Host "No changes to commit" }'
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
