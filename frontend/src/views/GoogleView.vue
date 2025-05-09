@@ -35,6 +35,7 @@ onMounted(async () => {
     console.error('No authorization code found in URL parameters');
     error.value = 'No authorization code provided from Google';
     loading.value = false;
+    redirectToLogin();
     return;
   }
   
