@@ -3,6 +3,8 @@ import request from 'supertest';
 import app from '../app';
 import { PrismaClient } from '@prisma/client';
 
+jest.spyOn(console, 'warn').mockImplementation(() => {});
+
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
   const mockPrismaClient = {
@@ -50,7 +52,7 @@ describe('EventController', () => {
     jest.clearAllMocks();
     
     // Mock count for pagination
-    prismaInstance.events.count.mockResolvedValue(25);
+    prismaInstance.events.count.jest.fn().mockResolvedValue(25);
     
     // Mock event data
     const mockEvents = [
@@ -72,7 +74,7 @@ describe('EventController', () => {
       }
     ];
     
-    prismaInstance.events.findMany.mockResolvedValue(mockEvents);
+    prismaInstance.events.findMany = jest.fn().mockResolvedValue(mockEvents);
   });
 
   // Test for GET /events (read events with pagination)
@@ -94,7 +96,7 @@ describe('EventController', () => {
   // Test for POST /events (create event)
   describe('POST /events', () => {
     test('should create a new event', async () => {
-      prismaInstance.events.create.mockResolvedValue({
+      prismaInstance.events.create.jest.fn().mockresolvedvalue({
         id: 3,
         title: 'New Test Event',
         description: 'New Description',
@@ -131,7 +133,7 @@ describe('EventController', () => {
   // Test for GET /eventDetails/:id
   describe('GET /eventDetails/:id', () => {
     test('should return event details by ID', async () => {
-      prismaInstance.events.findUnique.mockResolvedValue({
+      prismaInstance.events.findUnique.jest.fn().mockresolvedvalue({
         id: 1,
         title: 'Test Event 1',
         description: 'Description 1',
@@ -153,7 +155,7 @@ describe('EventController', () => {
     });
 
     test('should return 404 for non-existent event', async () => {
-      prismaInstance.events.findUnique.mockResolvedValue(null);
+      prismaInstance.events.findUnique.jest.fn().mockresolvedvalue(null);
 
       const res = await request(app).get('/eventDetails/999');
       
@@ -165,7 +167,7 @@ describe('EventController', () => {
   // Test for PUT /events/:id (update event)
   describe('PUT /events/:id', () => {
     test('should update an event', async () => {
-      prismaInstance.events.findUnique.mockResolvedValue({
+      prismaInstance.events.findUnique.jest.fn().mockresolvedvalue({
         id: 1,
         title: 'Old Title',
         description: 'Old Description',
@@ -173,7 +175,7 @@ describe('EventController', () => {
         joinform: 'https://forms.example.com/old'
       });
       
-      prismaInstance.events.update.mockResolvedValue({
+      prismaInstance.events.update.jest.fn().mockresolvedvalue({
         id: 1,
         title: 'Updated Title',
         description: 'Updated Description',
@@ -196,7 +198,7 @@ describe('EventController', () => {
     });
 
     test('should return 404 if event not found', async () => {
-      prismaInstance.events.findUnique.mockResolvedValue(null);
+      prismaInstance.events.findUnique.jest.fn().mockresolvedvalue(null);
 
       const res = await request(app)
         .put('/events/999')
@@ -211,13 +213,13 @@ describe('EventController', () => {
   // Test for DELETE /events/:id
   describe('DELETE /events/:id', () => {
     test('should delete an event', async () => {
-      prismaInstance.events.findUnique.mockResolvedValue({
+      prismaInstance.events.findUnique.jest.fn().mockresolvedvalue({
         id: 1,
         title: 'Test Event',
         images: 'https://res.cloudinary.com/test-cloud/events/test.jpg'
       });
       
-      prismaInstance.events.delete.mockResolvedValue({ id: 1 });
+      prismaInstance.events.delete.jest.fn().mockresolvedvalue({ id: 1 });
 
       const res = await request(app).delete('/events/1');
       
@@ -242,7 +244,7 @@ describe('EventController', () => {
   // Test for like/unlike event
   describe('Like/Unlike Events', () => {
     test('should like an event', async () => {
-      prismaInstance.liked_by.create.mockResolvedValue({
+      prismaInstance.liked_by.create.jest.fn().mockresolvedvalue({
         id: 1,
         e_id: 1,
         u_id: 1
@@ -264,7 +266,7 @@ describe('EventController', () => {
     });
 
     test('should unlike an event', async () => {
-      prismaInstance.liked_by.deleteMany.mockResolvedValue({ count: 1 });
+      prismaInstance.liked_by.deleteMany.jest.fn().mockresolvedvalue({ count: 1 });
 
       const res = await request(app)
         .post('/unlikeEvent')
@@ -282,7 +284,7 @@ describe('EventController', () => {
     });
     
     test('should get liked events by user', async () => {
-      prismaInstance.liked_by.findMany.mockResolvedValue([
+      prismaInstance.liked_by.findMany.jest.fn().mockresolvedvalue([
         { id: 1, e_id: 1, u_id: 1 },
         { id: 2, e_id: 2, u_id: 1 }
       ]);
@@ -300,7 +302,7 @@ describe('EventController', () => {
     });
 
     test('should return 404 if no liked events found', async () => {
-      prismaInstance.liked_by.findMany.mockResolvedValue([]);
+      prismaInstance.liked_by.findMany.jest.fn().mockresolvedvalue([]);
 
       const res = await request(app).get('/likedEvents/1');
       
