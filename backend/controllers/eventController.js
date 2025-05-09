@@ -1,7 +1,7 @@
 import {PrismaClient} from "@prisma/client";
 import cloudinary from "../config/cloudinary.js";
 
-const prisma = new PrismaClient()
+let prisma = new PrismaClient()
 export function __setPrismaClient(client) {
   prisma = client
 }
