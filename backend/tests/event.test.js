@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 
 jest.spyOn(console, 'warn').mockImplementation(() => {});
+jest.spyOn(console, 'error').mockImplementation(() => {});
 
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
@@ -15,15 +16,12 @@ jest.mock('@prisma/client', () => {
     },
     liked_by: {
       create: jest.fn(),
-      deleteMany: jest.fn(),
+      deleteMany: jest.fn(), 
       findMany: jest.fn()
     },
     $disconnect: jest.fn()
   };
-
-  return {
-    PrismaClient: jest.fn(() => mockPrismaClient)
-  };
+  return { PrismaClient: jest.fn(() => mockPrismaClient) };
 });
 
 // Mock cloudinary
@@ -130,8 +128,8 @@ describe('EventController', () => {
     });
   });
 
-  // Test for GET /event/:id
-  describe('GET /event/:id', () => {
+  // Test for GET /eventDetails/:id
+  describe('GET /eventDetails/:id', () => {
     test('should return event details by ID', async () => {
       prismaInstance.events.findUnique.mockResolvedValue({
         id: 1,
@@ -142,7 +140,7 @@ describe('EventController', () => {
         joinform: 'https://forms.example.com/1'
       });
 
-      const res = await request(app).get('/event/1');
+      const res = await request(app).get('/eventDetails/1');
       
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('success', true);
@@ -157,7 +155,7 @@ describe('EventController', () => {
     test('should return 404 for non-existent event', async () => {
       prismaInstance.events.findUnique.mockResolvedValue(null);
 
-      const res = await request(app).get('/event/999');
+      const res = await request(app).get('/eventDetails/999');
       
       expect(res.status).toBe(404);
       expect(res.body).toHaveProperty('success', false);
