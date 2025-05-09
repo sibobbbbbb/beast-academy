@@ -45,42 +45,41 @@ describe('EventController', () => {
   let prismaInstance;
   
   beforeEach(() => {
-    // Get mock instance
     prismaInstance = new PrismaClient();
-    
-    // Reset mocks
     jest.clearAllMocks();
-    
-    // Mock count for pagination
-    prismaInstance.events.count = jest.fn().mockResolvedValue(25);
-    
-    // Mock event data
-    const mockEvents = [
+
+    // override all events methods as mocks
+    prismaInstance.events.findUnique = jest.fn();
+    prismaInstance.events.findMany   = jest.fn();
+    prismaInstance.events.create     = jest.fn();
+    prismaInstance.events.update     = jest.fn();
+    prismaInstance.events.delete     = jest.fn();
+    prismaInstance.events.count      = jest.fn().mockResolvedValue(25);
+
+    // default findMany returns two items
+    prismaInstance.events.findMany.mockResolvedValue([
       {
-        id: 1,
-        title: 'Test Event 1',
-        description: 'Description 1',
+        id: 1, title: 'Test Event 1', description: 'Description 1',
         images: 'https://test-url.com/image1.jpg',
-        posted_at: new Date(),
-        joinform: 'https://forms.example.com/1'
+        posted_at: new Date(), joinform: 'https://forms.example.com/1'
       },
       {
-        id: 2,
-        title: 'Test Event 2',
-        description: 'Description 2',
+        id: 2, title: 'Test Event 2', description: 'Description 2',
         images: 'https://test-url.com/image2.jpg',
-        posted_at: new Date(),
-        joinform: 'https://forms.example.com/2'
+        posted_at: new Date(), joinform: 'https://forms.example.com/2'
       }
-    ];
-    
-    prismaInstance.events.findMany = jest.fn().mockResolvedValue(mockEvents);
+    ]);
+
+    // override liked_by methods as mocks
+    prismaInstance.liked_by.create     = jest.fn();
+    prismaInstance.liked_by.deleteMany = jest.fn();
+    prismaInstance.liked_by.findMany   = jest.fn();
   });
 
   // Test for GET /events (read events with pagination)
   describe('GET /events', () => {
     test('should return paginated events', async () => {
-      const res = await request(app).get('/events?page=1');
+      const res = await request(app).get('/events?page=1&limit=10');
       
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('success', true);
