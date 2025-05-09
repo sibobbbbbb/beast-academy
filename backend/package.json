@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx prisma migrate deploy --schema=./db/prisma/schema.prisma && node index.js",
     "dev": "nodemon index.js",
-    "test": "dotenv -e .env.test node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "node --experimental-vm-modules -r dotenv/config node_modules/jest/bin/jest.js dotenv_config_path=.env.test",
     "create-admin": "node ./scripts/admin/create-admin.js"
   },
   "keywords": [],
@@ -31,13 +31,12 @@
     "node-fetch": "^2.7.0"
   },
   "devDependencies": {
-    "dotenv-cli": "^8.0.0",
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "nodemon": "^3.1.9",
     "prisma": "^6.5.0",
-    "supertest": "^6.3.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "supertest": "^6.3.3"
   }
 }
