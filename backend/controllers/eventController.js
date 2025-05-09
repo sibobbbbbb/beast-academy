@@ -1,5 +1,6 @@
 import {PrismaClient} from "@prisma/client";
 import cloudinary from "../config/cloudinary.js";
+import { recalculateActivity } from "./activityController.js"
 
 let prisma = new PrismaClient()
 export function __setPrismaClient(client) {
@@ -144,6 +145,17 @@ export const createEventController = async (req, res) => {
     }
 }
 
+export const getEventsByCriteria = async (criteria) => {
+    const events = await prisma.events.findMany(criteria);
+
+    return events
+}
+
+export const getEventsCountByCriteria = async (criteria) => {
+    const events = await prisma.events.count(criteria);
+    return events
+}
+
 export const readEventController = async (req, res) => {
     try {
         // Get page parameter from query string, default to 1 if not provided
@@ -154,22 +166,24 @@ export const readEventController = async (req, res) => {
         // Get total count for pagination metadata
         const totalCount = await prisma.events.count();
 
-        // Fetch events with joinform included
-        const events = await prisma.events.findMany({
-            skip,
-            take: pageSize,
-            orderBy: {
-                posted_at: 'desc' // Most recent events first
-            },
-            select: {
-                id: true,
-                title: true,
-                images: true,
-                description: true,
-                posted_at: true,
-                joinform: true
+        const criteria = {
+                skip,
+                take: pageSize,
+                orderBy: {
+                    posted_at: 'desc' // Most recent events first
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    images: true,
+                    description: true,
+                    posted_at: true,
+                    joinform: true
+                }
             }
-        });
+
+        // Fetch events with joinform included
+        const events = await getEventsByCriteria(criteria);
 
         // Calculate if there are more items to load
         const loadedSoFar = page === 1 ? 20 : 20 + (page - 1) * 5;
@@ -387,6 +401,8 @@ export const likeEventController = async (req, res) => {
         }
         });
 
+        recalculateActivity(parseInt(user_id), true);
+
         res.status(201).json({
         success: true,
         message: "Event liked successfully",
@@ -413,6 +429,8 @@ export const unlikeEventController = async (req, res) => {
             }
         });
 
+        recalculateActivity(parseInt(user_id), true);
+        
         res.status(200).json({
             success: true,
             message: "Event unliked successfully",
@@ -428,14 +446,34 @@ export const unlikeEventController = async (req, res) => {
     }
 };
 
+export const getLikedEvents = async (userId, timewindow = 0) => {
+  try {
+    const whereClause = {
+      u_id: parseInt(userId)
+    };
+
+    if (timewindow > 0) {
+      whereClause.created_at = {
+        gte: new Date(Date.now() - timewindow * 86400000)
+      };
+    }
+
+    const likedEvents = await prisma.liked_by.findMany({
+      where: whereClause
+    });
+
+    return likedEvents;
+  } catch (error) {
+    console.error("Error fetching liked events:", error);
+    throw error;
+  }
+};
+
+
 export const readLikedEventControllerId = async (req, res) => {
     const { userId } = req.params;
     try {
-        const likedEvents = await prisma.liked_by.findMany({
-            where: {
-                u_id: parseInt(userId)
-            }
-        });
+        const likedEvents = getLikedEvents(userId)
 
         if (likedEvents.length === 0) {
             return res.status(404).json({

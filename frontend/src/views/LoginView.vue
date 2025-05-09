@@ -235,9 +235,6 @@ const showPassword = ref(false);
 
 // Configure Google login
 onMounted(() => {
-  // Debug environment variables
-  console.log("VITE_GOOGLE_CLIENT_ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
-  
   // Load Google SDK
   loadGoogleScript();
 });
@@ -246,18 +243,15 @@ onMounted(() => {
 const loadGoogleScript = () => {
   // Check if the script is already loaded
   if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
-    console.log("Google SDK script already exists, initializing directly");
     initializeGoogleSignIn();
     return;
   }
 
-  console.log("Loading Google SDK script...");
   const script = document.createElement('script');
   script.src = 'https://accounts.google.com/gsi/client';
   script.async = true;
   script.defer = true;
   script.onload = () => {
-    console.log("Google SDK script loaded successfully");
     initializeGoogleSignIn();
   };
   script.onerror = ((error: Event | string) => {
@@ -271,7 +265,6 @@ const loadGoogleScript = () => {
 // Initialize Google Sign-In with better error handling
 const initializeGoogleSignIn = () => {
   try {
-    console.log("Initializing Google Sign-In...");
     
     if (!window.google) {
       console.error("Google SDK not loaded properly - window.google is undefined");
@@ -290,7 +283,6 @@ const initializeGoogleSignIn = () => {
     
     // Debug client ID
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    console.log("Using Google Client ID:", clientId);
     
     if (!clientId) {
       console.error("Google Client ID is missing or empty");
@@ -310,8 +302,6 @@ const initializeGoogleSignIn = () => {
         errorMessage.value = 'An error occurred with Google Sign-In. Please try again.';
       }
     });
-    
-    console.log("Google Sign-In initialized successfully");
   } catch (error) {
     console.error("Error in Google Sign-In initialization:", error);
     loginError.value = true;
@@ -321,7 +311,6 @@ const initializeGoogleSignIn = () => {
 
 // Handle Google Sign-In response with better error handling
 const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
-  console.log("Google Sign-In response received:", response);
   isLoading.value = true;
   loginError.value = false;
   
@@ -334,14 +323,12 @@ const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
   }
   
   try {
-    console.log("Sending Google token to backend...");
-    const result = await api.post('/auth/google', {
+    await api.post('/auth/google', {
       token: response.credential
     }, {
       withCredentials: true
     });
     
-    console.log('Google login successful:', result.data);
     router.push('/');
     await getUserProfile();
   } catch (error) {
@@ -363,7 +350,6 @@ const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
 
 // Handle Google Sign-In button click with better fallback
 const signInWithGoogle = () => {
-  console.log("Google Sign-In button clicked");
   loginError.value = false;
   
   // Use the redirect approach directly instead of One Tap
@@ -373,7 +359,6 @@ const signInWithGoogle = () => {
   
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
   
-  console.log("Redirecting to Google OAuth URL:", authUrl);
   window.location.href = authUrl;
 };
 
@@ -384,14 +369,12 @@ const handleLogin = async () => {
   
   try {
     // The backend sets httpOnly cookie automatically
-    const response = await api.post('/auth/login', { 
+    await api.post('/auth/login', { 
       email: email.value, 
       password: password.value 
     }, {
       withCredentials: true // Important for cookies to be sent/received
     });
-    
-    console.log('Login successful:', response.data);
     
     // No need to store token in localStorage since it's in httpOnly cookie
     // Instead, just redirect to the dashboard
@@ -434,9 +417,6 @@ const getUserProfile = async (): Promise<UserProfile | null> => {
     const response = await api.get<UserProfile>('/auth/me', {
       withCredentials: true // Important for sending the cookie
     });
-    
-    // Specifically log the role for testing
-    console.log('User role:', response.data.role);
     
     return response.data;
   } catch (error) {

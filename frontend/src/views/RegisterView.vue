@@ -314,9 +314,7 @@ const handleRegister = async () => {
     formData.append('name', name.value);
 
 
-    const response = await api.post('/auth/register', formData);
-
-    console.log('Register Success:', response.data);
+    await api.post('/auth/register', formData);
     router.push('/login');
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;

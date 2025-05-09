@@ -467,12 +467,10 @@ const getUserRole = async () => {
     // Response berisi data user termasuk role
     const userData = await response.json();
     // Set role ke variabel userRole
-    console.log(userData);
     if (!response.ok) {
       throw new Error('Failed to fetch user role');
     }
     userRole.value = userData.role || '';
-    console.log(userRole.value);
     return userData.role;
   } catch (error) {
     console.error("Failed to get user role from API:", error);

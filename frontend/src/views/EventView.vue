@@ -362,7 +362,6 @@ onMounted(async () => {
       await fetchLikedEvents();
     }
   } catch {
-    console.log('User not logged in');
     isLoggedIn.value = false;
   }
 });
@@ -489,8 +488,6 @@ async function handleCreateEvent(event: EventData) {
   try {
     isFormProcessing.value = true;
     error.value = null;
-
-    console.log('Creating event:', event);
     
     const response = await createEvents(event);
     

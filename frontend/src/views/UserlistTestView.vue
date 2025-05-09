@@ -243,7 +243,7 @@ import { selectedMembersMap, selectMember, deselectMember, exportToFile, exportT
 import { type Member } from '@/types/member';
 import logoImage from '@/assets/beastLogo.png';
 import { useDeviceModeStore } from '@/stores/deviceMode'
-import MobileListItem from './MobileListItem.vue'
+import MobileListItem from '@/components/MobileListItem.vue'
 import AddMemberForm from '../components/AddMembersForm.vue'
 
 const perPage = ref(10);
@@ -356,7 +356,6 @@ onMounted(() => {
   // set up the observer exactly once
     observer = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting && !maxPage.value) {
-      console.log('🌀 load more…', currentPage.value+1)
       refresh(currentPage.value + 1, true)
     }
   }, { threshold: 1.0 })
@@ -442,7 +441,6 @@ function cancelEdit(cancelAll: boolean = false) {
     memberEditContext.value = null;
   } else if (memberEditContext.value) {
     // Reset the memberEditContext to null if no parameter is passed
-    console.log("Edit canceled for member:", memberEditContext.value.id);
     memberEditContext.value = null;
   } else {
     console.error("No active edit context to cancel!");
@@ -502,7 +500,6 @@ const handleFilter = (role: string) => {
 };
 
 const refresh = async (newPage?: number, append = false) => {
-  console.log('Refreshing data...',newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }

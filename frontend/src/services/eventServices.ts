@@ -70,8 +70,6 @@ export const editEvents = async (id: string, eventData: EventData): Promise<ApiR
     if (!eventData.title || !eventData.description) {
       throw new Error("Title and description are required fields")
     }
-
-    console.log("Event data to be sent:", eventData)
     
     // FORM DATA
     const formData = new FormData();

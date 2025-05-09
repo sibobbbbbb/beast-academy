@@ -468,7 +468,6 @@ onMounted(async () => {
       userAvatar.value = response.data.avatar || '';
     }
   } catch{
-    console.log('User not logged in');
     isLoggedIn.value = false;
   }
 });

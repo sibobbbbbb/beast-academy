@@ -26,7 +26,6 @@ export const fetchMembers = async (perPage: number, page: number, sortBy?: strin
     if (filterBy) params.append('filterBy', filterBy);
 
     const fullURL = `${API_BASE_URL}/members?${params.toString()}`;
-    console.log("Fetching data from:", fullURL); // 🔹 Debug URL
 
     const response = await fetch(fullURL, {credentials: 'include'}); 
 

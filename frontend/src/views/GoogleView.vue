@@ -28,8 +28,6 @@ const redirectToLogin = () => {
 };
 
 onMounted(async () => {
-  // Debug code to see what's in the URL
-  console.log('Route query parameters:', route.query);
   
   const code = route.query.code as string;
   
@@ -37,19 +35,16 @@ onMounted(async () => {
     console.error('No authorization code found in URL parameters');
     error.value = 'No authorization code provided from Google';
     loading.value = false;
+    redirectToLogin();
     return;
   }
   
-  console.log('Found authorization code');
-  
   try {
     // Send code to backend for verification
-    console.log('Sending code to backend for verification');
     const response = await api.post('/auth/google/callback', { code }, {
       withCredentials: true
     });
     
-    console.log('Google auth successful:', response.data);
     
     // Initialize auth store with user data from response
     if (response.data.user) {

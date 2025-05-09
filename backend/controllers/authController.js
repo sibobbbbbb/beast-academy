@@ -6,6 +6,7 @@ import { OAuth2Client } from 'google-auth-library';
 import fetch from 'node-fetch';
 import { body, validationResult } from 'express-validator';
 import cloudinary from 'cloudinary'; 
+import { updateUserLoginSimple } from './activityController.js';
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -154,12 +155,19 @@ export const login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
+        // Update last activity
+
+        
+        updateUserLoginSimple(user.id);
+        
+    
+
         // Set HTTP-only cookie
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            // sameSite: 'strict',
-            sameSite: 'none', // Kalo beda misal fe vercel be railway
+            sameSite: 'strict',
+            // sameSite: 'none', // Kalo beda misal fe vercel be railway
             maxAge: 24 * 60 * 60 * 1000,
         });
 
@@ -186,7 +194,8 @@ export const logout = (req, res) => {
   res.clearCookie('token', { 
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none' // Kalo beda misal fe vercel be railway
+    sameSite: 'strict' // Kalo beda misal fe vercel be railway
+    // sameSite: 'none' // Kalo beda misal fe vercel be railway
 });
 res.json({ message: 'Logout successful' });
 };
@@ -327,8 +336,8 @@ export const googleLogin = async (req, res) => {
     res.cookie('token', authToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      // sameSite: 'strict',
-      sameSite: 'none', // Kalo beda misal fe vercel be railway
+      sameSite: 'strict',
+      // sameSite: 'none', // Kalo beda misal fe vercel be railway
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -494,8 +503,8 @@ export const googleCallback = async (req, res) => {
     res.cookie('token', authToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      // sameSite: 'strict',
-      sameSite: 'none', // Kalo beda misal fe vercel be railway
+      sameSite: 'strict',
+      // sameSite: 'none', // Kalo beda misal fe vercel be railway
       maxAge: 24 * 60 * 60 * 1000
     });
     
