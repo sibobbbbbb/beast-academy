@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 
 jest.mock('../db/prisma/prisma', () => ({
+  __esModule: true,
   prisma: {
     users: { findMany: jest.fn(), count: jest.fn() }
   }
