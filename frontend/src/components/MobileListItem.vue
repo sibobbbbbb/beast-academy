@@ -34,6 +34,10 @@
     grid-auto-columns: 1fr;
 }
 
+.selected {
+    border: 2px solid blue;
+}
+
 td {
     flex-grow: 0.5;
     text-align: center;

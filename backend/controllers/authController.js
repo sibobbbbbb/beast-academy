@@ -6,6 +6,7 @@ import { OAuth2Client } from 'google-auth-library';
 import fetch from 'node-fetch';
 import { body, validationResult } from 'express-validator';
 import cloudinary from 'cloudinary'; 
+import { updateUserLoginSimple } from './activityController.js';
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -153,6 +154,13 @@ export const login = async (req, res) => {
             process.env.JWT_SECRET, 
             { expiresIn: '1d' }
         );
+
+        // Update last activity
+
+        
+        updateUserLoginSimple(user.id);
+        
+    
 
         // Set HTTP-only cookie
         res.cookie('token', token, {

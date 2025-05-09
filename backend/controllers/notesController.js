@@ -1,4 +1,5 @@
 import { prisma } from "../db/prisma/prisma.js";
+import { recalculateActivity } from "./activityController.js";
 
 export const createNote = async (req, res) => {
     try {
@@ -20,6 +21,8 @@ export const createNote = async (req, res) => {
             status: 'active'
         }
         });
+
+        recalculateActivity(parseInt(memberId), true);
         
         return res.status(201).json({
         message: 'Note created successfully',
@@ -188,6 +191,8 @@ export const deleteNote = async (req, res) => {
           id: noteId
         }
       });
+
+      recalculateActivity(parseInt(existingNote.member_id), true);
       
       return res.status(200).json({
         message: 'Note deleted successfully'
@@ -196,6 +201,27 @@ export const deleteNote = async (req, res) => {
       console.error('Error deleting note:', error);
       return res.status(500).json({ error: 'Server error' });
     }
+  };
+
+  export const getTrainerNotecountForPerson = async (uid, timewindow = 0) => {
+  const whereClause = {
+    member_id: parseInt(uid)
+  };
+
+  if (timewindow > 0) {
+    whereClause.created_at = {
+      gte: new Date(Date.now() - timewindow * 86400000)
+    };
+  }
+
+  const notes = await prisma.training_assignments.count({
+    where: whereClause,
+    orderBy: {
+      created_at: 'desc'
+    }
+  });
+
+  return notes;
   };
   
   // Get all notes for a trainer
