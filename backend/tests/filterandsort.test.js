@@ -17,8 +17,8 @@ await jest.unstable_mockModule(
   })
 );
 
-import { getMembers } from '../controllers/filterAndSortController';
-import { prisma } from '../db/prisma/prisma';
+const { getMembers } = await import('../controllers/filterAndSortController.js');
+const { prisma }     = await import('../db/prisma/prisma.js');
 
 describe('filterAndSortController', () => {
   let req, res;
