@@ -44,6 +44,7 @@ describe('EventController', () => {
   
   beforeEach(() => {
     prismaInstance = new PrismaClient();
+    __setPrismaClient(prismaInstance)
     jest.clearAllMocks();
 
     // override all events methods as mocks
