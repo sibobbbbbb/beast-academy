@@ -72,8 +72,7 @@ describe('EventController', () => {
   beforeEach(() => {
     prismaInstance = new PrismaClient();
     
-    // Don't call __setPrismaClient directly, as it may cause issues
-    // Instead, mock the functions we need directly
+    __setPrismaClient(prismaInstance)
 
     // Reset all mocks
     jest.clearAllMocks();
