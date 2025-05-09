@@ -2,10 +2,10 @@
 import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { fetchMembers } from '@/services/templateServices';
 import { type Member } from '@/types/member';
-import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
+import { selectedMembersMap, selectMember, deselectMember } from '@/utils/memberSelection';
 import SortableHeader from '@/components/SortableHeader.vue';
 import SearchBox from '@/components/SearchBox.vue';
-import FilterDropdown from '@/components/FilterDropdown.vue';
+// import FilterDropdown from '@/components/FilterDropdown.vue';
 import { useDeviceModeStore } from '@/stores/deviceMode'
 import MobileListItem from '@/components/MobileListItem.vue'
 import NormalHeader from './NormalHeader.vue';
@@ -235,7 +235,7 @@ const emit = defineEmits<{
 }>();
 
 // intendedOperation is false for deselecting, and true for selecting
-function toggleSelect(item : Member, intendedOperation : Boolean = selectedMembersMap.value.has(item.id)) {
+function toggleSelect(item : Member, intendedOperation : boolean = selectedMembersMap.value.has(item.id)) {
   if (intendedOperation === true) {
     deselectMember(item)
     emit('memberlistOperation',
