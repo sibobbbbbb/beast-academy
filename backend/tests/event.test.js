@@ -1,7 +1,6 @@
 import { jest } from '@jest/globals';
 
 jest.spyOn(console, 'warn').mockImplementation(() => {});
-jest.spyOn(console, 'error').mockImplementation(() => {});
 
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {

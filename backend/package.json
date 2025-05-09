@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx prisma migrate deploy --schema=./db/prisma/schema.prisma && node index.js",
     "dev": "nodemon index.js",
-    "test": "cross-env-shell NODE_ENV=test \"node --experimental-vm-modules -r dotenv/config node_modules/jest/bin/jest.js\"",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "create-admin": "node ./scripts/admin/create-admin.js"
   },
   "keywords": [],
