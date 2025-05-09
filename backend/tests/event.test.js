@@ -1,7 +1,4 @@
 import { jest } from '@jest/globals';
-import request from 'supertest';
-import app from '../app';
-import { PrismaClient } from '@prisma/client';
 
 jest.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -40,6 +37,10 @@ jest.mock('../config/cloudinary', () => ({
     }
   }
 }));
+
+import request from 'supertest';
+import app from '../app';
+import { PrismaClient } from '@prisma/client';
 
 describe('EventController', () => {
   let prismaInstance;
