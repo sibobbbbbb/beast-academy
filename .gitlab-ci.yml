@@ -14,7 +14,7 @@ lint:
   script:
     - npm run lint
   rules:
-    - if: '$CI_COMMIT_BRANCH == "test"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 test:
   tags:
@@ -28,7 +28,7 @@ test:
   script:
     - npm run test
   rules:
-    - if: '$CI_COMMIT_BRANCH == "test"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 build:
   tags:
@@ -44,4 +44,4 @@ build:
     paths:
       - frontend/dist
   rules:
-    - if: '$CI_COMMIT_BRANCH == "test"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
