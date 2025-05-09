@@ -1,8 +1,15 @@
 import { jest } from '@jest/globals';
+
+jest.mock('../db/prisma/prisma', () => {
+  const mockUsers = {
+    findMany: jest.fn(),
+    count:    jest.fn(),
+  };
+  return { prisma: { users: mockUsers } };
+});
+
 import { getMembers as filterAndSortController } from '../controllers/filterAndSortController';
 import { prisma } from '../db/prisma/prisma';
-prisma.users.findMany = jest.fn();
-prisma.users.count    = jest.fn();
 
 describe('filterAndSortController', () => {
   let req, res;
