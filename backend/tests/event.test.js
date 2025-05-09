@@ -1,3 +1,7 @@
+process.env.CLOUDTIARY_CLOUD_IAVE = 'test-cloud-name';
+process.env.CLOUDINARY_API_KEY = 'test-api-key';
+process.env.CLOUDINARY_API_SECRET = 'test-api-secret';
+
 import { jest } from '@jest/globals';
 
 jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -24,16 +28,23 @@ jest.mock('@prisma/client', () => {
 });
 
 // Mock cloudinary
-jest.mock('../config/cloudinary', () => ({
-  v2: {
-    uploader: {
-      upload_stream: jest.fn().mockImplementation((options, callback) => ({
-        end: (buffer) => callback(null, { secure_url: 'https://test-url.com/image.jpg' })
-      })),
-      destroy: jest.fn().mockResolvedValue({ result: 'ok' })
+jest.mock('../config/cloudinary', () => {
+  return {
+    __esModule: true,
+    default: {
+      config: jest.fn(),
+      v2: {
+        config: jest.fn(),
+        uploader: {
+          upload_stream: jest.fn().mockImplementation((options, callback) => ({
+            end: (buffer) => callback(null, { secure_url: 'https://test-url.com/image.jpg' })
+          })),
+          destroy: jest.fn().mockResolvedValue({ result: 'ok' })
+        }
+      }
     }
-  }
-}));
+  };
+});
 
 import request from 'supertest';
 import app from '../app';
