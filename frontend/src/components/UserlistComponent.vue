@@ -117,7 +117,6 @@ async function dataFetcher(page: number, append = false) {
 
 
 const refresh = async (newPage?: number, append = false) => {
-  console.log('Refreshing data...', newPage);
   if (newPage !== undefined) {
     currentPage.value = newPage;
   }
@@ -147,12 +146,10 @@ const handleFilter = (role: string) => {
 
 onMounted(() => {
   mobileMode.value = deviceStore.currentMode === 'mobile'
-  console.log(mobileMode.value , deviceStore.currentMode)
 
   // set up the observer exactly once
   observer = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting && !maxPage.value) {
-      console.log('🌀 load more…', currentPage.value+1)
       refresh(currentPage.value + 1, true)
     }
   }, { threshold: 1.0 })

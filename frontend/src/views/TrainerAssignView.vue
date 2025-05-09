@@ -48,7 +48,6 @@ import type { Member } from '@/types/member';
     // }
 
     function addOrRemoveStudents(op : memberlistOp) {
-        console.log('Proc')
         if (op.operation === "add") {
             //console.log("Add")
             //console.log(op.member)

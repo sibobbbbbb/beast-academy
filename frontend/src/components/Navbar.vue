@@ -18,16 +18,7 @@
       >
         {{ item.name }}
       </a>
-      
-      <!-- Daftar Anggota navigation item - only visible for admin and trainer -->
-      <router-link 
-        v-if="authStore.isLoggedIn && authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"
-        to="/userlisttest"
-        class="text-white text-sm lg:text-base hover:text-[var(--primary-green)] transition-colors"
-      >
-        Daftar Anggota
-      </router-link>
-
+    
       <router-link 
         v-if="authStore.isLoggedIn && authStore.user && (authStore.user.role === 'member')"
         :to="'/notes-list/' + authStore.user.id"
@@ -230,7 +221,6 @@ watch(() => authStore.isLoggedIn, (isLoggedIn) => {
 
 // Handle avatar loading errors
 const handleAvatarError = async () => {
-  console.log('Avatar failed to load, refreshing user data');
   avatarLoadError.value = true;
   
   // Try to refresh user data
