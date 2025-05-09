@@ -27,6 +27,14 @@
       >
         Daftar Anggota
       </router-link>
+
+      <router-link 
+        v-if="authStore.isLoggedIn && authStore.user && (authStore.user.role === 'member')"
+        :to="'/notes-list/' + authStore.user.id"
+        class="text-white text-sm lg:text-base hover:text-[var(--primary-green)] transition-colors"
+      >
+        Notes
+      </router-link>
     </nav>
     
     <!-- Auth Buttons - Show only when NOT logged in -->
