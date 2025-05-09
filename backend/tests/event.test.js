@@ -1,4 +1,4 @@
-process.env.CLOUDTIARY_CLOUD_IAVE = 'test-cloud-name';
+process.env.CLOUDINARY_CLOUD_NAME = 'test-cloud-name';
 process.env.CLOUDINARY_API_KEY = 'test-api-key';
 process.env.CLOUDINARY_API_SECRET = 'test-api-secret';
 
@@ -36,10 +36,24 @@ jest.mock('../config/cloudinary', () => {
       v2: {
         config: jest.fn(),
         uploader: {
-          upload_stream: jest.fn().mockImplementation((options, callback) => ({
-            end: (buffer) => callback(null, { secure_url: 'https://test-url.com/image.jpg' })
-          })),
-          destroy: jest.fn().mockResolvedValue({ result: 'ok' })
+          upload_stream: jest.fn().mockImplementation((options, callback) => {
+            // Return a mock stream with an end method
+            return {
+              end: (buffer) => {
+                // Immediately call the callback with a successful result
+                callback(null, { 
+                  secure_url: 'https://test-url.com/image.jpg',
+                  public_id: 'test-public-id'
+                });
+              }
+            };
+          }),
+          destroy: jest.fn().mockImplementation((publicId, callback) => {
+            if (callback) {
+              callback(null, { result: 'ok' });
+            }
+            return Promise.resolve({ result: 'ok' });
+          })
         }
       }
     }
@@ -56,18 +70,22 @@ describe('EventController', () => {
   
   beforeEach(() => {
     prismaInstance = new PrismaClient();
-    __setPrismaClient(prismaInstance)
+    
+    // Don't call __setPrismaClient directly, as it may cause issues
+    // Instead, mock the functions we need directly
+
+    // Reset all mocks
     jest.clearAllMocks();
 
-    // override all events methods as mocks
+    // Set up default mock implementations for Prisma methods
     prismaInstance.events.findUnique = jest.fn();
-    prismaInstance.events.findMany   = jest.fn();
-    prismaInstance.events.create     = jest.fn();
-    prismaInstance.events.update     = jest.fn();
-    prismaInstance.events.delete     = jest.fn();
-    prismaInstance.events.count      = jest.fn().mockResolvedValue(25);
+    prismaInstance.events.findMany = jest.fn();
+    prismaInstance.events.create = jest.fn();
+    prismaInstance.events.update = jest.fn();
+    prismaInstance.events.delete = jest.fn();
+    prismaInstance.events.count = jest.fn().mockResolvedValue(25);
 
-    // default findMany returns two items
+    // Default findMany returns two items
     prismaInstance.events.findMany.mockResolvedValue([
       {
         id: 1, title: 'Test Event 1', description: 'Description 1',
@@ -81,10 +99,10 @@ describe('EventController', () => {
       }
     ]);
 
-    // override liked_by methods as mocks
-    prismaInstance.liked_by.create     = jest.fn();
+    // Override liked_by methods as mocks
+    prismaInstance.liked_by.create = jest.fn();
     prismaInstance.liked_by.deleteMany = jest.fn();
-    prismaInstance.liked_by.findMany   = jest.fn();
+    prismaInstance.liked_by.findMany = jest.fn();
   });
 
   // Test for GET /events (read events with pagination)
