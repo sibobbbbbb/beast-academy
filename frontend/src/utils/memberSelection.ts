@@ -26,7 +26,8 @@ const clearSelectedMembers = () => {
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import PizZipUtils from "pizzip/utils/index.js";
-import { saveAs }  from "file-saver";
+import { saveAs } from "file-saver";
+import * as XLSX from 'xlsx-js-style'
 
 const backendURL = import.meta.env.VITE_API_BASE_URL;
 const exportToFile = () => {
@@ -53,4 +54,38 @@ const exportToFile = () => {
     })
   };
 
-export { selectedMembersMap, selectMember, deselectMember, clearSelectedMembers, selectMembers, isEmpty, selectedCount, exportToFile }
+  const exportToExcel = () => {
+    const membersData = Array.from(selectedMembersMap.value.values()).map(member => ({
+      Name: member.name,
+      Email: member.email,
+      Contact: member.phone_no,
+      Attendance: ""
+    }));
+  
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(membersData);
+    
+    worksheet['!cols'] = [
+      { wch: 30 }, // Name column
+      { wch: 30 }, // Email column
+      { wch: 30 }, // Contact column
+      { wch: 10 }  // Attendance column
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
+  
+    const excelBuffer = XLSX.write(workbook, { 
+      bookType: 'xlsx', 
+      type: 'array' 
+    });
+  
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+  
+    saveAs(blob, "members.xlsx");
+  };
+  
+  
+
+export { selectedMembersMap, selectMember, deselectMember, clearSelectedMembers, selectMembers, isEmpty, selectedCount, exportToFile, exportToExcel }
