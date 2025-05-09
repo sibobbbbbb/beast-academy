@@ -38,6 +38,7 @@ jest.mock('../config/cloudinary', () => ({
 import request from 'supertest';
 import app from '../app';
 import { PrismaClient } from '@prisma/client';
+import { __setPrismaClient } from '../controllers/eventController'
 
 describe('EventController', () => {
   let prismaInstance;
