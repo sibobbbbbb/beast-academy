@@ -42,7 +42,8 @@
     <button v-if="userRole == 'admin'" @click="showAddOverlay = true">Add Member</button>
     <button v-if="!showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Delete Member</button>
     <button v-if="showDeleteColumn && userRole === 'admin'" @click="toggleDeleteColumn">Cancel</button>
-    <button @click="(_) => { exportToFile() }"> Export </button>
+    <button @click="(_) => {exportToFile();}">Export to DOCX</button>
+    <button @click="(_) => {exportToExcel();}">Export to XLSX</button>
     <table>
       <thead>
         <tr>
@@ -186,7 +187,7 @@
         </tr>
       </tbody>
     </table>
-    <nav
+    <nav>
       style="position: sticky; bottom: 0; background-color: rgba(190, 100, 180, 0.6); text-align: center; padding-top: 0.025rem;">
       <hr style="
         width: 25%;
@@ -201,7 +202,7 @@
       <button @click="showAddOverlay = true">Add Member</button>
       <button @click="() => {toggleActionContext(mobileActions.Edit)}" :class="{ 'editting': isAction(mobileActions.Edit), 'edit': !isAction(mobileActions.Edit) }">Edit</button>
       <button @click="() => {toggleActionContext(mobileActions.Delete)}" :class="{ 'deleting': isAction(mobileActions.Delete), 'delete': !isAction(mobileActions.Delete) }">Delete</button>
-      <button>Export</button>
+      <!-- <button>Export</button> -->
     </nav>
   </div>
 
@@ -227,7 +228,6 @@
       </div>
     </div>
   </teleport>
-
 </template>
 
 <script setup lang="ts">
@@ -239,7 +239,7 @@ import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fetchMembers } from '@/services/templateServices';
 import Pagination from '@/components/PaginationApp.vue';
 import { useRouter } from 'vue-router';
-import { selectedMembersMap, selectMember, deselectMember, exportToFile} from '@/utils/memberSelection';
+import { selectedMembersMap, selectMember, deselectMember, exportToFile, exportToExcel} from '@/utils/memberSelection';
 import { type Member } from '@/types/member';
 import logoImage from '@/assets/beastLogo.png';
 import { useDeviceModeStore } from '@/stores/deviceMode'
