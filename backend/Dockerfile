@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "cd db/prisma && npx prisma generate && cd /app && npx nodemon --legacy-watch --verbose index.js"]
+CMD ["sh", "-c", "cd db/prisma && npx prisma generate && npx prisma db push && cd /app && npx nodemon --legacy-watch --verbose index.js"]

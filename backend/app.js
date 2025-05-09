@@ -9,6 +9,8 @@ import eventRoutes from './routes/eventRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import trainerAssRoutes from './routes/trainerAssigntmentRoutes.js'
 
+import { initDefaultJudgeValues, auditAndFixUserMetrics } from './controllers/activityController.js';
+
 const app = express();
 
 // Middlewares
@@ -39,5 +41,16 @@ app.use('/api', memberRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', eventRoutes);
 app.use('/api',trainerAssRoutes);
+
+try {
+    console.log("[INIT] Starting default config setup...");
+  await initDefaultJudgeValues();
+
+  console.log("[INIT] Auditing and fixing user metrics...");
+  await auditAndFixUserMetrics({ autoFix: true });
+}
+catch (err) {
+  console.error("[INIT] Error during initialization:", err);
+};
 
 export default app;
