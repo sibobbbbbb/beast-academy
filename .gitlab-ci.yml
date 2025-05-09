@@ -58,17 +58,12 @@ deploy:
     # Configure Git (Windows PowerShell commands)
     - git config --global user.name "$env:GITLAB_USER_NAME"
     - git config --global user.email "$env:GITLAB_USER_EMAIL"
+
     # Setup SSH for Windows
     - mkdir -Force "$env:USERPROFILE\.ssh"
     - Set-Content -Path "$env:USERPROFILE\.ssh\id_rsa" -Value "$env:GITHUB_SSH_PRIVATE_KEY"
-    # Adjust permissions for SSH key (Windows equivalent of chmod 600)
-    - $acl = Get-Acl "$env:USERPROFILE\.ssh\id_rsa"
-    - $acl.SetAccessRuleProtection($true, $false)
-    - $rule = New-Object System.Security.AccessControl.FileSystemAccessRule("$env:USERNAME", "Read, Write", "Allow")
-    - $acl.SetAccessRule($rule)
-    - Set-Acl "$env:USERPROFILE\.ssh\id_rsa" $acl
-    # Add GitHub to known hosts
     - ssh-keyscan github.com | Out-File -Append -FilePath "$env:USERPROFILE\.ssh\known_hosts" -Encoding ASCII
+
   script:
     # Prepare temporary directory for operation
     - $tempDir = "$env:TEMP\github_sync"
