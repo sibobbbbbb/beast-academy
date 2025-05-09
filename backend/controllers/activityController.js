@@ -93,7 +93,7 @@ export async function recalculateActivity(uid, refreshDB = false) {
   const postsInTimeWindow = await getEventsCountByCriteria(criteria);
 
   if (refreshDB) {
-    refreshActivityForUser(uid)
+    await refreshActivityForUser(uid)
   }
 
   const metrics = await prisma.user_activity_score.findUnique({
