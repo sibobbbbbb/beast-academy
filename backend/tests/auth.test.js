@@ -1,6 +1,9 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 import app from '../app';
+import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
@@ -46,12 +49,10 @@ jest.mock('cloudinary', () => ({
 
 describe('AuthController', () => {
   let prismaInstance;
-  const bcrypt = require('bcryptjs');
-  const jwt = require('jsonwebtoken');
   
   beforeEach(() => {
     // Get mock instance
-    prismaInstance = new (require('@prisma/client').PrismaClient)();
+    prismaInstance = new PrismaClient();
     
     // Reset mocks
     jest.clearAllMocks();

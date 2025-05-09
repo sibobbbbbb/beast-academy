@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 import app from '../app';
+import { PrismaClient } from '@prisma/client';
 
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
@@ -43,7 +44,7 @@ describe('EventController', () => {
   
   beforeEach(() => {
     // Get mock instance
-    prismaInstance = new (require('@prisma/client').PrismaClient)();
+    prismaInstance = new PrismaClient();
     
     // Reset mocks
     jest.clearAllMocks();
