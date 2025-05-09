@@ -17,7 +17,7 @@ await jest.unstable_mockModule(
   })
 );
 
-import { getMembers as filterAndSortController } from '../controllers/filterAndSortController';
+import { getMembers } from '../controllers/filterAndSortController';
 import { prisma } from '../db/prisma/prisma';
 
 describe('filterAndSortController', () => {
