@@ -167,6 +167,7 @@ export const login = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
+            // sameSite: 'none', // Kalo beda misal fe vercel be railway
             maxAge: 24 * 60 * 60 * 1000,
         });
 
@@ -190,8 +191,13 @@ export const login = async (req, res) => {
 
 // Logout User
 export const logout = (req, res) => {
-    res.clearCookie('token', { httpOnly: true, sameSite: 'strict' });
-    res.json({ message: 'Logout successful' });
+  res.clearCookie('token', { 
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict' // Kalo beda misal fe vercel be railway
+    // sameSite: 'none' // Kalo beda misal fe vercel be railway
+});
+res.json({ message: 'Logout successful' });
 };
 
 // Update this method in your authController.js file
@@ -331,6 +337,7 @@ export const googleLogin = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      // sameSite: 'none', // Kalo beda misal fe vercel be railway
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -359,7 +366,7 @@ export const googleCallback = async (req, res) => {
     }
     
     // Exchange code for tokens
-    const redirectUri = "http://localhost:5173/auth/google/callback";
+    const redirectUri = `${process.env.FRONTEND_URL}/auth/google/callback`;
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -497,6 +504,7 @@ export const googleCallback = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      // sameSite: 'none', // Kalo beda misal fe vercel be railway
       maxAge: 24 * 60 * 60 * 1000
     });
     
