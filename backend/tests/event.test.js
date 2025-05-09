@@ -1,6 +1,7 @@
 process.env.CLOUDINARY_CLOUD_NAME = 'test-cloud-name';
 process.env.CLOUDINARY_API_KEY = 'test-api-key';
 process.env.CLOUDINARY_API_SECRET = 'test-api-secret';
+process.env.NODE_ENV = 'test';
 
 import { jest } from '@jest/globals';
 
