@@ -11,6 +11,7 @@ import MobileListItem from '@/components/MobileListItem.vue'
 import NormalHeader from './NormalHeader.vue';
 import { type memberlistOp } from '@/types/memberlistOperation';
 import Pagination from '@/components/PaginationApp.vue';
+import { waitForDebugger } from 'inspector';
 
 const deviceStore = useDeviceModeStore()
 
@@ -232,10 +233,29 @@ const emit = defineEmits<{
   (event: 'processMember', members: Member): void;
   (event: 'processMemberList', members: Member[]): void;
   (event: 'memberlistOperation', memberlistop: memberlistOp) : void;
+  (event: 'mobileLongPress', member: Member) : void;
 }>();
+
+function longPressBarrier(memberid : number) {
+  let longTapped = localTapMap.has(memberid) ? localTapMap.get(memberid) : false;
+
+  // already long tapped, do not continue
+  if (longTapped) {
+    //avoid memory overuse, realistically you could only long tap one at a time methinks
+    // but just in case
+    localTapMap.delete(memberid);
+    return true;
+  }
+
+  return false;
+}
 
 // intendedOperation is false for deselecting, and true for selecting
 function toggleSelect(item : Member, intendedOperation : boolean = selectedMembersMap.value.has(item.id)) {
+  if (longPressBarrier(item.id)) {
+    return
+  }
+
   if (intendedOperation === true) {
     deselectMember(item)
     emit('memberlistOperation',
@@ -256,6 +276,8 @@ function processSelectedMembers() : Member[] {
 }
 
 function processSingleMember(member: Member) : Member {
+  
+
   emit('processMember', member);
   return member
 }
@@ -276,6 +298,24 @@ export interface ChildComponentExpose {
 export interface SlotProps {
   item?: Member;
 }
+
+// Report long press
+function reportLongPress(item : Member) {
+  
+  emit('mobileLongPress',item)
+
+  nextTick(() => {
+    props.multiSelect ? toggleSelect(item) : processSingleMember(item)
+    localTapMap.set(item.id, true);
+    // To help wait emit actions to resolve
+    console.log("Has :", selectedMembersMap.value.has(item.id))
+  });
+
+  console.log("HOLD PROC")
+}
+
+// Prevent doubling from mobile presses
+const localTapMap = new Map<number, boolean>()
 
 defineExpose({
   processSelectedMembers
@@ -406,7 +446,10 @@ defineExpose({
         Search bar
       </thead> -->
       <tbody>
-        <MobileListItem v-for="item in lastFetch" :key="item.id" @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)" :class="{ selected: selectedMembersMap.has(item.id) }">
+        <MobileListItem v-for="item in lastFetch"
+          :key="item.id" @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)"
+          :class="{ selected: selectedMembersMap.has(item.id) }" 
+          v-use-longpress="500" @longpress="reportLongPress(item)" >
           <!-- primary slot, main text -->
           <template #main>
             {{ item.name }}
@@ -444,8 +487,7 @@ defineExpose({
         </tr>
       </tbody>
     </table>
-    <nav
-      style="position: sticky; bottom: 0; background-color: rgba(190, 100, 180, 0.6); text-align: center; padding-top: 0.025rem;">
+    <nav class="bottom_nav">
       <hr style="
         width: 25%;
         height: 4px;
@@ -455,7 +497,7 @@ defineExpose({
         margin: 0.2rem auto;
         align-self: center;
       ">
-      <slot>
+      <slot name="mobile-actions">
         <!-- Context actions if any-->
       </slot>
     </nav>
@@ -472,6 +514,14 @@ defineExpose({
 </template>
 
 <style>
+
+.bottom_nav {
+  position: sticky;
+  bottom: 0;
+  background-color: rgba(190, 100, 180, 0.6);
+  text-align: center;
+  padding-top: 0.025rem;
+}
 .error-overlay {
   position: fixed;
   inset: 0;
