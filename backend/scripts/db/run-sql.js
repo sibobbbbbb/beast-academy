@@ -20,8 +20,10 @@ async function runSQLFiles() {
       '03_placeholders.sql',
     ];
 
+    const sqlDir = path.join(__dirname, '../../db/init');
+    
     for (const file of sqlFiles) {
-      const filePath = path.join(__dirname, 'db/init', file);
+      const filePath = path.join(sqlDir, file);
       const sql = await fs.readFile(filePath, 'utf8');
       console.log(`Executing ${file}...`);
       await client.query(sql);
