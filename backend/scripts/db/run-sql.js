@@ -15,7 +15,6 @@ async function runSQLFiles() {
     await client.connect();
 
     const sqlFiles = [
-      '02_triggers.sql',
       '03_placeholders.sql',
     ];
 
