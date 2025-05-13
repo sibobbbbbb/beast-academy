@@ -15,13 +15,12 @@ async function runSQLFiles() {
     await client.connect();
 
     const sqlFiles = [
-      '01_newinit.sql',
       '02_triggers.sql',
       '03_placeholders.sql',
     ];
 
     const sqlDir = path.join(__dirname, '../../db/init');
-    
+
     for (const file of sqlFiles) {
       const filePath = path.join(sqlDir, file);
       const sql = await fs.readFile(filePath, 'utf8');
