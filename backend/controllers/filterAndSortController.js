@@ -70,7 +70,7 @@ export const getMembers = async (req, res) => {
     }
     
     // Query untuk mendapatkan daftar members
-    const members = await prisma.users.findMany({
+    const rawMembers = await prisma.users.findMany({
       where: whereCondition,
       orderBy: { [sortBy]: order },
       skip: offset,
@@ -86,8 +86,16 @@ export const getMembers = async (req, res) => {
             users_trained_by_member_idTousers: true, // Include member data
           },
         },
+        user_activity_scores: {
+          select: { activity_score: true }
+        },
       },
     });
+
+    const members = rawMembers.map(({ user_activity_scores, ...user }) => ({
+  ...user,
+  activity_score: user_activity_scores?.activity_score ?? 0,
+}));
 
     // Menghitung total members yang memenuhi kondisi
     const totalMembers = await prisma.users.count({
