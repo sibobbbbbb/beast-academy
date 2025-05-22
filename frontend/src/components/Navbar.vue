@@ -253,7 +253,7 @@ const closeMobileMenu = () => {
 const navigationItems = [
   { name: 'Features', path: '/#features' },
   { name: 'About', path: '/#about' },
-  { name: 'Community', path: '/#community' },
+  // { name: 'Community', path: '/#community' },
   { name: 'Events', path: '/events' },
   { name: 'Contact', path: '/#contact' },
 ];
