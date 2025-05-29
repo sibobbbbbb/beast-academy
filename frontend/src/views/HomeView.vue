@@ -488,11 +488,12 @@ const handleImageError = (event: Event) => {
   target.style.padding = '2rem';
 };
 
+// Lint is a pain in the ass sometimes
 // Placeholder function for newsletter subscription
-const subscribeNewsletter = () => {
-  // Implement newsletter subscription logic
-  console.log('Newsletter subscription submitted');
-};
+// const subscribeNewsletter = () => {
+//   // Implement newsletter subscription logic
+//   console.log('Newsletter subscription submitted');
+// };
 </script>
 
 
