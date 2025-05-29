@@ -7,8 +7,10 @@ export const getMembers = async (req, res) => {
     // Ambil role dan userId dari token yang sudah diverifikasi
     const { role, userId } = req.user;
 
+    console.log(`Filter by : ${filterBy}`)
+
     // Field yang valid untuk sorting
-    const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name", "id"];
+    const validSortFields = ["created_at", "email", "phone_no", "last_activity", "name", "id", "activity_score"];
     const validOrderValues = ["asc", "desc"];
 
     if (!validSortFields.includes(sortBy)) {
@@ -22,22 +24,26 @@ export const getMembers = async (req, res) => {
     const limitNumber = parseInt(limit, 10) || 5;
     const offset = (pageNumber - 1) * limitNumber;
 
-    // Membuat kondisi pencarian dan filter
-    let whereCondition = {};
+    let whereClauses = [];
 
-    // Filter berdasarkan role (via relasi many-to-many dengan users)
+    // Role filter
     if (filterBy) {
-      whereCondition.role = filterBy;
+      whereClauses.push({ role: filterBy });
     }
-    
-    // Pencarian berdasarkan name, email, atau phone_no
+
+    // Search filter
     if (search) {
-      whereCondition.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone_no: { contains: search, mode: "insensitive" } },
-      ];
+      whereClauses.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { phone_no: { contains: search, mode: "insensitive" } },
+        ]
+      });
     }
+
+    // Build whereCondition from AND clauses
+    let whereCondition = whereClauses.length > 0 ? { AND: whereClauses } : {};
 
     // Jika role adalah trainer, filter member yang dilatih oleh trainer tersebut
     if (role === "trainer") {
@@ -69,10 +75,18 @@ export const getMembers = async (req, res) => {
       }
     }
     
+    let orderByClause;
+    if (sortBy === "activity_score") {
+      // Urutkan berdasarkan kolom activity_score di relation user_activity_scores
+      orderByClause = { user_activity_scores: { activity_score: order } };
+    } else {
+      orderByClause = { [sortBy]: order };
+    }
+
     // Query untuk mendapatkan daftar members
     const rawMembers = await prisma.users.findMany({
       where: whereCondition,
-      orderBy: { [sortBy]: order },
+      orderBy: orderByClause,
       skip: offset,
       take: limitNumber,
       include: {
@@ -95,7 +109,7 @@ export const getMembers = async (req, res) => {
     const members = rawMembers.map(({ user_activity_scores, ...user }) => ({
   ...user,
   activity_score: user_activity_scores?.activity_score ?? 0,
-}));
+  }));
 
     // Menghitung total members yang memenuhi kondisi
     const totalMembers = await prisma.users.count({

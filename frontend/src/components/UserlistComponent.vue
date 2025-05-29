@@ -11,8 +11,6 @@ import MobileListItem from '@/components/MobileListItem.vue'
 import NormalHeader from './NormalHeader.vue';
 import { type memberlistOp } from '@/types/memberlistOperation';
 import Pagination from '@/components/PaginationApp.vue';
-import { waitForDebugger } from 'inspector';
-
 const deviceStore = useDeviceModeStore()
 
 /*
@@ -92,13 +90,14 @@ const props = defineProps({
 async function dataFetcher(page: number, append = false) {
   try {
     const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
-    
+    console.log(`Filter by ${selectedRole.value}`)
     if (append) {
       lastFetch.value = [...lastFetch.value, ...response.data]; // append mode
     } else {
       lastFetch.value = response.data; // reset mode
     }
   
+    console.log(lastFetch.value)
     totalPages.value = response.pagination.totalPages;
 
     // Cek apakah ini halaman terakhir
@@ -321,6 +320,7 @@ defineExpose({
   processSelectedMembers
 })
 
+
 </script>
 
 <template>
@@ -354,6 +354,7 @@ defineExpose({
     <button @click="refresh(currentPage)">Refresh</button>
     </div>
 
+
     <!-- Member List Display -->
     <table>
       <thead>
@@ -378,6 +379,9 @@ defineExpose({
           </th>
           <th class="contact">
             <SortableHeader sortid="phone_no" @sort="handleSort">Contact</SortableHeader>
+          </th>
+          <th class="activeness">
+            <SortableHeader sortid="activity_score" @sort="handleSort">Activeness</SortableHeader>
           </th>
         </tr>
       </thead>
@@ -404,6 +408,9 @@ defineExpose({
           }).replace(',', ',') }}</td>
           <td>
             <span>{{ item.phone_no }}</span>
+          </td>
+          <td>
+            <span>{{ item.activity_score || "NULL" }}</span>
           </td>
         </tr>
       </tbody>

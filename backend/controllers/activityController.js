@@ -113,7 +113,7 @@ export async function recalculateActivity(uid, refreshDB = false) {
   const login_activeness = Math.exp(-metrics.days_since_last_login / 7) * weights[1]
   
   const likeRatio = metrics.post_interactions_monthly / postsInTimeWindow
-  const like_activeness = Math.min(likeRatio, 1.0) * weights[2]
+  const like_activeness = Math.min(likeRatio, 1.0) * weights[2] || 0
 
   // Step 2: Calculate score using weights
   console.log("SCORES ",training_activeness, login_activeness, like_activeness)
