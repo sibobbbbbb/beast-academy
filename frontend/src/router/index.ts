@@ -9,6 +9,7 @@ import EventDetails from '@/views/EventDetails.vue'
 import api from '@/utils/axios'
 import NoteListView from '@/views/NoteListView.vue'
 import AdminView from '@/views/AdminView.vue'
+import TrainerView from '@/views/TrainerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,6 +82,12 @@ const router = createRouter({
       component: AdminView,
       meta: { requiresAuth: true }
       
+    },
+    {
+      path: '/trainerview',
+      name: 'Trainer view',
+      component: TrainerView,
+      meta: { requiresAuth: true }
     }
 
   ],
