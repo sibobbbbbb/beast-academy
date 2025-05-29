@@ -236,7 +236,7 @@ const emit = defineEmits<{
 }>();
 
 function longPressBarrier(memberid : number) {
-  let longTapped = localTapMap.has(memberid) ? localTapMap.get(memberid) : false;
+  const longTapped = localTapMap.has(memberid) ? localTapMap.get(memberid) : false;
 
   // already long tapped, do not continue
   if (longTapped) {
@@ -304,7 +304,11 @@ function reportLongPress(item : Member) {
   emit('mobileLongPress',item)
 
   nextTick(() => {
-    props.multiSelect ? toggleSelect(item) : processSingleMember(item)
+    if (props.multiSelect) {
+      toggleSelect(item);
+    } else {
+      processSingleMember(item);
+    }
     localTapMap.set(item.id, true);
     // To help wait emit actions to resolve
     console.log("Has :", selectedMembersMap.value.has(item.id))

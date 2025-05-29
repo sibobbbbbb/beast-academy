@@ -1,12 +1,12 @@
 <script setup lang="ts">
-    import {computed, onMounted, ref, type Ref} from 'vue';
+    import {onMounted, ref, type Ref} from 'vue';
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
-    import { type memberlistOp } from '@/types/memberlistOperation';
-    import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import { clearSelectedMembers, exportToExcel, selectedCount} from '@/utils/memberSelection';
+    // import { type memberlistOp } from '@/types/memberlistOperation';
+    //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
+    import { selectedCount} from '@/utils/memberSelection'; //clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
-import { MoveUpLeftIcon } from 'lucide-vue-next';
+    //import { MoveUpLeftIcon } from 'lucide-vue-next';
 
 
     // Add member / Bottom button
@@ -47,21 +47,21 @@ import { MoveUpLeftIcon } from 'lucide-vue-next';
     }
 
     //function for process member emit
-    function processMemberContext() {
-        switch (currentMobileContext.value) {
-            case (mobileContext.edit) : {
-                // no multi select tap
-                break;
-            } 
-            case (mobileContext.delete) : {
-                // enable multi select
-                break;
-            }
-            case (mobileContext.export) : {
+    // function processMemberContext() {
+    //     switch (currentMobileContext.value) {
+    //         case (mobileContext.edit) : {
+    //             // no multi select tap
+    //             break;
+    //         } 
+    //         case (mobileContext.delete) : {
+    //             // enable multi select
+    //             break;
+    //         }
+    //         case (mobileContext.export) : {
 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     const isMulti = ref(false);
 

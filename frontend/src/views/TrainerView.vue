@@ -1,12 +1,12 @@
 <script setup lang="ts">
-    import {computed, onMounted, ref, type Ref} from 'vue';
+    import { onMounted, ref, type Ref} from 'vue'; //computed,
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
-    import { type memberlistOp } from '@/types/memberlistOperation';
-    import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import { clearSelectedMembers, exportToExcel, selectedCount} from '@/utils/memberSelection';
+    //import { type memberlistOp } from '@/types/memberlistOperation';
+    //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
+    import {selectedCount} from '@/utils/memberSelection'; // clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
-    import { MoveUpLeftIcon } from 'lucide-vue-next';
+    //import { MoveUpLeftIcon } from 'lucide-vue-next';
     import { useRouter } from 'vue-router';
 
 
@@ -37,33 +37,33 @@
         mobileMode.value = deviceStore.currentMode === 'mobile' 
     })
 
-    enum mobileContext {
-        edit,
-        export
-    }
+    // enum mobileContext {
+    //     edit,
+    //     export
+    // }
 
-    const currentMobileContext : Ref<null | mobileContext> = ref(null)
+    // const currentMobileContext : Ref<null | mobileContext> = ref(null)
 
-    function switchMode(mode : mobileContext) {
-        if (currentMobileContext.value === mode) {
-            currentMobileContext.value = null;
-        } else {
-            currentMobileContext.value = mode;
-        }
-    }
+    // function switchMode(mode : mobileContext) {
+    //     if (currentMobileContext.value === mode) {
+    //         currentMobileContext.value = null;
+    //     } else {
+    //         currentMobileContext.value = mode;
+    //     }
+    // }
 
-    //function for process member emit
-    function processMemberContext() {
-        switch (currentMobileContext.value) {
-            case (mobileContext.edit) : {
-                // no multi select tap
-                break;
-            } 
-            case (mobileContext.export) : {
+    // //function for process member emit
+    // function processMemberContext() {
+    //     switch (currentMobileContext.value) {
+    //         case (mobileContext.edit) : {
+    //             // no multi select tap
+    //             break;
+    //         } 
+    //         case (mobileContext.export) : {
 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     const isMulti = ref(false);
 
