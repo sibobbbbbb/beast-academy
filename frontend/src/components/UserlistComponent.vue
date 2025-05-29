@@ -11,7 +11,6 @@ import MobileListItem from '@/components/MobileListItem.vue'
 import NormalHeader from './NormalHeader.vue';
 import { type memberlistOp } from '@/types/memberlistOperation';
 import Pagination from '@/components/PaginationApp.vue';
-
 const deviceStore = useDeviceModeStore()
 
 /*
@@ -91,13 +90,14 @@ const props = defineProps({
 async function dataFetcher(page: number, append = false) {
   try {
     const response = await fetchMembers(perPage.value, page, sortBy.value, order.value, searchQuery.value, selectedRole.value);
-    
+    console.log(`Filter by ${selectedRole.value}`)
     if (append) {
       lastFetch.value = [...lastFetch.value, ...response.data]; // append mode
     } else {
       lastFetch.value = response.data; // reset mode
     }
   
+    console.log(lastFetch.value)
     totalPages.value = response.pagination.totalPages;
 
     // Cek apakah ini halaman terakhir
@@ -229,10 +229,29 @@ const emit = defineEmits<{
   (event: 'processMember', members: Member): void;
   (event: 'processMemberList', members: Member[]): void;
   (event: 'memberlistOperation', memberlistop: memberlistOp) : void;
+  (event: 'mobileLongPress', member: Member) : void;
 }>();
+
+function longPressBarrier(memberid : number) {
+  let longTapped = localTapMap.has(memberid) ? localTapMap.get(memberid) : false;
+
+  // already long tapped, do not continue
+  if (longTapped) {
+    //avoid memory overuse, realistically you could only long tap one at a time methinks
+    // but just in case
+    localTapMap.delete(memberid);
+    return true;
+  }
+
+  return false;
+}
 
 // intendedOperation is false for deselecting, and true for selecting
 function toggleSelect(item : Member, intendedOperation : boolean = selectedMembersMap.value.has(item.id)) {
+  if (longPressBarrier(item.id)) {
+    return
+  }
+
   if (intendedOperation === true) {
     deselectMember(item)
     emit('memberlistOperation',
@@ -253,6 +272,8 @@ function processSelectedMembers() : Member[] {
 }
 
 function processSingleMember(member: Member) : Member {
+  
+
   emit('processMember', member);
   return member
 }
@@ -274,9 +295,28 @@ export interface SlotProps {
   item?: Member;
 }
 
+// Report long press
+function reportLongPress(item : Member) {
+  
+  emit('mobileLongPress',item)
+
+  nextTick(() => {
+    props.multiSelect ? toggleSelect(item) : processSingleMember(item)
+    localTapMap.set(item.id, true);
+    // To help wait emit actions to resolve
+    console.log("Has :", selectedMembersMap.value.has(item.id))
+  });
+
+  console.log("HOLD PROC")
+}
+
+// Prevent doubling from mobile presses
+const localTapMap = new Map<number, boolean>()
+
 defineExpose({
   processSelectedMembers
 })
+
 
 </script>
 
@@ -311,6 +351,7 @@ defineExpose({
     <button @click="refresh(currentPage)">Refresh</button>
     </div>
 
+
     <!-- Member List Display -->
     <table>
       <thead>
@@ -335,6 +376,9 @@ defineExpose({
           </th>
           <th class="contact">
             <SortableHeader sortid="phone_no" @sort="handleSort">Contact</SortableHeader>
+          </th>
+          <th class="activeness">
+            <SortableHeader sortid="activity_score" @sort="handleSort">Activeness</SortableHeader>
           </th>
         </tr>
       </thead>
@@ -361,6 +405,9 @@ defineExpose({
           }).replace(',', ',') }}</td>
           <td>
             <span>{{ item.phone_no }}</span>
+          </td>
+          <td>
+            <span>{{ item.activity_score || "NULL" }}</span>
           </td>
         </tr>
       </tbody>
@@ -403,7 +450,10 @@ defineExpose({
         Search bar
       </thead> -->
       <tbody>
-        <MobileListItem v-for="item in lastFetch" :key="item.id" @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)" :class="{ selected: selectedMembersMap.has(item.id) }">
+        <MobileListItem v-for="item in lastFetch"
+          :key="item.id" @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)"
+          :class="{ selected: selectedMembersMap.has(item.id) }" 
+          v-use-longpress="500" @longpress="reportLongPress(item)" >
           <!-- primary slot, main text -->
           <template #main>
             {{ item.name }}
@@ -441,8 +491,7 @@ defineExpose({
         </tr>
       </tbody>
     </table>
-    <nav
-      style="position: sticky; bottom: 0; background-color: rgba(190, 100, 180, 0.6); text-align: center; padding-top: 0.025rem;">
+    <nav class="bottom_nav">
       <hr style="
         width: 25%;
         height: 4px;
@@ -452,7 +501,7 @@ defineExpose({
         margin: 0.2rem auto;
         align-self: center;
       ">
-      <slot>
+      <slot name="mobile-actions">
         <!-- Context actions if any-->
       </slot>
     </nav>
@@ -469,6 +518,14 @@ defineExpose({
 </template>
 
 <style>
+
+.bottom_nav {
+  position: sticky;
+  bottom: 0;
+  background-color: rgba(190, 100, 180, 0.6);
+  text-align: center;
+  padding-top: 0.025rem;
+}
 .error-overlay {
   position: fixed;
   inset: 0;

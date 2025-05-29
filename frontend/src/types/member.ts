@@ -7,4 +7,5 @@ export type Member = {
   phone_no: string;
   created_at: string;
   last_activity: string;
+  activity_score?: number;
 };

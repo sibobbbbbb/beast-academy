@@ -15,7 +15,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to update activity score when users log in
-CREATE TRIGGER user_login_trigger
+CREATE OR REPLACE TRIGGER user_login_trigger
 AFTER UPDATE OF last_activity ON users
 FOR EACH ROW
 WHEN (OLD.last_activity IS DISTINCT FROM NEW.last_activity)
@@ -24,17 +24,17 @@ EXECUTE FUNCTION update_user_login_activity();
 -- LOGIN FUNC
 
 -- Create a function to update user login activity
-CREATE OR REPLACE FUNCTION update_user_login(user_id BIGINT)
+CREATE OR REPLACE FUNCTION update_user_login(login_user_id BIGINT)
 RETURNS BOOLEAN AS $$
 BEGIN
   -- Update the last_activity timestamp
   UPDATE users 
   SET last_activity = NOW() 
-  WHERE id = user_id;
+  WHERE id = login_user_id;
   
   -- Create or update the activity score
   INSERT INTO user_activity_score (user_id, days_since_last_login, last_calculated)
-  VALUES (user_id, 0, NOW())
+  VALUES (login_user_id, 0, NOW())  
   ON CONFLICT (user_id) 
   DO UPDATE SET 
     days_since_last_login = 0, -- User just logged in, so it's 0 days
@@ -61,7 +61,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to update activity score when users log in
-CREATE TRIGGER new_user_trigger
+CREATE OR REPLACE TRIGGER new_user_trigger
 AFTER INSERT ON users
 FOR EACH ROW
 EXECUTE FUNCTION create_user_activity();
