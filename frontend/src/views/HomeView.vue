@@ -39,9 +39,33 @@
       </div>
       
       <div class="w-full md:w-1/2 flex justify-center">
-        <div class="relative w-full max-w-md">
+        <div class="relative w-full max-w-md lg:max-w-lg">
+          <!-- Background decoration -->
           <div class="absolute inset-0 bg-[var(--primary-green)]/20 rounded-2xl transform rotate-3"></div>
-          <div class="relative z-10 w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] rounded-2xl shadow-xl bg-white/10"></div>
+          
+          <!-- Grid container untuk dua gambar -->
+          <div class="relative z-10 w-full space-y-3 rounded-2xl overflow-hidden">
+            <!-- Gambar pertama (crop bagian atas) -->
+            <div class="rounded-xl overflow-hidden shadow-lg">
+              <img 
+                src="/src/assets/homepage1.webp" 
+                alt="Tennis Community - Group Photo 1" 
+                class="w-full h-48 object-cover object-top rounded-xl"
+                @error="handleImageError"
+              />
+            </div>
+            
+            <!-- Gambar kedua (crop bagian bawah) -->
+            <div class="rounded-xl overflow-hidden shadow-lg">
+              <img 
+                src="/src/assets/homepage1.webp" 
+                alt="Tennis Community - Group Photo 2" 
+                class="w-full h-70 object-cover object-bottom rounded-xl"
+                @error="handleImageError"
+              />
+            </div>
+          
+          </div>
         </div>
       </div>
     </section>
@@ -441,6 +465,15 @@ onMounted(async () => {
     isLoggedIn.value = false;
   }
 });
+
+// Add this function inside your script setup section
+const handleImageError = (event: Event) => {
+  // Fallback if image fails to load
+  const target = event.target as HTMLImageElement;
+  target.src = '/src/assets/beastLogo.png'; // Use your existing logo as fallback
+  target.style.objectFit = 'contain';
+  target.style.padding = '2rem';
+};
 
 // Placeholder function for newsletter subscription
 const subscribeNewsletter = () => {
