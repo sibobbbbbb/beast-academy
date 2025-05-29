@@ -363,10 +363,10 @@ const getActivityBadgeClass = (score: number | null) => {
 };
 
 // Helper function to format mobile values
-const formatMobileValue = (value: any, field: string) => {
-  if (!value) return '-';
+const formatMobileValue = (value: unknown, field: string) => {
+  if (value === null || value === undefined || value === '') return '-';
   
-  if (field === 'created_at') {
+  if (field === 'created_at' && typeof value === 'string') {
     return new Date(value).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short', 
@@ -374,7 +374,7 @@ const formatMobileValue = (value: any, field: string) => {
     });
   }
   
-  return value;
+  return value as string;
 };
 
 async function dataFetcher(page: number, append = false) {
