@@ -167,13 +167,26 @@
       <div class="container !mx-auto !px-6 md:!px-12">
         <div class="flex flex-col md:flex-row items-center">
           <div class="w-full md:w-1/2 !mb-12 md:!mb-0">
-            <div class="relative">
-              <div class="absolute -top-4 -left-4 w-full h-full bg-[var(--primary-green)]/20 rounded-xl transform -rotate-3"></div>
-              <div class="relative z-10 w-full h-[350px] rounded-xl shadow-xl bg-white/20"></div>
-              <!-- Tennis ball decoration -->
-              <div class="absolute -bottom-6 -right-6 w-16 h-16 rounded-full" :style="{ background: 'var(--primary-green)', opacity: 0.5 }"></div>
-            </div>
-          </div>
+  <div class="relative">
+    <!-- Background decoration -->
+    <div class="absolute -top-4 -left-4 w-full h-full bg-[var(--primary-green)]/20 rounded-xl transform -rotate-3"></div>
+    
+    <!-- Image container -->
+    <div class="relative z-10 w-full rounded-xl shadow-xl overflow-hidden">
+      <img 
+        src="/src/assets/homepage2.webp" 
+        alt="BEAST Tennis Community - About Us" 
+        class="w-full h-auto object-cover rounded-xl"
+        style="min-height: 350px; max-height: 500px; object-position: center 20%;"
+        @error="handleImageError"
+      />
+      
+      
+    </div>
+    
+    
+  </div>
+</div>
           
           <div class="w-full md:w-1/2 md:!pl-12">
             <h2 class="text-3xl md:text-4xl !font-bold !mb-6" :style="{ color: 'var(--primary-blue)' }">About BEAST Tennis Community</h2>
