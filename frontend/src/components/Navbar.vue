@@ -205,6 +205,7 @@ const authStore = useAuthStore();
 const mobileMenuOpen = ref(false);
 const profileDropdownOpen = ref(false);
 const avatarLoadError = ref(false);
+const errorMercy = ref(true);
 
 // Use computed property for avatar URL to handle Google avatar URLs properly
 const avatarUrl = computed(() => {
@@ -230,12 +231,15 @@ watch(() => authStore.isLoggedIn, (isLoggedIn) => {
 // Handle avatar loading errors
 const handleAvatarError = async () => {
   avatarLoadError.value = true;
+  if (errorMercy.value == false) {
+    return
+  }
   
   // Try to refresh user data
   try {
     await authStore.fetchProfile();
     // Reset error state to try again
-    avatarLoadError.value = false;
+    errorMercy.value = false;
   } catch (error) {
     console.error('Failed to refresh user data:', error);
   }
