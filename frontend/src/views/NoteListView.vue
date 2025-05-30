@@ -13,7 +13,7 @@
             <p class="text-[var(--neutral-700)] max-w-xl">Manage and track notes for this member</p>
           </div>
           <button v-if="userRole === 'trainer'" @click="(_) => {exportTrainerNotes(notes)}" 
-            class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"> 
+            class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white px-5 py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"> 
             Export 
           </button>
           
@@ -254,8 +254,7 @@
       </div>
     </div>
     
-    <!-- Tennis court decoration at bottom -->
-    <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
+
   </div>
 </template>
 

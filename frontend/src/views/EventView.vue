@@ -284,8 +284,6 @@
           </button>
         </div>
         
-        <!-- Tennis court decoration at bottom -->
-        <div class="h-1 w-full !mt-6" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
       </div>
     </div>
   </div>
