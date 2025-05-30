@@ -43,7 +43,7 @@
             </div>
             <div>
               <p class="text-sm text-[var(--neutral-700)]">Total Members</p>
-              <p class="text-2xl !font-bold text-[var(--primary-blue)]">{{ lastFetch.length }}</p>
+              <p class="text-2xl !font-bold text-[var(--primary-blue)]">{{ trainerStats.studentsCount }}</p>
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@
             </div>
             <div>
               <p class="text-sm text-[var(--neutral-700)]">Notes Added</p>
-              <p class="text-2xl !font-bold text-[var(--primary-green)]">-</p>
+              <p class="text-2xl !font-bold text-[var(--primary-green)]">{{ trainerStats.notesGiven }}</p>
             </div>
           </div>
         </div>
@@ -71,7 +71,7 @@
             </div>
             <div>
               <p class="text-sm text-[var(--neutral-700)]">Active Sessions</p>
-              <p class="text-2xl !font-bold text-[var(--green-light)]">-</p>
+              <p class="text-2xl !font-bold text-[var(--green-light)]">{{ trainerStats.activeNotes }}</p>
             </div>
           </div>
         </div>
@@ -183,6 +183,8 @@
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
     import { useRouter } from 'vue-router';
+    import { getTrainerStats } from '@/utils/admin';
+    import { useAuthStore } from '@/stores/auth';
 
     // Add member / Bottom button
     // Delete member - process member / members action // Avail only when selecting one or more
@@ -196,9 +198,19 @@
     const revealActions : Ref<boolean> = ref(false);
 
     const router = useRouter();
+    const authStore = useAuthStore();
 
     // Mock data for stats - replace with real data
     const lastFetch = ref<Member[]>([]);
+
+    interface TrainerStats {
+      studentsCount: number;
+      notesGiven: number;
+      activeNotes: number;
+    }
+
+
+    const trainerStats : Ref<TrainerStats> = ref({studentsCount: -1, notesGiven: -1, activeNotes: -1} as TrainerStats)
 
     function modeSet() {
         revealActions.value = selectedCount.value > 0 ? true : false
@@ -211,10 +223,19 @@
     }
 
     onMounted(() => {
+
+
         mobileMode.value = deviceStore.currentMode === 'mobile' 
         if (!mobileMode.value) {
             isMulti.value = true
         }
+
+        authStore.checkAuthStatus().then((_) => {
+              let user = authStore.user
+              let id = user?.id
+              getTrainerStats(id!!).then((results) => {trainerStats.value = results as TrainerStats})
+        })
+
     })
 
     // enum mobileContext {

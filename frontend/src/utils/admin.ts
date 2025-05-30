@@ -38,3 +38,24 @@ export const getStats = async () => {
     return null;
   }
 }
+
+export const getTrainerStats = async (tid : Number) => {
+    try {
+
+    console.log("fetching " + `${API_BASE_URL}/trainer-stats/${tid}`);
+    const response = await fetch(`${API_BASE_URL}/trainer-stats/${tid}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Gagal mendapatkan stats');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error getching Stats:', error);
+    return null;
+  }
+}

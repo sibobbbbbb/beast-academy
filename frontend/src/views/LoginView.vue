@@ -167,6 +167,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/utils/axios';
 import { AxiosError } from 'axios';
+import { useAuthStore } from '@/stores/auth';
 
 // Declare global Google SDK variables with proper interfaces
 declare global {
@@ -182,6 +183,8 @@ declare global {
     };
   }
 }
+
+const authStore = useAuthStore();
 
 // Define interfaces for Google SDK
 interface GoogleInitializeConfig {
@@ -368,8 +371,10 @@ const handleLogin = async () => {
   isLoading.value = true;
   
   try {
+
+    // try login with authstore instead
     // The backend sets httpOnly cookie automatically
-    await api.post('/auth/login', { 
+    const results = await api.post('/auth/login', { 
       email: email.value, 
       password: password.value 
     }, {
@@ -379,9 +384,10 @@ const handleLogin = async () => {
     // No need to store token in localStorage since it's in httpOnly cookie
     // Instead, just redirect to the dashboard
     router.push('/');
+
+    authStore.user = results.data.user
     
     // For testing: Get the user profile which includes role
-    await getUserProfile();
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
     console.error('Login failed', axiosError);

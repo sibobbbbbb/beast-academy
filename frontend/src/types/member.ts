@@ -8,4 +8,5 @@ export type Member = {
   created_at: string;
   last_activity: string;
   activity_score?: number;
+  avatar?: string
 };
