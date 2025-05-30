@@ -1,4 +1,4 @@
-import api, { API_BASE_URL } from "./axios";
+import { API_BASE_URL } from "./axios";
 
 export const updateUserData = async (id: number, name: string, phone_no: string) => {
   try {
@@ -39,7 +39,7 @@ export const getStats = async () => {
   }
 }
 
-export const getTrainerStats = async (tid : Number) => {
+export const getTrainerStats = async (tid : number) => {
     try {
 
     console.log("fetching " + `${API_BASE_URL}/trainer-stats/${tid}`);

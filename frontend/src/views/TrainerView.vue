@@ -200,8 +200,6 @@
     const router = useRouter();
     const authStore = useAuthStore();
 
-    // Mock data for stats - replace with real data
-    const lastFetch = ref<Member[]>([]);
 
     interface TrainerStats {
       studentsCount: number;
@@ -230,10 +228,10 @@
             isMulti.value = true
         }
 
-        authStore.checkAuthStatus().then((_) => {
-              let user = authStore.user
-              let id = user?.id
-              getTrainerStats(id!!).then((results) => {trainerStats.value = results as TrainerStats})
+        authStore.checkAuthStatus().then(() => {
+              const user = authStore.user
+              const id = user?.id
+              getTrainerStats(id!).then((results) => {trainerStats.value = results as TrainerStats})
         })
 
     })

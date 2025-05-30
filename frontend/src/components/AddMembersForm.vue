@@ -244,7 +244,7 @@ export default defineComponent({
           await navigator.clipboard.writeText(defaultPassword.value)
           copyStatus.value = 'Copied!'
           setTimeout(() => copyStatus.value = 'Copy', 2000)
-        } catch (err) {
+        } catch {
           copyStatus.value = 'Failed'
           setTimeout(() => copyStatus.value = 'Copy', 2000)
         }
