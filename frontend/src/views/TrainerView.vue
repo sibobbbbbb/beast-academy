@@ -178,7 +178,7 @@
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
     //import { type memberlistOp } from '@/types/memberlistOperation';
     //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import {selectedCount, clearSelectedMembers, exportToExcel, exportToFile} from '@/utils/memberSelection'; // clearSelectedMembers, exportToExcel, 
+    import {selectedCount, clearSelectedMembers, exportToExcel} from '@/utils/memberSelection'; // clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
@@ -217,32 +217,32 @@
         }
     })
 
-    enum mobileContext {
-        export
-    }
+    // enum mobileContext {
+    //     export
+    // }
 
-    const currentMobileContext : Ref<null | mobileContext> = ref(null)
+    // const currentMobileContext : Ref<null | mobileContext> = ref(null)
 
-    function switchMode(mode : mobileContext) {
-        if (currentMobileContext.value === mode) {
-            currentMobileContext.value = null;
-        } else {
-            currentMobileContext.value = mode;
-        }
-    }
+    // function switchMode(mode : mobileContext) {
+    //     if (currentMobileContext.value === mode) {
+    //         currentMobileContext.value = null;
+    //     } else {
+    //         currentMobileContext.value = mode;
+    //     }
+    // }
 
-    //function for process member emit
-    function processMemberContext() {
-        switch (currentMobileContext.value) {
-            case (mobileContext.export) : {
-                // no multi select tap
-                break;
-            } 
-            default : {
+    // //function for process member emit
+    // function processMemberContext() {
+    //     switch (currentMobileContext.value) {
+    //         case (mobileContext.export) : {
+    //             // no multi select tap
+    //             break;
+    //         } 
+    //         default : {
                 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     const isMulti = ref(false);
 

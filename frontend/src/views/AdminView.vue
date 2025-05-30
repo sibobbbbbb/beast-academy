@@ -285,7 +285,6 @@
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
-    import { X } from 'lucide-vue-next';
     import { updateUserData } from '@/services/memberServices';
     import AddMemberForm from '../components/AddMembersForm.vue'
 
@@ -300,7 +299,7 @@
 
     const revealActions : Ref<boolean> = ref(false);
 
-    const isSaving : Ref<Boolean> = ref(false)
+    const isSaving : Ref<boolean> = ref(false)
 
     function modeSet() {
         revealActions.value = selectedCount.value > 0 ? true : false
