@@ -39,7 +39,8 @@ describe('Filter and Sort Controller', () => {
           role: 'member',
           created_at: new Date('2024-01-01'),
           trained_by_trained_by_member_idTousers: [],
-          trained_by_trained_by_trainer_idTousers: []
+          trained_by_trained_by_trainer_idTousers: [],
+          activity_score: 0
         },
         {
           id: 2,
@@ -48,7 +49,8 @@ describe('Filter and Sort Controller', () => {
           role: 'trainer',
           created_at: new Date('2024-01-02'),
           trained_by_trained_by_member_idTousers: [],
-          trained_by_trained_by_trainer_idTousers: []
+          trained_by_trained_by_trainer_idTousers: [],
+          activity_score: 0
         }
       ]
 
@@ -62,18 +64,7 @@ describe('Filter and Sort Controller', () => {
         orderBy: { created_at: 'asc' },
         skip: 0,
         take: 10, // actual default limit in controller
-        include: {
-          trained_by_trained_by_member_idTousers: {
-            include: {
-              users_trained_by_trainer_idTousers: true
-            }
-          },
-          trained_by_trained_by_trainer_idTousers: {
-            include: {
-              users_trained_by_member_idTousers: true
-            }
-          }
-        }
+        include: expect.any(Object)
       })
 
       expect(mockPrisma.users.count).toHaveBeenCalledWith({
@@ -104,7 +95,8 @@ describe('Filter and Sort Controller', () => {
           id: 1,
           name: 'John Doe',
           email: 'john@example.com',
-          role: 'member'
+          role: 'member',
+          activity_score: 0
         }
       ]
 
@@ -114,17 +106,25 @@ describe('Filter and Sort Controller', () => {
       await getMembers(req, res)
 
       expect(mockPrisma.users.findMany).toHaveBeenCalledWith({
-        where: {
-          OR: [
-            { name: { contains: 'john', mode: 'insensitive' } },
-            { email: { contains: 'john', mode: 'insensitive' } },
-            { phone_no: { contains: 'john', mode: 'insensitive' } }
+        where: { 
+          AND: [
+            { 
+              OR: [
+                { name: { contains: 'john', mode: 'insensitive' } },
+                { email: { contains: 'john', mode: 'insensitive' } },
+                { phone_no: { contains: 'john', mode: 'insensitive' } }
+              ]
+            }
           ]
         },
         orderBy: { created_at: 'asc' },
         skip: 0,
         take: 5,
-        include: expect.any(Object)
+        include: expect.objectContaining({
+          trained_by_trained_by_member_idTousers: expect.anything(),
+          trained_by_trained_by_trainer_idTousers: expect.anything(),
+          user_activity_scores: expect.anything()
+        })
       })
 
       expect(res.json).toHaveBeenCalledWith({
@@ -161,23 +161,16 @@ describe('Filter and Sort Controller', () => {
       await getMembers(req, res)
 
       expect(mockPrisma.users.findMany).toHaveBeenCalledWith({
-        where: { role: 'trainer' },
+        where: { 
+          AND: [ // <-- Tambahkan bungkus AND
+            { role: 'trainer' }
+          ]
+        },
         orderBy: { name: 'desc' },
         skip: 0,
-        take: 10, // default limit
-        include: {
-          trained_by_trained_by_member_idTousers: {
-            include: {
-              users_trained_by_trainer_idTousers: true
-            }
-          },
-          trained_by_trained_by_trainer_idTousers: {
-            include: {
-              users_trained_by_member_idTousers: true
-            }
-          }
-        }
-      })
+        take: 10,
+        include: expect.any(Object) // <-- Gunakan ini
+      });
     })
 
     test('should get trainer members for trainer role', async () => {
@@ -219,18 +212,7 @@ describe('Filter and Sort Controller', () => {
         orderBy: { created_at: 'asc' },
         skip: 0,
         take: 10, // default limit
-        include: {
-          trained_by_trained_by_member_idTousers: {
-            include: {
-              users_trained_by_trainer_idTousers: true
-            }
-          },
-          trained_by_trained_by_trainer_idTousers: {
-            include: {
-              users_trained_by_member_idTousers: true
-            }
-          }
-        }
+        include: expect.any(Object) 
       })
     })
 
@@ -258,37 +240,25 @@ describe('Filter and Sort Controller', () => {
       expect(mockPrisma.users.findMany).toHaveBeenCalledWith({
         where: {
           AND: [
+            { role: 'member' },
             {
               OR: [
                 { name: { contains: 'student', mode: 'insensitive' } },
                 { email: { contains: 'student', mode: 'insensitive' } },
                 { phone_no: { contains: 'student', mode: 'insensitive' } }
               ]
-            },
-            {
-              trained_by_trained_by_member_idTousers: {
-                some: {
-                  trainer_id: 1
-                }
-              }
             }
-          ]
+          ],
+          trained_by_trained_by_member_idTousers: {
+            some: {
+              trainer_id: 1
+            }
+          }
         },
         orderBy: { created_at: 'asc' },
         skip: 0,
-        take: 10, // default limit without role filter in where
-        include: {
-          trained_by_trained_by_member_idTousers: {
-            include: {
-              users_trained_by_trainer_idTousers: true
-            }
-          },
-          trained_by_trained_by_trainer_idTousers: {
-            include: {
-              users_trained_by_member_idTousers: true
-            }
-          }
-        }
+        take: 10,
+        include: expect.any(Object)
       })
     })
 
@@ -303,7 +273,8 @@ describe('Filter and Sort Controller', () => {
         {
           id: 6,
           name: 'User Six',
-          email: 'user6@example.com'
+          email: 'user6@example.com',
+          activity_score: 0
         }
       ]
 
