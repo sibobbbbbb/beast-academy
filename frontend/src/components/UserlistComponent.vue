@@ -228,11 +228,19 @@
         <!-- primary slot, main text -->
         <template #main>
           <div class="flex items-center !space-x-3">
-            <div class="flex-shrink-0 h-10 w-10">
-              <div class="h-10 w-10 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center">
-                <span class="text-sm !font-medium text-[var(--primary-blue)]">{{ item.name.charAt(0).toUpperCase() }}</span>
-              </div>
-            </div>
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <div class="h-10 w-10 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center overflow-hidden">
+                          <img 
+                            v-if="item.avatar" 
+                            :src="item.avatar"
+                            alt="Profile" 
+                            class="w-full h-full object-cover" 
+                            @error="item.avatar = undefined"
+                            referrerpolicy="no-referrer"
+                          />
+                      <span v-else class="text-sm !font-medium text-[var(--primary-blue)]">{{ item.name.charAt(0).toUpperCase() }}</span>
+                    </div>
+                  </div>
             <div class="flex-1">
               <div class="!font-semibold text-[var(--primary-blue)]">{{ item.name }}</div>
             </div>
