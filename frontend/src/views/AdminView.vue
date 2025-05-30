@@ -93,41 +93,49 @@
       </div>
     </details>
       <!-- Action buttons -->
-      <div v-if="revealActions || (mobileMode && isMulti)" class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-red-400 sticky top-1.5 md:relative">
-        <div class="flex items-center justify-between">
+      <div
+        v-if="revealActions || (mobileMode && isMulti)"
+        class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-red-400 sticky top-1.5 md:relative"
+        :class="mobileMode ? 'grid grid-rows-[2fr_1fr] gap-4' : ''"
+      >
+        <div
+          class="flex items-center justify-between"
+          :class="mobileMode ? 'row-start-1 col-span-2 flex-col items-start space-y-2' : ''"
+        >
           <div class="flex items-center">
-            <div class="bg-red-100 p-3 rounded-lg !mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-lg !font-bold text-red-600">Bulk Actions</h3>
-              <p class="text-[var(--neutral-700)]">{{ selectedCount }} members selected for bulk operations</p>
-            </div>
+        <div class="bg-red-100 p-3 rounded-lg !mr-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg !font-bold text-red-600">Bulk Actions</h3>
+          <p class="text-[var(--neutral-700)]">{{ selectedCount }} members selected for bulk operations</p>
+        </div>
           </div>
-          
-          <div class="flex !space-x-3">
-            <button 
-              @click="exportToExcel()"
-              class="bg-[var(--primary-green)] hover:bg-[var(--green-dark)] text-white px-4 py-2 rounded-lg !font-medium transition-colors flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Export
-            </button>
-            
-            <button 
-              @click="deleteMember()"
-              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg !font-medium transition-colors flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete
-            </button>
-          </div>
+        </div>
+        <div
+          class="flex !space-x-3"
+          :class="mobileMode ? 'row-start-2 col-span-2 justify-center' : 'justify-end'"
+        >
+          <button 
+        @click="exportToExcel()"
+        class="bg-[var(--primary-green)] hover:bg-[var(--green-dark)] text-white px-4 py-1 rounded-lg !font-medium transition-colors flex items-center"
+          >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Export
+          </button>
+          <button 
+        @click="deleteMember()"
+        class="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-lg !font-medium transition-colors flex items-center"
+          >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Delete
+          </button>
         </div>
       </div>
       <div v-else class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-[var(--green-light)] sticky top-1.5 md:relative">
