@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./axios";
+import api, { API_BASE_URL } from "./axios";
 
 export const updateUserData = async (id: number, name: string, phone_no: string) => {
   try {
@@ -19,3 +19,22 @@ export const updateUserData = async (id: number, name: string, phone_no: string)
     return null;
   }
 };
+
+export const getStats = async () => {
+    try {
+    const response = await fetch(`${API_BASE_URL}/admin-stats`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Gagal mendapatkan stats');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error getching Stats:', error);
+    return null;
+  }
+}

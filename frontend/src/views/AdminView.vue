@@ -44,7 +44,7 @@
             </div>
             <div>
               <p class="text-sm text-[var(--neutral-700)]">Total Members</p>
-              <p class="text-2xl !font-bold text-[var(--primary-blue)]">{{ selectedCount }}</p>
+              <p class="text-2xl !font-bold text-[var(--primary-blue)]">{{ stats.membersCount }}</p>
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@
             </div>
             <div>
               <p class="text-sm text-[var(--neutral-700)]">Trainers</p>
-              <p class="text-2xl !font-bold text-[var(--green-light)]">-</p>
+              <p class="text-2xl !font-bold text-[var(--green-light)]">{{stats.trainersCount}}</p>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@
             </div>
             <div>
               <p class="text-sm text-[var(--neutral-700)]">Events</p>
-              <p class="text-2xl !font-bold text-orange-600">-</p>
+              <p class="text-2xl !font-bold text-orange-600">{{stats.eventsCount}}</p>
             </div>
           </div>
         </div>
@@ -288,18 +288,21 @@
     import { updateUserData } from '@/services/memberServices';
     import AddMemberForm from '../components/AddMembersForm.vue'
 
+    import { getStats } from '@/utils/admin';
+
     // Add member / Bottom button
     // Delete member - process member / members action // Avail only when selecting one or more
     // Export - process members action // Same as Delete member
     // Edit - process member action // Always available as button
 
     const deviceStore = useDeviceModeStore();
-
     const ulistRef : Ref<ChildComponentExpose | null> = ref(null);
-
     const revealActions : Ref<boolean> = ref(false);
-
     const isSaving : Ref<boolean> = ref(false)
+
+    const stats : Ref<adminStats> = ref({
+      eventsCount: 7 , membersCount : 8 , trainersCount: 1
+    })
 
     function modeSet() {
         revealActions.value = selectedCount.value > 0 ? true : false
@@ -313,12 +316,26 @@
         if (!mobileMode.value) {
             isMulti.value = true
         }
+
+        getStats().then((value : any) => {
+          console.log(value)
+          stats.value = value as adminStats;
+          
+          // Member, Trainer, Event
+        })
     })
 
     enum mobileContext {
         edit,
         export,
         delete
+    }
+
+    interface adminStats {
+      eventsCount : Number,
+      membersCount : Number,
+      trainersCount : Number
+
     }
 
     const currentMobileContext : Ref<null | mobileContext> = ref(null)

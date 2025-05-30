@@ -44,10 +44,10 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
+              <th class="px-3 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
                 <SortableHeader sortid="id" @sort="handleSort" :active="activeSort['id' as ActiveSortKey]">ID</SortableHeader>
               </th>
-              <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
+              <th class="px-6 pl-2 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
                 <SortableHeader sortid="name" @sort="handleSort" :active="activeSort['name'as ActiveSortKey]">Name</SortableHeader>
               </th>
               <th v-if="$slots.default" class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
@@ -75,14 +75,22 @@
                   :checked="selectedMembersMap.has(item.id)"
                   class="h-5 w-5 text-[var(--primary-blue)] focus:ring-[var(--primary-blue)] border-[var(--neutral-400)] rounded" />
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm !font-medium text-[var(--neutral-800)]">
+              <td class="px-3 py-4 whitespace-nowrap text-sm !font-medium text-[var(--neutral-800)]">
                 {{ item.id }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-6 pl-0 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
-                    <div class="h-10 w-10 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center">
-                      <span class="text-sm !font-medium text-[var(--primary-blue)]">{{ item.name.charAt(0).toUpperCase() }}</span>
+                    <div class="h-10 w-10 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center overflow-hidden">
+                          <img 
+                            v-if="item.avatar" 
+                            :src="item.avatar"
+                            alt="Profile" 
+                            class="w-full h-full object-cover" 
+                            @error="item.avatar = undefined"
+                            referrerpolicy="no-referrer"
+                          />
+                      <span v-else class="text-sm !font-medium text-[var(--primary-blue)]">{{ item.name.charAt(0).toUpperCase() }}</span>
                     </div>
                   </div>
                   <div class="!ml-4">
