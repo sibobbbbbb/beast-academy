@@ -3,10 +3,11 @@
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
     // import { type memberlistOp } from '@/types/memberlistOperation';
     //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import { selectedCount} from '@/utils/memberSelection'; //clearSelectedMembers, exportToExcel, 
+    import { selectedCount, clearSelectedMembers, exportToExcel} from '@/utils/memberSelection'; //clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
+    import { X } from 'lucide-vue-next';
 
 
     // Add member / Bottom button
@@ -18,16 +19,22 @@
 
     const ulistRef : Ref<ChildComponentExpose | null> = ref(null);
 
-    const revealActions : Ref<boolean> = ref(false);
 
     function modeSet() {
-        revealActions.value = selectedCount.value > 0 ? true : false
+        if (selectedCount.value == 0) {
+            if (mobileMode.value) {
+                isMulti.value = false
+            }
+        }
     }
 
     const mobileMode = ref(false)
 
     onMounted(() => {
         mobileMode.value = deviceStore.currentMode === 'mobile' 
+        if (!mobileMode.value) {
+            isMulti.value = true
+        }
     })
 
     enum mobileContext {
@@ -73,13 +80,22 @@
         <button @click="console.log('delet')"> Delete </button>
     </span> -->
 
+    <h3 v-if="mobileMode && isMulti">
+        <X :size="24" style="display: inline;" @click="() => {clearSelectedMembers(); isMulti = false}"/> Selecting {{ selectedCount }} members 
+    </h3>
+
     <UserlistComponent @process-member="(member : Member) => {console.log(member.id)}"
         ref="ulistRef"
         :multi-select="isMulti"
         @memberlist-operation="modeSet"
         role-filter="member"
+        
         @mobile-long-press="() => {
             isMulti = true
+        }"
+        @update:multi-select="(state : boolean) => {
+            clearSelectedMembers()
+            isMulti = state;
         }"
         >
 
@@ -90,8 +106,12 @@
 
         <template #mobile-actions>
             <button @click="switchMode(mobileContext.edit)"> Edit </button>
-            <button @click="switchMode(mobileContext.delete)"> Delete </button>
-            <button @click="switchMode(mobileContext.export)"> Export </button>
+            <button @click=""> Add </button>
+        </template>
+
+        <template #mobile-actions-multi>
+            <button @click=""> Delete </button>
+            <button @click="exportToExcel"> Export (XLSX) </button>
         </template>
 
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, onUnmounted, toRef } from 'vue'
 import { fetchMembers } from '@/services/templateServices';
 import { type Member } from '@/types/member';
 import { selectedMembersMap, selectMember, deselectMember } from '@/utils/memberSelection';
@@ -12,7 +12,7 @@ import NormalHeader from './NormalHeader.vue';
 import { type memberlistOp } from '@/types/memberlistOperation';
 import Pagination from '@/components/PaginationApp.vue';
 const deviceStore = useDeviceModeStore()
-
+import { useBackCancel } from '@/utils/useBackCancel';
 /*
   ##  GUIDE
   This component is made to allow userlist to act as a component that purely allows and assists in
@@ -230,6 +230,8 @@ const emit = defineEmits<{
   (event: 'processMemberList', members: Member[]): void;
   (event: 'memberlistOperation', memberlistop: memberlistOp) : void;
   (event: 'mobileLongPress', member: Member) : void;
+  (event: 'update:multiSelect', value: boolean): void
+  (event: 'on-back'): void
 }>();
 
 function longPressBarrier(memberid : number) {
@@ -321,6 +323,19 @@ defineExpose({
   processSelectedMembers
 })
 
+// Called by useBackCancel to disable multi-select
+function stopMultiSelect() {
+  console.log("back")
+  emit('update:multiSelect', false)
+  emit('on-back')
+}
+
+const multiSelectActiveRef = toRef(props, 'multiSelect')
+// Intercept browser back when multi-select is active
+useBackCancel(
+  multiSelectActiveRef,
+  stopMultiSelect
+)
 
 </script>
 
@@ -457,7 +472,7 @@ defineExpose({
         <MobileListItem v-for="item in lastFetch"
           :key="item.id" @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)"
           :class="{ selected: selectedMembersMap.has(item.id) }" 
-          v-use-longpress="500" @longpress="reportLongPress(item)" >
+          @longpress="reportLongPress(item)" >
           <!-- primary slot, main text -->
           <template #main>
             {{ item.name }}
@@ -505,7 +520,10 @@ defineExpose({
         margin: 0.2rem auto;
         align-self: center;
       ">
-      <slot name="mobile-actions">
+      <slot v-if="props.multiSelect" name="mobile-actions-multi">
+        <!-- Context actions if any-->
+      </slot>
+      <slot v-else name="mobile-actions">
         <!-- Context actions if any-->
       </slot>
     </nav>

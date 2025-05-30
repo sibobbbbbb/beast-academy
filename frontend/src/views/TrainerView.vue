@@ -3,12 +3,11 @@
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
     //import { type memberlistOp } from '@/types/memberlistOperation';
     //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import {selectedCount} from '@/utils/memberSelection'; // clearSelectedMembers, exportToExcel, 
+    import {selectedCount, clearSelectedMembers, exportToExcel, exportToFile} from '@/utils/memberSelection'; // clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
     import { useRouter } from 'vue-router';
-
 
     // Add member / Bottom button
     // Delete member - process member / members action // Avail only when selecting one or more
@@ -35,35 +34,37 @@
 
     onMounted(() => {
         mobileMode.value = deviceStore.currentMode === 'mobile' 
+        if (!mobileMode.value) {
+            isMulti.value = true
+        }
     })
 
-    // enum mobileContext {
-    //     edit,
-    //     export
-    // }
+    enum mobileContext {
+        export
+    }
 
-    // const currentMobileContext : Ref<null | mobileContext> = ref(null)
+    const currentMobileContext : Ref<null | mobileContext> = ref(null)
 
-    // function switchMode(mode : mobileContext) {
-    //     if (currentMobileContext.value === mode) {
-    //         currentMobileContext.value = null;
-    //     } else {
-    //         currentMobileContext.value = mode;
-    //     }
-    // }
+    function switchMode(mode : mobileContext) {
+        if (currentMobileContext.value === mode) {
+            currentMobileContext.value = null;
+        } else {
+            currentMobileContext.value = mode;
+        }
+    }
 
-    // //function for process member emit
-    // function processMemberContext() {
-    //     switch (currentMobileContext.value) {
-    //         case (mobileContext.edit) : {
-    //             // no multi select tap
-    //             break;
-    //         } 
-    //         case (mobileContext.export) : {
-
-    //         }
-    //     }
-    // }
+    //function for process member emit
+    function processMemberContext() {
+        switch (currentMobileContext.value) {
+            case (mobileContext.export) : {
+                // no multi select tap
+                break;
+            } 
+            default : {
+                
+            }
+        }
+    }
 
     const isMulti = ref(false);
 
@@ -78,6 +79,9 @@
 
     <!-- <button v-if="userRole === 'trainer'" @click="navigateToNotes(item)"> + </button> -->
 
+    <button @click="exportToFile"> Export to WORD </button>
+    <button @click="exportToExcel"> Export to XSLX </button>
+
     <UserlistComponent @process-member="(member : Member) => {navigateToNotes(member)}"
         ref="ulistRef"
         :multi-select="isMulti"
@@ -86,17 +90,19 @@
         @mobile-long-press="() => {
             isMulti = true
         }"
+        @update:multi-select="(state : boolean) => {
+            clearSelectedMembers()
+            isMulti = state;
+        }"
         >
         
         <template v-slot="{ item }: SlotProps">
             <button @click="navigateToNotes(item)">Add Notes</button>
         </template>
 
-        <!-- <template #mobile-actions>
-            <button @click="switchMode(mobileContext.edit)"> Edit </button>
-            <button @click="switchMode(mobileContext.delete)"> Delete </button>
+        <template #mobile-actions>
             <button @click="switchMode(mobileContext.export)"> Export </button>
-        </template> -->
+        </template>
 
 
     </UserlistComponent>

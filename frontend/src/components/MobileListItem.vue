@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-    const emit = defineEmits(['click']);
+    const emit = defineEmits(['click', 'longpress']);
 </script>
 
 <template>
-    <tr class="mobile_item" @click="emit('click')">
+    <tr class="mobile_item" @click="emit('click')" >
 
-        <td class="primary">
+        <td class="primary"  @contextmenu.prevent="emit('longpress')">
             <slot name="main">
                 Name
             </slot>
