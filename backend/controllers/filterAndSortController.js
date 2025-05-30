@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { prisma } from "../db/prisma/prisma";
+import { prisma } from "../db/prisma/prisma.js";
 
 export const getMembers = async (req, res) => {
   try {
