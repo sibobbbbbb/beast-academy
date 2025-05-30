@@ -113,9 +113,8 @@ export async function recalculateActivity(uid, refreshDB = false) {
   const training_activeness = Math.min(metrics.notes_received_weekly / weeklyTrainingTarget, 1.0) * weights[0]
   const login_activeness = Math.exp(-metrics.days_since_last_login / 7) * weights[1]
   
-  // const likeRatio = metrics.post_interactions_monthly / postsInTimeWindow
-  const likeRatio = postsInTimeWindow > 0 ? metrics.post_interactions_monthly / postsInTimeWindow : 0;
-  const like_activeness = Math.min(likeRatio, 1.0) * weights[2]
+  const likeRatio = metrics.post_interactions_monthly / postsInTimeWindow
+  const like_activeness = Math.min(likeRatio, 1.0) * weights[2] || 0
 
   // Step 2: Calculate score using weights
   console.log("SCORES ",training_activeness, login_activeness, like_activeness)
@@ -178,7 +177,7 @@ export async function auditAndFixUserMetrics({ autoFix = false } = {}) {
     const needsUpdate =
       !stored ||
       stored.post_interactions_monthly !== realLikes ||
-      stored.notes_received_weekly !== realNotes
+      stored.notes_received_weekly !== realNotes && !!realNotes
 
     if (needsUpdate) {
       mismatchCount++;
@@ -222,62 +221,26 @@ export async function updateUserLoginSimple(userId) {
 }
 
 
-//// LEGACY - Replace with auditAndFixUserMetrics
-// Run on setup or as a daily job
-// Primarily for when the day changes or configs is changed
-// export const refreshActivenessJudge = async (forceRecalculate = false) => {
-//   try {
-//     const postActivenessWindow = await getCachedConfig("postActivenessWindow", 7);
+export const augmentWithActivity = async (req, res) => {
+  try {
+    var { members, pagination } = req.data;
 
-//     const [latestPostCount, latestLogin, state] = await Promise.all([
-//       prisma.posts.findFirst({ orderBy: { id: 'desc' } }), // Replace with count of posts within postActivenessWindow
-//       prisma.user_activity_score.findFirst({ orderBy: { last_login: 'desc' } }),
-//       prisma.activity_state.findUnique({ where: { id: 1 } })
-//     ]);
+    const enriched = await Promise.all(
+      members.map(async member => {
+        const activity_score = await recalculateActivity(member.id);
+        member["activity_score"] = activity_score;
+        return member;
+      })
+    );
 
-//     const lastEvaluatedLogin = state?.last_evaluated_login ?? new Date(0);
-//     const lastEvaluatedPostId = state?.last_evaluated_post_id ?? 0;
+    console.log(enriched)
 
-//     const shouldRecalculate =
-//       !state || forceRecalculate ||
-//       (latestPost?.id ?? 0) > lastEvaluatedPostId ||
-//       (latestLogin?.last_login ?? new Date(0)) > new Date(lastEvaluatedLogin.getTime() + postActivenessWindow * 86400000);
-
-//     if (!shouldRecalculate) {
-//       console.log("[ActivityJudge] No recalculation needed.");
-//       return;
-//     }
-
-//     const oneWeekAgo = new Date(Date.now() - postActivenessWindow * 86400000);
-//     const postsThisTimeWindow = await prisma.posts.count({
-//       where: { created_at: { gte: oneWeekAgo } }
-//     });
-
-//     const allMetrics = await prisma.user_activity_score.findMany({
-//       select: { user_id: true }
-//     });
-
-//     for (const { user_id } of allMetrics) {
-//       await recalculateActivity(user_id, postsThisTimeWindow);
-//     }
-
-//     await prisma.activity_state.upsert({
-//       where: { id: 1 },
-//       update: {
-//         posts_this_timewindow: postsThisTimeWindow,
-//         last_evaluated_post_id: latestPost?.id ?? 0,
-//         last_evaluated_login: latestLogin?.last_login ?? new Date()
-//       },
-//       create: {
-//         id: 1,
-//         posts_this_timewindow: postsThisTimeWindow,
-//         last_evaluated_post_id: latestPost?.id ?? 0,
-//         last_evaluated_login: latestLogin?.last_login ?? new Date()
-//       }
-//     });
-
-//     console.log(`[ActivityJudge] Recalculated ${allMetrics.length} users.`);
-//   } catch (error) {
-//     console.error(`[ActivityJudge] Failed:`, error);
-//   }
-// };
+    res.json({
+      data: enriched,
+      pagination: pagination
+    });
+  } catch (error) {
+    console.error("Error fetching members + activity:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

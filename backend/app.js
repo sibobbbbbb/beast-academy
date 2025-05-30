@@ -40,7 +40,7 @@ app.use('/api', templateRoutes);
 app.use('/api', memberRoutes);
 app.use('/api/auth', authRoutes);
 // app.use('/api', eventRoutes);
-app.use('/', eventRoutes);
+app.use('/api', eventRoutes);
 app.use('/api',trainerAssRoutes);
 
 try {
