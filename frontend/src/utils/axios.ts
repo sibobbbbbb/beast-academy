@@ -5,7 +5,7 @@ const isDev = import.meta.env.MODE === 'development';
 const envBaseURL = import.meta.env.VITE_API_BASE_URL;
 const runtimeBaseURL = `${window.location.protocol}//${window.location.hostname}:3000/api`;
 
-const API_BASE_URL = isDev
+export const API_BASE_URL = isDev
   ? (envBaseURL && !envBaseURL.includes('localhost') ? envBaseURL : runtimeBaseURL)
   : envBaseURL; // ✅ in production, ONLY use env
 

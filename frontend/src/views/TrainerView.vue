@@ -30,6 +30,8 @@
 
     <!-- Main content -->
     <div class="container !mx-auto px-6 md:px-12 py-8">
+        <details class="bg-white rounded-xl shadow-sm p-6 !mb-6" >
+        <summary class="!mb-1"> Trainer Stats</summary>
       <!-- Stats cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 !mb-8">
         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-[var(--primary-blue)]">
@@ -75,8 +77,38 @@
         </div>
       </div>
 
+      </details>
+
+      <div v-if="revealActions || (mobileMode && isMulti)" class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-(--primary-green) sticky top-1.5 md:relative">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="bg-green-100 p-3 rounded-lg !mr-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-(--primary-green)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg !font-bold">Bulk Actions</h3>
+              <p class="text-[var(--neutral-700)]">{{ selectedCount }} members selected for bulk operations</p>
+            </div>
+          </div>
+          
+          <div class="flex !space-x-3">
+            <button 
+              @click="exportToExcel()"
+              class="bg-[var(--primary-green)] hover:bg-[var(--green-dark)] text-white px-4 py-2 rounded-lg !font-medium transition-colors flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Member list card -->
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-white static_view rounded-xl shadow-sm overflow-hidden">
         <div class="bg-[var(--primary-blue)] text-white px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
@@ -115,6 +147,23 @@
                 Add Notes
               </button>
             </template>
+
+            <template #mobile-actions>
+              <div class="flex justify-center !space-x-4 py-4">
+                <button @click="isMulti = true" class="bg-[var(--neutral-700)] hover:bg-[var(--blue-dark)] text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center">
+                    Toggle Select
+                </button>
+              </div>
+            </template>
+
+            <template #mobile-actions-multi>
+                <div class="flex justify-center !space-x-4 py-4">
+                    <button @click="{isMulti = false; clearSelectedMembers(); revealActions = false}" class="bg-[var(--neutral-700)] hover:bg-[var(--blue-dark)] text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center">
+                        Disable Select
+                    </button>
+                </div>
+            </template>
+
           </UserlistComponent>
         </div>
       </div>
@@ -222,7 +271,7 @@
 }
 
 /* Hover effects */
-.bg-white:hover {
+.bg-white:not(.static_view):hover {
   transform: translateY(-2px);
   transition: transform 0.2s ease;
 }

@@ -285,7 +285,11 @@
         <div class="w-12 h-1 bg-[var(--neutral-400)] rounded-full"></div>
       </div>
       
-      <slot name="mobile-actions">
+      <slot v-if="!props.multiSelect" name="mobile-actions">
+        <!-- Context actions if any-->
+      </slot>
+
+      <slot v-else name="mobile-actions-multi">
         <!-- Context actions if any-->
       </slot>
     </div>
@@ -638,6 +642,7 @@ function reportError(title : string, message?: string) {
 
 export interface ChildComponentExpose {
   processSelectedMembers: () => Member;
+  refresh: (newPage?: number, append?: boolean) => Promise<void>;
 }
 
 export interface SlotProps {
@@ -667,7 +672,8 @@ function reportLongPress(item : Member) {
 const localTapMap = new Map<number, boolean>()
 
 defineExpose({
-  processSelectedMembers
+  processSelectedMembers,
+  refresh
 })
 
 // Called by useBackCancel to disable multi-select
