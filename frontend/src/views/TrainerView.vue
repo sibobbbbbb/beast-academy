@@ -200,8 +200,6 @@
     const router = useRouter();
     const authStore = useAuthStore();
 
-    // Mock data for stats - replace with real data
-    //const lastFetch = ref<Member[]>([]);
 
     interface TrainerStats {
       studentsCount: number;
