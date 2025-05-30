@@ -80,7 +80,7 @@
         >
           <div class="py-1">
             <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="profileDropdownOpen = false">My Profile</router-link>
-            <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="profileDropdownOpen = false">Settings</router-link>
+      
             <!-- Daftar Anggota menu item for admin and trainer in dropdown -->
             <router-link 
               v-if="authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'trainer')"

@@ -40,9 +40,10 @@ function parseConfigValue(val) {
 export const getActivity = async (req,res) => {
     const { id } = req.params;
     try {
-      retval = recalculateActivity(id);
+      const retval = await recalculateActivity(id);
       res.status(200).json({ message: "Status Ok" }); //return it
     } catch (error) {
+      console.error("Error in getActivity:", error);
       res.status(404).json({ message: error.message });
     }
 }
