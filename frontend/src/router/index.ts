@@ -39,7 +39,7 @@ const router = createRouter({
       path: '/userlisttest',
       name: 'userlisttest',
       component: () => import('../views/UserlistTestView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, divergeViews: true }
     },
     {
       path: '/trainer-assignment',
@@ -103,6 +103,8 @@ router.beforeEach(async (to, from, next) => {
   const requiresTrainer = to.matched.some(record => record.meta.requiresTrainer)
 
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+
+  const divergeViews = to.matched.some(record => record.meta.divergeViews)
   
   try {
     // Check authentication status
@@ -127,7 +129,14 @@ router.beforeEach(async (to, from, next) => {
     } else if (requiresGuest && isLoggedIn) {
       // If route requires guest but user is logged in
       next('/')
-    } else {
+    }
+      else if (divergeViews && userType == "admin") {
+      next('/adminview')
+    }
+      else if (divergeViews && userType == "trainer") {
+      next('/trainerview')
+    }
+     else {
       // Otherwise proceed normally
       next()
     }
