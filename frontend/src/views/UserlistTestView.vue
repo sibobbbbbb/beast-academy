@@ -258,6 +258,7 @@ const totalPages = ref(1);
 const router = useRouter();
 
 const memberEditContext = ref<Member | null>(null);
+
 const showDeleteColumn = ref(false);
 
 const userRole = ref("");
@@ -434,6 +435,7 @@ async function saveItem(item: Member) {
   }
   
 }
+
 
 function cancelEdit(cancelAll: boolean = false) {
   if (cancelAll) {

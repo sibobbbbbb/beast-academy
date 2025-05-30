@@ -90,6 +90,14 @@
             >
               Daftar Anggota
             </router-link>
+            <router-link 
+              v-if="authStore.user && (authStore.user.role === 'admin')"
+              to="/trainer-assignment" 
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
+              @click="profileDropdownOpen = false"
+            >
+              Trainer Assignment
+            </router-link>
             <button @click="handleLogout" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">Sign out</button>
           </div>
         </div>

@@ -5,6 +5,7 @@ const emits = defineEmits<{
 
 const props = defineProps<{
     sortid?: string
+    active?: string
 }>();
 </script>
 
@@ -14,8 +15,8 @@ const props = defineProps<{
             <slot>HEADER_NAME</slot>
         </span>
         <div class="sort-buttons">
-            <button @click="emits('sort', props.sortid || '', false)">▲</button>
-            <button @click="emits('sort', props.sortid || '', true)">▼</button>
+            <button :class="{'selected' : active == 'asc'}" @click="emits('sort', props.sortid || '', false)">▲</button>
+            <button :class="{'selected' : active == 'desc'}" @click="emits('sort', props.sortid || '', true)">▼</button>
         </div>
     </div>
 </template>
@@ -40,10 +41,17 @@ const props = defineProps<{
 }
 
 button {
-    background: rgb(125, 125, 125);
-    border: 1px rgb(8,8,8) solid;
+    background: var(--neutral-400);
+    border: 1px var(--neutral-600) solid;
     cursor: pointer;
     font-size: 0.8rem;
     padding: 0.10rem 0.4rem;
+    border-radius: 5rem;
+    aspect-ratio: 1;
+}
+
+button.selected {
+    background: var(--neutral-600);
+    border: 1px var(--neutral-400) solid;
 }
 </style>
