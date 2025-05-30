@@ -245,7 +245,7 @@ export default defineComponent({
           copyStatus.value = 'Copied!'
           setTimeout(() => copyStatus.value = 'Copy', 2000)
         } catch (err) {
-          copyStatus.value = 'Failed'
+          copyStatus.value = 'Failed : ' +  err 
           setTimeout(() => copyStatus.value = 'Copy', 2000)
         }
       }

@@ -5,13 +5,6 @@ import { prisma } from "../db/prisma/prisma.js";
 export const getStats = async (req, res) => {
 
   // Add this temporarily to see what roles exist
-const allUsers = await prisma.users.findMany({
-  select: {
-    id: true,
-    role: true
-  }
-});
-console.log('All users and their roles:', allUsers);
 
   try {
     // count users with role = 'member'

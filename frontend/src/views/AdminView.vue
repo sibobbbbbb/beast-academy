@@ -325,9 +325,9 @@
             isMulti.value = true
         }
 
-        getStats().then((value : any) => {
+        getStats().then((value : adminStats) => {
           console.log(value)
-          stats.value = value as adminStats;
+          stats.value = value;
           
           // Member, Trainer, Event
         })
@@ -340,9 +340,9 @@
     }
 
     interface adminStats {
-      eventsCount : Number,
-      membersCount : Number,
-      trainersCount : Number
+      eventsCount : number,
+      membersCount : number,
+      trainersCount : number
 
     }
 
