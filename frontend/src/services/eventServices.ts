@@ -50,6 +50,7 @@ export const deleteEvents = async (id: string): Promise<ApiResponse<DeleteEventR
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     })
 
     if (!response.ok) {
@@ -87,6 +88,7 @@ export const editEvents = async (id: string, eventData: EventData): Promise<ApiR
     const response = await fetch(`${API_BASE_URL}/events/${id}`, {
       method: "PUT",
       body: formData,
+      credentials: "include",
     })
 
     if (!response.ok) {
@@ -120,6 +122,7 @@ export const createEvents = async (eventData: Partial<EventData>): Promise<ApiRe
     const response = await fetch(`${API_BASE_URL}/events`, {
       method: "POST",
       body: formData,
+      credentials: "include",
     })
 
     if (!response.ok) {
@@ -162,6 +165,7 @@ export async function likeEvent(eventId: number, userId: number) {
       headers: {
         "Content-Type": "application/json"
       },
+      credentials: "include", // Include credentials for session management
       body: JSON.stringify({ event_id: eventId, user_id: userId })
     });
 
@@ -183,6 +187,7 @@ export async function unlikeEvent(eventId: number, userId: number) {
       headers: {
         "Content-Type": "application/json"
       },
+      credentials: "include", // Include credentials for session management
       body: JSON.stringify({ event_id: eventId, user_id: userId })
     });
 
