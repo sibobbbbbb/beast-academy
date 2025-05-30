@@ -325,7 +325,7 @@
             isMulti.value = true
         }
 
-        getStats().then((value: adminStats) => {
+        getStats().then((value : adminStats) => {
           console.log(value)
           stats.value = value;
           
