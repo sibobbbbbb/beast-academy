@@ -14,7 +14,9 @@
             <p class="text-[var(--neutral-700)] max-w-xl">Find and join tennis tournaments, clinics, and social events in your area</p>
           </div>
           
+          <!-- Only show Create Event button for admin -->
           <button 
+            v-if="userRole === 'admin'"
             @click="openCreateForm" 
             class="!mt-4 md:mt-0 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-5 !py-2.5 rounded-lg flex items-center !font-medium transition-colors shadow-md cursor-pointer"
           >
@@ -99,8 +101,8 @@
               
               <!-- Action buttons -->
               <div class="flex justify-between items-center w-full">
-                <!-- Tombol JOIN -->
-                <div>
+                <!-- Tombol JOIN - only for users with valid roles -->
+                <div v-if="hasValidRole">
                   <button 
                     @click.stop="openJoinForm(event)" 
                     class="px-4 py-1 rounded-full bg-[var(--primary-blue)] text-white text-sm font-medium hover:bg-[var(--blue-dark)] transition-colors"
@@ -109,10 +111,14 @@
                     JOIN
                   </button>
                 </div>
+                
+                <!-- Empty div to maintain spacing when no JOIN button -->
+                <div v-else></div>
 
                 <div class="flex space-x-2">
-                  <!-- Like button -->
+                  <!-- Like button - only for users with valid roles -->
                   <button 
+                    v-if="hasValidRole"
                     @click.stop="likedEvents[event.id] ? toggleUnlike(event) : toggleLike(event)" 
                     class="p-2 rounded-full cursor-pointer"
                     title="Like Event"
@@ -135,8 +141,9 @@
                     </svg>
                   </button>
 
-                  <!-- Edit button -->
+                  <!-- Edit button - only for admin -->
                   <button 
+                    v-if="userRole === 'admin'"
                     @click.stop="openEditForm(event)" 
                     class="p-2 text-[var(--neutral-600)] hover:text-[var(--primary-blue)] rounded-full hover:bg-[var(--neutral-200)] cursor-pointer"
                     title="Edit Event"
@@ -148,8 +155,9 @@
                     </svg>
                   </button>
                   
-                  <!-- Delete button -->
+                  <!-- Delete button - only for admin -->
                   <button 
+                    v-if="userRole === 'admin'"
                     @click.stop="openDeleteConfirm(event)" 
                     class="p-2 text-[var(--neutral-600)] hover:text-red-500 rounded-full hover:bg-[var(--neutral-200)] cursor-pointer"
                     title="Delete Event"
@@ -175,10 +183,14 @@
           </svg>
         </div>
         <h3 class="text-2xl !font-bold text-[var(--neutral-800)] !mb-3">No events found</h3>
-        <p class="text-[var(--neutral-600)] !mb-6 max-w-md mx-auto">
-          There are no tennis events available right now. Create your first event to get started!
+        <p class="text-[var(--neutral-600)] !mb-6 max-w-md mx-auto text-center">
+          There are no tennis events available right now. 
+          <span v-if="userRole === 'admin'">Create your first event to get started!</span>
+          <span v-else>Check back later for new events!</span>
         </p>
+        <!-- Only show create button for admin in empty state -->
         <button 
+          v-if="userRole === 'admin'"
           @click="openCreateForm" 
           class="bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white !px-6 !py-3 rounded-lg inline-flex items-center !font-medium transition-colors"
         >
@@ -202,9 +214,9 @@
       <!-- Sentinel element for infinite scrolling -->
       <div id="sentinel" class="h-4 w-full"></div>
 
-      <!-- Create Event Modal -->
+      <!-- Create Event Modal - only for admin -->
       <EventForm
-        v-if="showCreateForm"
+        v-if="showCreateForm && userRole === 'admin'"
         :event="currentEvent"
         :isProcessing="isFormProcessing"
         title="Create New Event"
@@ -212,9 +224,9 @@
         @cancel="showCreateForm = false"
         />
         
-        <!-- Edit Event Modal -->
+        <!-- Edit Event Modal - only for admin -->
         <EventForm
-        v-if="showEditForm"
+        v-if="showEditForm && userRole === 'admin'"
         :event="currentEvent"
         title="Edit Event"
         :isProcessing="isFormProcessing"
@@ -222,9 +234,9 @@
         @cancel="showEditForm = false"
       />
       
-      <!-- Delete Confirmation Modal -->
+      <!-- Delete Confirmation Modal - only for admin -->
       <ConfirmDialog
-        v-if="showDeleteConfirm"
+        v-if="showDeleteConfirm && userRole === 'admin'"
         title="Delete Event"
         message="Are you sure you want to delete this event? This action cannot be undone."
         confirm-text="Delete"
@@ -237,40 +249,45 @@
     
     <!-- Tennis court decoration at bottom -->
     <div class="h-2" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
+    
+    <!-- Login Prompt Modal -->
     <div v-if="showLoginPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-  <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4" @click.stop>
-    <!-- Tennis ball decoration -->
-    <div class="absolute -top-4 -right-4 w-10 h-10 rounded-full hidden md:block" style="background: var(--primary-green); opacity: 0.5"></div>
-    
-    <div class="text-center !mb-5">
-      <div class="w-12 h-12 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center mx-auto !mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color: var(--primary-blue)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
+      <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4" @click.stop>
+        <!-- Tennis ball decoration -->
+        <div class="absolute -top-4 -right-4 w-10 h-10 rounded-full hidden md:block" style="background: var(--primary-green); opacity: 0.5"></div>
+        
+        <div class="text-center !mb-5">
+          <div class="w-12 h-12 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center mx-auto !mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color: var(--primary-blue)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold !mb-2 text-[var(--neutral-800)]">Login Required</h3>
+          <p class="text-[var(--neutral-700)] mb-6">
+            <span v-if="!hasValidRole">Please login with a valid account (trainer, member, or admin) to access this feature.</span>
+            <span v-else>Would you like to like this event? Please login first to access this feature.</span>
+          </p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+          <button 
+            @click="closeLoginPrompt" 
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="router.push('/login')" 
+            class="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[var(--blue-dark)] text-sm font-medium transition-colors cursor-pointer"
+          >
+            Login
+          </button>
+        </div>
+        
+        <!-- Tennis court decoration at bottom -->
+        <div class="h-1 w-full !mt-6" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
       </div>
-      <h3 class="text-xl font-bold !mb-2 text-[var(--neutral-800)]">Login Required</h3>
-      <p class="text-[var(--neutral-700)] mb-6">Would you like to like this event? Please login first to access this feature.</p>
     </div>
-    
-    <div class="flex flex-col sm:flex-row justify-center gap-3">
-      <button 
-        @click="closeLoginPrompt" 
-        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium transition-colors cursor-pointer"
-      >
-        Cancel
-      </button>
-      <button 
-        @click="router.push('/login')" 
-        class="px-4 py-2 bg-[var(--primary-blue)] text-white rounded-lg hover:bg-[var(--blue-dark)] text-sm font-medium transition-colors cursor-pointer"
-      >
-        Login
-      </button>
-    </div>
-    
-    <!-- Tennis court decoration at bottom -->
-    <div class="h-1 w-full !mt-6" style="background: linear-gradient(90deg, var(--primary-green) 0%, var(--green-light) 100%)"></div>
-  </div>
-</div>
   </div>
 </template>
 
@@ -311,7 +328,14 @@ const error = ref<string | null>(null);
 const likedEvents = ref<Record<string, boolean>>({});
 const isLoggedIn = ref(false);
 const userID = ref('');
+const userRole = ref(''); // Add user role state
 const showLoginPrompt = ref(false);
+
+// Computed property to check if user has valid role
+const hasValidRole = computed(() => {
+  const validRoles = ['trainer', 'member', 'admin'];
+  return validRoles.includes(userRole.value);
+});
 
 const router = useRouter();
 
@@ -329,6 +353,11 @@ async function fetchLikedEvents() {
 }
 
 function openJoinForm(event: EventData) {
+  if (!hasValidRole.value) {
+    alert("Please login with a valid account to join events.");
+    return;
+  }
+  
   if (event.joinform) {
     window.open(event.joinform, "_blank");
   } else {
@@ -336,7 +365,6 @@ function openJoinForm(event: EventData) {
     alert("Join form not available for this event.");
   }
 }
-
 
 // Load initial events
 onMounted(async () => {
@@ -352,6 +380,7 @@ onMounted(async () => {
     observer.observe(sentinel);
   }
 
+  // Check user authentication and role
   try {
     const response = await api.get('/auth/me', {
       withCredentials: true
@@ -359,10 +388,12 @@ onMounted(async () => {
     if (response.data) {
       isLoggedIn.value = true;
       userID.value = response.data.id;
+      userRole.value = response.data.role; // Set user role
       await fetchLikedEvents();
     }
   } catch {
     isLoggedIn.value = false;
+    userRole.value = ''; // Reset role if not authenticated
   }
 });
 
@@ -410,7 +441,7 @@ function handleSearch() {
 }
 
 async function toggleLike(event: EventData) {
-  if (!isLoggedIn.value) {
+  if (!hasValidRole.value) {
     showLoginPrompt.value = true;
     return;
   }
@@ -423,7 +454,7 @@ async function toggleLike(event: EventData) {
 }
 
 async function toggleUnlike(event: EventData) {
-  if (!isLoggedIn.value) {
+  if (!hasValidRole.value) {
     showLoginPrompt.value = true;
     return;
   }
@@ -458,8 +489,13 @@ function viewEventDetails(event: EventData) {
   router.push(`/event-details/${event.id}`);
 }
 
-// Open create form
+// Open create form - only for admin
 function openCreateForm() {
+  if (userRole.value !== 'admin') {
+    alert('Only administrators can create events.');
+    return;
+  }
+  
   currentEvent.value = {
     id: 0,
     title: '',
@@ -471,20 +507,35 @@ function openCreateForm() {
   showCreateForm.value = true;
 }
 
-// Open edit form
+// Open edit form - only for admin
 function openEditForm(event: EventData) {
+  if (userRole.value !== 'admin') {
+    alert('Only administrators can edit events.');
+    return;
+  }
+  
   currentEvent.value = { ...event };
   showEditForm.value = true;
 }
 
-// Open delete confirmation
+// Open delete confirmation - only for admin
 function openDeleteConfirm(event: EventData) {
+  if (userRole.value !== 'admin') {
+    alert('Only administrators can delete events.');
+    return;
+  }
+  
   currentEvent.value = event;
   showDeleteConfirm.value = true;
 }
 
 // Handle create event
 async function handleCreateEvent(event: EventData) {
+  if (userRole.value !== 'admin') {
+    error.value = 'Only administrators can create events.';
+    return;
+  }
+  
   try {
     isFormProcessing.value = true;
     error.value = null;
@@ -519,6 +570,11 @@ const closeLoginPrompt = () => {
 
 // Handle edit event
 async function handleEditEvent(eventData: EventData) {
+  if (userRole.value !== 'admin') {
+    error.value = 'Only administrators can edit events.';
+    return;
+  }
+  
   try {
     loading.value = true;
     error.value = null;
@@ -543,6 +599,11 @@ async function handleEditEvent(eventData: EventData) {
 
 // Handle delete event
 async function handleDeleteEvent() {
+  if (userRole.value !== 'admin') {
+    error.value = 'Only administrators can delete events.';
+    return;
+  }
+  
   try {
     loading.value = true;
     error.value = null;
