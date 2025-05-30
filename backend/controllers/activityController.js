@@ -40,9 +40,10 @@ function parseConfigValue(val) {
 export const getActivity = async (req,res) => {
     const { id } = req.params;
     try {
-      retval = recalculateActivity(id);
+      const retval = await recalculateActivity(id);
       res.status(200).json({ message: "Status Ok" }); //return it
     } catch (error) {
+      console.error("Error in getActivity:", error);
       res.status(404).json({ message: error.message });
     }
 }
@@ -112,7 +113,8 @@ export async function recalculateActivity(uid, refreshDB = false) {
   const training_activeness = Math.min(metrics.notes_received_weekly / weeklyTrainingTarget, 1.0) * weights[0]
   const login_activeness = Math.exp(-metrics.days_since_last_login / 7) * weights[1]
   
-  const likeRatio = metrics.post_interactions_monthly / postsInTimeWindow
+  // const likeRatio = metrics.post_interactions_monthly / postsInTimeWindow
+  const likeRatio = postsInTimeWindow > 0 ? metrics.post_interactions_monthly / postsInTimeWindow : 0;
   const like_activeness = Math.min(likeRatio, 1.0) * weights[2]
 
   // Step 2: Calculate score using weights

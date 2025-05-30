@@ -1,7 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma/prisma";
 
 export const getMembers = async (req, res) => {
@@ -22,7 +19,7 @@ export const getMembers = async (req, res) => {
     }
 
     const pageNumber = parseInt(page, 10) || 1;
-    const limitNumber = parseInt(limit, 10) || 5;
+    const limitNumber = parseInt(limit, 10) || 10;
     const offset = (pageNumber - 1) * limitNumber;
 
     // Membuat kondisi pencarian dan filter
