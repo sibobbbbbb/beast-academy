@@ -84,24 +84,16 @@
             </div>
             
             <!-- Action buttons -->
-            <div class="mt-8 flex flex-wrap gap-4">
+            <div class="mt-8 flex flex-wrap gap-4" v-if="hasValidRole">
               
               <button 
+                @click.stop="openJoinForm(event)"
                 class="px-6 py-3 bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white rounded-lg !font-medium transition-colors flex items-center cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Register for Event
-              </button>
-              
-              <button 
-                class="px-6 py-3 bg-white border border-[var(--primary-blue)] text-[var(--primary-blue)] hover:bg-[var(--primary-blue)]/5 rounded-lg !font-medium transition-colors flex items-center cursor-pointer"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                Share Event
               </button>
             </div>
           </div>
@@ -115,23 +107,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { type EventData } from '@/services/eventServices.ts';
 import Navbar from '@/components/Navbar.vue';
-
-// Renamed from Event to EventData to avoid conflict with DOM Event
-interface EventData {
-  id: number;
-  title: string;
-  images: string;
-  description: string;
-  posted_at: string;
-}
+import api from '@/utils/axios.ts';
 
 const route = useRoute();
 const router = useRouter();
 const event = ref<EventData | null>(null);
 const error = ref<string | null>(null);
+const userRole = ref('');
+const isLoggedIn = ref(false);
+const userID = ref('');
+
+const hasValidRole = computed(() => {
+  const validRoles = ['trainer', 'member', 'admin'];
+  return validRoles.includes(userRole.value);
+});
+
+onMounted(async () => {
+  const eventId = route.params.id as string;
+
+  fetchEventDetails(eventId);
+
+  try {
+    const response = await api.get('/auth/me', {
+      withCredentials: true
+    });
+    if (response.data) {
+      isLoggedIn.value = true;
+      userID.value = response.data.id;
+      userRole.value = response.data.role;
+    }
+  } catch {
+    isLoggedIn.value = false;
+    userRole.value = '';
+  }
+});
 
 const fetchEventDetails = async (id: string) => {
   try {
@@ -182,10 +195,18 @@ function handleImageError(e: Event): void {
   target.classList.add('bg-[var(--neutral-300)]');
 }
 
-onMounted(() => {
-  const eventId = route.params.id as string;
-  fetchEventDetails(eventId);
-});
+function openJoinForm(event: EventData) {
+  if (!hasValidRole.value) {
+    alert("Please login with a valid account to join events.");
+    return;
+  }
+  
+  if (event.joinform) {
+    window.open(event.joinform, "_blank");
+  } else {
+    alert("Join form not available for this event.");
+  }
+}
 </script>
 
 <style scoped>
