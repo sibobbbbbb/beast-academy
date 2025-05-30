@@ -119,7 +119,7 @@
             </button>
             
             <button 
-              @click="console.log('delete')"
+              @click="deleteMember()"
               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg !font-medium transition-colors flex items-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,11 +281,11 @@
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
     // import { type memberlistOp } from '@/types/memberlistOperation';
     //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import { selectedCount, clearSelectedMembers, exportToExcel} from '@/utils/memberSelection'; //clearSelectedMembers, exportToExcel, 
+    import { selectedCount, clearSelectedMembers, exportToExcel, selectedMembersMap} from '@/utils/memberSelection'; //clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
-    import { updateUserData } from '@/services/memberServices';
+    import { deleteMemberById, updateUserData } from '@/services/memberServices';
     import AddMemberForm from '../components/AddMembersForm.vue'
 
     import { getStats } from '@/utils/admin';
@@ -395,6 +395,19 @@ function cancelEdit(cancelAll: boolean = false) {
     console.error("No active edit context to cancel!");
   }
 }
+
+  const deleteMember = async () => {
+    const confirmed = confirm('Are you sure you want to delete this member?');
+    if (confirmed) {
+
+      for (const user of selectedMembersMap.value.keys()) {
+        await deleteMemberById(user);
+      }
+
+      clearSelectedMembers()
+      ulistRef.value?.refresh(0); // Refresh data after deletion
+    }
+  };
 
 
 </script>
