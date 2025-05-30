@@ -39,13 +39,13 @@ const router = createRouter({
       path: '/userlisttest',
       name: 'userlisttest',
       component: () => import('../views/UserlistTestView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, divergeViews: true }
     },
     {
       path: '/trainer-assignment',
       name: 'Trainer asignment menu',
       component: () => import('../views/TrainerAssignView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin : true }
     },
     {
       path: '/profile',
@@ -80,14 +80,14 @@ const router = createRouter({
       path: '/adminview',
       name: 'Admin view',
       component: AdminView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: true }
       
     },
     {
       path: '/trainerview',
       name: 'Trainer view',
       component: TrainerView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresTrainer: true }
     }
 
   ],
@@ -99,6 +99,12 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   // Check if route requires guest (non-authenticated user)
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
+
+  const requiresTrainer = to.matched.some(record => record.meta.requiresTrainer)
+
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+
+  const divergeViews = to.matched.some(record => record.meta.divergeViews)
   
   try {
     // Check authentication status
@@ -108,14 +114,29 @@ router.beforeEach(async (to, from, next) => {
     
     const isLoggedIn = !!response.data
     
+    const userType = isLoggedIn? response.data["role"] : null
+
     // Handle authentication requirements
-    if (requiresAuth && !isLoggedIn) {
+    if (requiresAdmin && userType !== "admin") {
+      next('/')
+    }
+    else if (requiresTrainer && userType !== "trainer") {
+      next('/')
+    }
+    else if (requiresAuth && !isLoggedIn) {
       // If route requires auth but user is not logged in
       next('/login')
     } else if (requiresGuest && isLoggedIn) {
       // If route requires guest but user is logged in
       next('/')
-    } else {
+    }
+      else if (divergeViews && userType == "admin") {
+      next('/adminview')
+    }
+      else if (divergeViews && userType == "trainer") {
+      next('/trainerview')
+    }
+     else {
       // Otherwise proceed normally
       next()
     }

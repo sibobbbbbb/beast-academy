@@ -30,8 +30,10 @@
     </div>
 
     <!-- Main content -->
-    <div class="container !mx-auto px-6 md:px-12 py-8">
+    <div class="container !mx-auto px-6 md:px-12 py-8" style="min-width: 75dvw;">
       <!-- Admin stats -->
+    <details class="bg-white rounded-xl shadow-sm p-6 !mb-6" >
+        <summary class="!mb-1"> Admin Stats</summary>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 !mb-8">
         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-[var(--primary-blue)]">
           <div class="flex items-center">
@@ -89,9 +91,9 @@
           </div>
         </div>
       </div>
-
+    </details>
       <!-- Action buttons -->
-      <div v-if="revealActions" class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-red-400">
+      <div v-if="revealActions || (mobileMode && isMulti)" class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-red-400 sticky top-1.5 md:relative">
         <div class="flex items-center justify-between">
           <div class="flex items-center">
             <div class="bg-red-100 p-3 rounded-lg !mr-4">
@@ -100,7 +102,7 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-lg !font-bold text-red-600">Bulk Actions Available</h3>
+              <h3 class="text-lg !font-bold text-red-600">Bulk Actions</h3>
               <p class="text-[var(--neutral-700)]">{{ selectedCount }} members selected for bulk operations</p>
             </div>
           </div>
@@ -128,9 +130,32 @@
           </div>
         </div>
       </div>
+      <div v-else class="bg-white rounded-xl shadow-sm p-6 !mb-6 border-l-4 border-[var(--green-light)] sticky top-1.5 md:relative">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+
+            <div>
+              <h3 class="text-lg !font-bold text-[var(--green-light)]">Admin tools</h3>
+              <p class="text-[var(--neutral-700)]">Select members to enable bulk operations</p>
+            </div>
+          </div>
+          
+          <div class="flex !space-x-3">
+            <button 
+              @click="showAddOverlay = true"
+              class="bg-[var(--primary-blue)] hover:bg-[var(--green-dark)] text-white px-4 py-2 rounded-lg !font-medium transition-colors flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Add New Member
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- Member management card -->
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-white static_view rounded-xl shadow-sm overflow-hidden">
         <div class="bg-[var(--primary-blue)] text-white px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
@@ -147,7 +172,7 @@
         
         <div class="p-6">
           <UserlistComponent 
-            @process-member="(member : Member) => {console.log(member.id)}"
+            @process-member="processMemberContext"
             ref="ulistRef"
             :multi-select="isMulti"
             @memberlist-operation="modeSet"
@@ -155,10 +180,17 @@
             @mobile-long-press="() => {
                 isMulti = true
             }"
+            @update:multi-select="(state : boolean) => {
+                clearSelectedMembers()
+                isMulti = state;
+            }"
           >
+        
+
+
             <template v-slot="{ item }: SlotProps">
               <button 
-                @click="console.log('edit',item!.id)"
+                @click="editMember(item)"
                 class="bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white px-4 py-2 rounded-lg !font-medium transition-colors flex items-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -168,38 +200,33 @@
               </button>
             </template>
 
+
+
             <template #mobile-actions>
               <div class="flex justify-center !space-x-4 py-4">
                 <button 
                   @click="switchMode(mobileContext.edit)"
                   class="bg-[var(--primary-blue)] hover:bg-[var(--blue-dark)] text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center"
+                      :class="[{ blink: currentMobileContext === mobileContext.edit }]"
                 >
+                
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Edit
                 </button>
-                
-                <button 
-                  @click="switchMode(mobileContext.delete)"
-                  class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete
-                </button>
-                
-                <button 
-                  @click="switchMode(mobileContext.export)"
-                  class="bg-[var(--primary-green)] hover:bg-[var(--green-dark)] text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 !mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Export
+                <button @click="isMulti = true" class="bg-[var(--neutral-700)] hover:bg-[var(--blue-dark)] text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center">
+                    Toggle Select
                 </button>
               </div>
+            </template>
+
+            <template #mobile-actions-multi>
+                <div class="flex justify-center !space-x-4 py-4">
+                    <button @click="{isMulti = false; clearSelectedMembers(); revealActions = false}" class="bg-[var(--neutral-700)] hover:bg-[var(--blue-dark)] text-white px-6 py-3 rounded-lg !font-medium transition-colors flex items-center">
+                        Disable Select
+                    </button>
+                </div>
             </template>
           </UserlistComponent>
         </div>
@@ -208,6 +235,45 @@
     
     
   </div>
+
+    <teleport to="body">
+    <div v-if="showAddOverlay" class="overlay" @click.self="showAddOverlay = false">
+      <div class="modal-content min-w-3/4 md:max-w-11/12">
+        <!-- if your AddMembersView wants to emit a 'close' you can also listen: @close="showAddOverlay = false" -->
+        <AddMemberForm />
+      </div>
+    </div>
+    <div v-if="showEditOverlay" class="overlay" @click.self="() => {showEditOverlay = false; cancelEdit(true)}">
+      <div class="modal-content">
+        <div class="bg-white static_view rounded-xl" v-if="memberEditContext">
+          <h2 class="text-xl md:text-2xl !font-bold !ml-2 " style="display: block;">Name</h2>
+          <input class="w-full px-3 py-2 bg-[var(--neutral-200)] border border-[var(--neutral-400)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] text-[var(--neutral-800)] text-sm" 
+            style="display: block;" v-model="memberEditContext.name"/>
+            <h2 class="text-xl md:text-2xl !font-bold !ml-2" style="display: block;">Phone No</h2>
+          <input class="w-full px-3 py-2 bg-[var(--neutral-200)] border border-[var(--neutral-400)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-blue)] text-[var(--neutral-800)] text-sm"
+           style="display: block;" v-model="memberEditContext.phone_no"/>
+        </div>
+        <span>
+            <button 
+            class="w-full py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors text-base font-medium flex justify-center items-center text-[var(--primary-white)] cursor-pointer"
+            :style="{ 
+              background: 'var(--primary-blue)',
+              boxShadow: '0 4px 6px rgba(0, 132, 197, 0.25)'
+            }"
+            :class="{ 'hover:bg-[var(--blue-dark)]': !isSaving }"
+            :disabled="isSaving"
+            @click="memberEditContext ? saveItem(memberEditContext).then(() => {isSaving = false; showEditOverlay = false}).catch((reason) => {console.warn(reason); isSaving = false}) : console.warn('Save failed, undefined memberEditContext')"
+          >
+            <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-[var(--primary-white)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isSaving ? 'Saving...' : 'Save' }}
+          </button>
+        </span>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup lang="ts">
@@ -215,11 +281,12 @@
     import UserlistComponent, { type SlotProps, type ChildComponentExpose } from '@/components/UserlistComponent.vue';
     // import { type memberlistOp } from '@/types/memberlistOperation';
     //import { assignTrainer, removeStudents, getStudents } from '@/services/trainerAssignmentServices';
-    import { selectedCount, exportToExcel} from '@/utils/memberSelection'; //clearSelectedMembers, exportToFile, 
+    import { selectedCount, clearSelectedMembers, exportToExcel} from '@/utils/memberSelection'; //clearSelectedMembers, exportToExcel, 
     import { type Member } from '@/types/member';
     import { useDeviceModeStore } from '@/stores/deviceMode';
     //import { MoveUpLeftIcon } from 'lucide-vue-next';
-
+    import { updateUserData } from '@/services/memberServices';
+    import AddMemberForm from '../components/AddMembersForm.vue'
 
     // Add member / Bottom button
     // Delete member - process member / members action // Avail only when selecting one or more
@@ -232,14 +299,20 @@
 
     const revealActions : Ref<boolean> = ref(false);
 
+    const isSaving : Ref<boolean> = ref(false)
+
     function modeSet() {
         revealActions.value = selectedCount.value > 0 ? true : false
     }
+
 
     const mobileMode = ref(false)
 
     onMounted(() => {
         mobileMode.value = deviceStore.currentMode === 'mobile' 
+        if (!mobileMode.value) {
+            isMulti.value = true
+        }
     })
 
     enum mobileContext {
@@ -256,26 +329,56 @@
         } else {
             currentMobileContext.value = mode;
         }
+        console.log(`Mode set : ${currentMobileContext.value}`)
     }
 
     //function for process member emit
-    // function processMemberContext() {
-    //     switch (currentMobileContext.value) {
-    //         case (mobileContext.edit) : {
-    //             // no multi select tap
-    //             break;
-    //         } 
-    //         case (mobileContext.delete) : {
-    //             // enable multi select
-    //             break;
-    //         }
-    //         case (mobileContext.export) : {
+    function processMemberContext(member : Member) {
+        switch (currentMobileContext.value) {
+            case (mobileContext.edit) : {
+                // no multi select tap
+                editMember(member)
 
-    //         }
-    //     }
-    // }
+                break;
+            } 
+        }
+    }
 
     const isMulti = ref(false);
+
+    // Add and stuff
+    const showAddOverlay = ref(false);
+    const showEditOverlay = ref(false);
+
+    const memberEditContext = ref<Member | null>(null);
+    function editMember(item: Member) {
+        memberEditContext.value = { ...item }; // Create a shallow copy to avoid direct mutation
+        showEditOverlay.value = true
+    }
+
+    async function saveItem(item: Member) {
+    if (item.id === memberEditContext.value?.id){
+        await updateUserData(item.id, item.name, item.phone_no);
+        ulistRef.value?.refresh(0)
+    } // assertion
+    else {
+        console.error("item id does not match member edit context value!")
+    }
+    
+    }
+
+function cancelEdit(cancelAll: boolean = false) {
+  if (cancelAll) {
+    // Clear the edit context entirely
+    memberEditContext.value = null;
+  } else if (memberEditContext.value) {
+    // Reset the memberEditContext to null if no parameter is passed
+    memberEditContext.value = null;
+  } else {
+    console.error("No active edit context to cancel!");
+  }
+}
+
 
 </script>
 
@@ -301,7 +404,7 @@
 }
 
 /* Hover effects */
-.bg-white:hover {
+.bg-white:not(.static_view):hover {
   transform: translateY(-2px);
   transition: transform 0.2s ease;
 }
@@ -319,4 +422,37 @@
 .border-red-400 {
   animation: pulse 2s infinite;
 }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  max-height: 90%;
+  overflow-y: auto;
+}
+
+@keyframes blink {
+  /* stay fully visible for the first 20% */
+  0%         { opacity: 1; }
+  /* fade out from 20% → 50% */
+  50%        { opacity: 0.5; }
+  /* hold full opacity until 100% */
+  100%       { opacity: 1; }
+}
+.blink {
+  transition: opacity 1s ease-in-out ;
+  animation: blink 1s step-start infinite;
+  animation-timing-function: ease-in-out;
+}
+
 </style>
