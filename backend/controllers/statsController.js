@@ -3,16 +3,29 @@ import { prisma } from "../db/prisma/prisma.js";
 
 
 export const getStats = async (req, res) => {
+
+  // Add this temporarily to see what roles exist
+const allUsers = await prisma.users.findMany({
+  select: {
+    id: true,
+    role: true
+  }
+});
+console.log('All users and their roles:', allUsers);
+
   try {
     // count users with role = 'member'
-    const membersCount = await prisma.users.count({
-      where: { role: "member" }
-    });
+const membersCount = await prisma.users.count({
+  where:{ 
+    role: 'member'
+  }
+});
 
-    // count users with role = 'trainer'
-    const trainersCount = await prisma.users.count({
-      where: { role: "trainer" }
-    });
+const trainersCount = await prisma.users.count({
+  where:{ 
+    role: 'trainer'
+  }
+});
 
     // count all events
     const eventsCount = await prisma.events.count();
