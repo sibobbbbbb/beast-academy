@@ -45,22 +45,22 @@
                 </div>
               </th>
               <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
-                <SortableHeader sortid="id" @sort="handleSort">ID</SortableHeader>
+                <SortableHeader sortid="id" @sort="handleSort" :active="activeSort['id' as ActiveSortKey]">ID</SortableHeader>
               </th>
               <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
-                <SortableHeader sortid="name" @sort="handleSort">Name</SortableHeader>
+                <SortableHeader sortid="name" @sort="handleSort" :active="activeSort['name'as ActiveSortKey]">Name</SortableHeader>
               </th>
               <th v-if="$slots.default" class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
                 <NormalHeader>Action</NormalHeader>
               </th>
               <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
-                <SortableHeader sortid="created_at" @sort="handleSort">Joined</SortableHeader>
+                <SortableHeader sortid="created_at" @sort="handleSort" :active="activeSort['created_at'as ActiveSortKey]">Joined</SortableHeader>
               </th>
               <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
-                <SortableHeader sortid="phone_no" @sort="handleSort">Contact</SortableHeader>
+                <SortableHeader sortid="phone_no" @sort="handleSort" :active="activeSort['phone_no'as ActiveSortKey]">Contact</SortableHeader>
               </th>
               <th class="px-6 py-4 text-left text-sm !font-medium text-[var(--neutral-800)] uppercase tracking-wider">
-                <SortableHeader sortid="activity_score" @sort="handleSort">Activeness</SortableHeader>
+                <SortableHeader sortid="activity_score" @sort="handleSort" :active="activeSort['activity_score' as ActiveSortKey]">Activeness</SortableHeader>
               </th>
             </tr>
           </thead>
@@ -108,7 +108,7 @@
                 <div class="text-sm text-[var(--neutral-600)]">{{ item.email || '-' }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs !font-medium"
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-m !font-medium"
                       :class="getActivityBadgeClass(item.activity_score ?? null)">
                   {{ item.activity_score || 'N/A' }}
                 </span>
@@ -213,11 +213,10 @@
     <!-- Mobile List -->
     <div class="!space-y-4 !mb-20">
       <MobileListItem v-for="item in lastFetch" :key="item.id" 
-                      @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)"
-                      :class="{ 'ring-2 ring-[var(--primary-blue)]': selectedMembersMap.has(item.id) }" 
-                      v-use-longpress="500" 
-                      @longpress="reportLongPress(item)"
-                      class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4">
+            @click="props.multiSelect ? toggleSelect(item) : processSingleMember(item)"
+            :class="{ selected: selectedMembersMap.has(item.id) }" 
+            @longpress="reportLongPress(item)"
+                class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4">
         <!-- primary slot, main text -->
         <template #main>
           <div class="flex items-center !space-x-3">
@@ -237,7 +236,7 @@
         </template>
         <!-- non-primary slots -->
         <template #x1 v-if="mobileTagSelected[0]">
-          <div class="!mt-3 pt-3 border-t border-[var(--neutral-200)]">
+          <div class="border-t border-[var(--neutral-200)]">
             <span class="text-xs !font-medium text-[var(--neutral-500)] uppercase tracking-wider">
               {{ mobileTagText[mobileTagSelected[0]] }}
             </span>
@@ -247,7 +246,7 @@
           </div>
         </template>
         <template #x2 v-if="mobileTagSelected[1]">
-          <div class="!mt-2">
+          <div>
             <span class="text-xs !font-medium text-[var(--neutral-500)] uppercase tracking-wider">
               {{ mobileTagText[mobileTagSelected[1]] }}
             </span>
@@ -257,7 +256,7 @@
           </div>
         </template>
         <template #x3 v-if="mobileTagSelected[2]">
-          <div class="!mt-2">
+          <div>
             <span class="text-xs !font-medium text-[var(--neutral-500)] uppercase tracking-wider">
               {{ mobileTagText[mobileTagSelected[2]] }}
             </span>
@@ -386,11 +385,21 @@ const perPage = ref(10);
 const currentPage = ref(0);
 const lastFetch = ref<Member[]>([]);
 const maxPage = ref(false);
-const sortBy = ref("id");
-const order = ref("asc");
+const sortBy = ref("");
+const order = ref("");
 const searchQuery = ref("");
 const selectedRole = ref("");
 const totalPages = ref(1);
+type ActiveSortKey = "created_at" | "email" | "phone_no" | "last_activity" | "name" | "id" | "activity_score";
+const activeSort = ref<Record<ActiveSortKey, string>>({
+  "created_at" : "",
+  "email" : "",
+  "phone_no" : "",
+  "last_activity" : "",
+  "name" : "",
+  "id" : "",
+  "activity_score" : ""
+})
 
 const mobileMode = ref(false);
 
@@ -408,8 +417,8 @@ const props = defineProps({
 // Helper function to get activity badge styling
 const getActivityBadgeClass = (score: number | null) => {
   if (!score) return 'bg-gray-100 text-gray-800';
-  if (score >= 80) return 'bg-green-100 text-green-800';
-  if (score >= 60) return 'bg-yellow-100 text-yellow-800';
+  if (score >= 8) return 'bg-green-100 text-green-800';
+  if (score >= 6) return 'bg-yellow-100 text-yellow-800';
   return 'bg-red-100 text-red-800';
 };
 
@@ -466,8 +475,12 @@ const refresh = async (newPage?: number, append = false) => {
 
 // Fungsi untuk menangani sorting dari SortableHeader
 const handleSort = (column: string, reverse: boolean) => {
+  if (sortBy.value != "") {
+    activeSort.value[sortBy.value as ActiveSortKey] = ""
+  }
   sortBy.value = column;
   order.value = reverse ? "desc" : "asc";
+  activeSort.value[sortBy.value as ActiveSortKey] = order.value
   refresh(0);
 };
 

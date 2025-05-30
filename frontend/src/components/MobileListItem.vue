@@ -4,7 +4,6 @@
 
 <template>
     <tr class="mobile_item" @click="emit('click')" >
-
         <td class="primary"  @contextmenu.prevent="emit('longpress')">
             <slot name="main">
                 Name
@@ -24,24 +23,14 @@
 
 <style scoped>
 .mobile_item {
-    height: 4rem;
-    border: 2px solid red;
-    margin: 0.5rem 0px;
-    display: grid;
-    grid-auto-flow: column;
-    width: 100%;
-    grid-template-columns: 4fr;
-    grid-auto-columns: 1fr;
+  display: grid;
+  width: 100%;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
 }
 
 .selected {
-    border: 2px solid blue;
-}
-
-td {
-    flex-grow: 0.5;
-    text-align: center;
-    float: inline-start;
+    background-color: var(--neutral-300);
 }
 
 td:not(.primary) {
@@ -63,12 +52,10 @@ td #text {
 }
 
 
-.primary {
-    flex-grow: 2;
-    text-align: start;
-    padding-left: 1rem;
-    font-weight: bold;
-    font-size: 1.25rem
+.primary { 
+  padding: 0.25rem 1rem;
+  font-weight: bold;
+  font-size: 1.25rem;
 }
 
 td label {

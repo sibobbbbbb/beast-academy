@@ -30,7 +30,7 @@
     </div>
 
     <!-- Main content -->
-    <div class="container !mx-auto px-6 md:px-12 py-8">
+    <div class="container !mx-auto px-6 md:px-12 py-8" style="min-width: 75dvw;">
       <!-- Admin stats -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 !mb-8">
         <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-[var(--primary-blue)]">
@@ -130,7 +130,7 @@
       </div>
 
       <!-- Member management card -->
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-white static rounded-xl shadow-sm overflow-hidden">
         <div class="bg-[var(--primary-blue)] text-white px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
@@ -247,13 +247,12 @@
     const ulistRef : Ref<ChildComponentExpose | null> = ref(null);
 
 
+    const revealActions : Ref<boolean> = ref(false);
+
     function modeSet() {
-        if (selectedCount.value == 0) {
-            if (mobileMode.value) {
-                isMulti.value = false
-            }
-        }
+        revealActions.value = selectedCount.value > 0 ? true : false
     }
+
 
     const mobileMode = ref(false)
 
@@ -323,7 +322,7 @@
 }
 
 /* Hover effects */
-.bg-white:hover {
+.bg-white:not(.static):hover {
   transform: translateY(-2px);
   transition: transform 0.2s ease;
 }
