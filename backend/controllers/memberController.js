@@ -41,7 +41,7 @@ export const addMemberControllers = [
     const img_file = req.file;
     try {
       // Cek jika email atau nomor hp sudah ada
-      const existingEmail = await prisma.users.findUnique({
+      const existingEmail = await prisma.users.findFirst({
         where: { email },
       });
 
@@ -50,7 +50,7 @@ export const addMemberControllers = [
       }
 
       if (phone) {
-        const existingPhoneNo = await prisma.users.findUnique({
+        const existingPhoneNo = await prisma.users.findFirst({
           where: { phone_no: phone },
         });
 
