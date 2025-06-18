@@ -236,7 +236,7 @@ export const updateMemberControllers = async (req, res) => {
   try {
     // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
     if (phone_no) {
-      const existingPhoneNo = await prisma.users.findUnique({
+      const existingPhoneNo = await prisma.users.findFirst({
         where: { phone_no },
       });
 
@@ -445,7 +445,7 @@ export const checkPhoneNumberController = async (req, res) => {
   const { phone_no } = req.body;
 
   try {
-    const existingPhoneNo = await prisma.users.findUnique({
+    const existingPhoneNo = await prisma.users.findFirst({
       where: { phone_no },
     });
 

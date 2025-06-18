@@ -158,20 +158,6 @@ export async function auditAndFixUserMetrics({ autoFix = false } = {}) {
     const realNotes = (await getTrainerNotecountForPerson(user_id, noteWindow)).length;
     const realLikes = (await getLikedEvents(user_id, postWindow)).length;
 
-    // const lastLoginData = await prisma.users.findUnique({
-    //   where: { id: user_id },
-    //   select: { last_activity: true }
-    // });
-
-    // let rightNow = Date.now()
-    // const lastLoginDate = lastLoginData?.last_activity ?? new Date(0);
-    // const daysSinceLogin = Math.floor((rightNow - new Date(lastLoginDate).getTime()) / 86400);
-
-    
-    // console.log("NOW :", new Date(Date.now()).toISOString() , " | ", rightNow)
-    // console.log("LOGIN :", lastLoginDate ," | " ,new Date(lastLoginDate).getTime())
-    // console.log(daysSinceLogin);
-
     const stored = await prisma.user_activity_score.findUnique({ where: { user_id } });
 
     const needsUpdate =
