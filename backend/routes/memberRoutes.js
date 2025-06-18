@@ -16,6 +16,6 @@ router.put('/update-member/:id', authMiddleware, checkRole(['admin']), updateMem
 router.get('/profile',authMiddleware ,getProfileControllers);
 router.put('/update-profile',authMiddleware ,upload ,updateProfileControllers);
 router.post('/check-phone',authMiddleware ,checkPhoneNumberController);
-router.post('/change-password', changePasswordController);
+router.post('/change-password', authMiddleware, changePasswordController);
 
 export default router;

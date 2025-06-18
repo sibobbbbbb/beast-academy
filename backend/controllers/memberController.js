@@ -171,7 +171,7 @@ export const getMemberControllers = async (req, res) => {
 export const getMemberByIdControllers = async (req, res) => {
   const { id } = req.params;
   try {
-    const member = await prisma.users.findUnique({
+    const member = await prisma.users.findFirst({
       where: { id: parseInt(id) },
     });
     res.status(200).json(member);
@@ -193,6 +193,15 @@ export const deleteMemberControllers = async (req, res) => {
     });
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    if (user.role === "trainer") {
+      await prisma.training_assignments.deleteMany({
+        where: { trainer_id: parseInt(id) }
+      });
+      await prisma.trained_by.deleteMany({
+        where: { trainer_id: parseInt(id) },
+      });
     }
 
     // Hapus Avatar dari Cloudinary
@@ -310,7 +319,7 @@ export const updateProfileControllers = async (req, res) => {
     if (role === "member" || role === "trainer" || role === "admin") {
       // Cek jika nomor telepon sudah ada dan bukan milik member yang sedang diupdate
       if (phone_no) {
-        const existingPhoneNo = await prisma.users.findUnique({
+        const existingPhoneNo = await prisma.users.findFirst({
           where: { phone_no },
         });
 
@@ -463,9 +472,18 @@ export const changePasswordController = async (req, res) => {
 
   try {
     // Cek apakah password lama sesuai
-    const user = await prisma.users.findUnique({
-      where: { id: decoded.userId },
-    });
+    var user;
+    if (req.user.role !== "admin") {
+        user = await prisma.users.findFirst({
+        where: { id: decoded.userId },
+      });
+    } else if (req.user.role === "admin") {
+        user = await originalPrisma.users.findFirst({
+        where: { id: decoded.userId },
+      });
+    } else {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan" });
