@@ -1,10 +1,13 @@
 import { prisma } from "../db/prisma/prisma.js";
+import { PrismaClient } from '@prisma/client';
 import { body, validationResult } from "express-validator";
 import jwt, { decode } from "jsonwebtoken";
 import { upload } from "../middlewares/multerMiddleware.js";
 import cloudinary from "../config/cloudinary.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+
+const originalPrisma = new PrismaClient();
 
 // Add a new member
 export const addMemberControllers = [
@@ -261,12 +264,18 @@ export const getProfileControllers = async (req, res) => {
 
   // Cek apakah role adalah member, trainer, atau admin
   try {
-    if (role === "trainer" || role === "admin" || role === "member") {
-      const data = await prisma.users.findUnique({
+    if (role === "trainer" || role === "member") {
+      const data = await prisma.users.findFirst({
         where: { id: decoded.userId },
       });
       res.status(200).json(data);
-    } else {
+    } else if (role === "admin") {
+      const data = await originalPrisma.users.findFirst({
+        where: { id: decoded.userId },
+      });
+      res.status(200).json(data);
+    }
+    else {
       return res.status(403).json({ message: "Forbidden" });
     }
   } catch (error) {
