@@ -80,18 +80,43 @@
               </td>
               <td class="px-6 pl-0 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10">
+                  <div class="flex-shrink-0 h-10 w-10 relative group">
                     <div class="h-10 w-10 rounded-full bg-[var(--primary-blue)]/10 flex items-center justify-center overflow-hidden">
-                          <img 
-                            v-if="item.avatar" 
-                            :src="item.avatar"
-                            alt="Profile" 
-                            class="w-full h-full object-cover" 
-                            @error="item.avatar = undefined"
-                            referrerpolicy="no-referrer"
-                          />
+                      <img 
+                        v-if="item.avatar" 
+                        :src="item.avatar"
+                        alt="Profile" 
+                        class="w-full h-full object-cover" 
+                        @error="item.avatar = undefined"
+                        referrerpolicy="no-referrer"
+                      />
                       <span v-else class="text-sm !font-medium text-[var(--primary-blue)]">{{ item.name.charAt(0).toUpperCase() }}</span>
                     </div>
+                    
+                    <!-- Tombol Edit Foto - Hanya tampil untuk admin -->
+                    <button 
+                      v-if="userRole === 'admin'"
+                      @click="triggerPhotoUpload(item.id)"
+                      class="absolute -top-1 -right-1 bg-[var(--primary-blue)] text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-[var(--primary-blue)]/80"
+                      :disabled="isUploadingPhoto.has(item.id)"
+                      title="Edit foto profile"
+                    >
+                      <!-- Loading spinner saat upload -->
+                      <div v-if="isUploadingPhoto.has(item.id)" class="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      <!-- Icon pensil -->
+                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    
+                    <!-- Hidden file input untuk setiap member -->
+                    <input 
+                      :id="`fileInput_${item.id}`"
+                      type="file" 
+                      accept="image/jpeg,image/png,image/gif" 
+                      class="hidden" 
+                      @change="handlePhotoUpload($event, item)"
+                    />
                   </div>
                   <div class="!ml-4">
                     <div class="text-sm !font-medium text-[var(--neutral-800)]">{{ item.name }}</div>
@@ -347,6 +372,7 @@ import MobileListItem from '@/components/MobileListItem.vue'
 import NormalHeader from './NormalHeader.vue';
 import { type memberlistOp } from '@/types/memberlistOperation';
 import Pagination from '@/components/PaginationApp.vue';
+import { updateMemberPhoto } from '@/services/memberServices';
 
 const deviceStore = useDeviceModeStore()
 import { useBackCancel } from '@/utils/useBackCancel';
@@ -420,6 +446,8 @@ const activeSort = ref<Record<ActiveSortKey, string>>({
   "id" : "",
   "activity_score" : ""
 })
+const userRole = ref("");
+const isUploadingPhoto = ref<Set<number>>(new Set());
 
 const mobileMode = ref(false);
 
@@ -516,7 +544,8 @@ const handleFilter = (role: string) => {
   refresh(0);
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await getUserRole();
   mobileMode.value = deviceStore.currentMode === 'mobile'
 
   // set up the observer exactly once
@@ -705,6 +734,93 @@ useBackCancel(
   multiSelectActiveRef,
   stopMultiSelect
 )
+
+const getUserRole = async () => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      credentials: 'include',
+    });
+    const userData = await response.json();
+    userRole.value = userData.role || '';
+  } catch (error) {
+    console.error('Error getting user role:', error);
+  }
+};
+
+const triggerPhotoUpload = (memberId: number) => {
+  const fileInput = document.getElementById(`fileInput_${memberId}`) as HTMLInputElement;
+  if (fileInput) {
+    fileInput.click();
+  }
+};
+
+const handlePhotoUpload = async (event: Event, member: Member) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file) return;
+  
+  // Validasi file
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  
+  if (!validTypes.includes(file.type)) {
+    alert('Tipe file tidak valid. Gunakan JPEG, PNG, atau GIF.');
+    target.value = '';
+    return;
+  }
+  
+  if (file.size > maxSize) {
+    alert('Ukuran file melebihi 5MB.');
+    target.value = '';
+    return;
+  }
+  
+  // Konfirmasi update
+  const confirmed = confirm(`Apakah Anda yakin ingin mengubah foto profil ${member.name}?`);
+  if (!confirmed) {
+    target.value = '';
+    return;
+  }
+  
+  try {
+    // Set loading state
+    isUploadingPhoto.value.add(member.id);
+    
+    // Upload foto
+    const response = await updateMemberPhoto(member.id, file);
+    
+    // Update avatar di UI langsung dengan URL baru dari server
+    member.avatar = response.avatar;
+    
+    // Show success message
+    alert('Foto profil berhasil diupdate!');
+    
+    // Reset input
+    target.value = '';
+    
+  } catch (error: unknown) {
+    console.error('Error uploading photo:', error);
+    
+    // Type guard untuk handle error message
+    let errorMessage = 'Gagal mengupdate foto profil';
+    
+    if (error instanceof Error) {
+      errorMessage = `Gagal mengupdate foto profil: ${error.message}`;
+    } else if (typeof error === 'string') {
+      errorMessage = `Gagal mengupdate foto profil: ${error}`;
+    } else {
+      errorMessage = 'Gagal mengupdate foto profil. Silakan coba lagi.';
+    }
+    
+    alert(errorMessage);
+    target.value = '';
+  } finally {
+    // Remove loading state
+    isUploadingPhoto.value.delete(member.id);
+  }
+};
 
 </script>
 
@@ -927,4 +1043,34 @@ select:focus-visible {
   }
 }
 
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Hover effect untuk tombol edit */
+.group:hover button {
+  opacity: 1;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
 </style>

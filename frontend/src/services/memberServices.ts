@@ -197,3 +197,26 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
     throw error;
   }
 }
+
+export const updateMemberPhoto = async (memberId: number, img_file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append('img_file', img_file);
+    
+    const response = await fetch(`${API_BASE_URL}/update-member-photo/${memberId}`, {
+      method: 'PUT',
+      body: formData,
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengupdate foto member');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating member photo:', error);
+    throw error;
+  }
+};

@@ -493,3 +493,76 @@ export const changePasswordController = async (req, res) => {
       .json({ message: "Terjadi kesalahan saat mengubah password" });
   }
 };
+
+export const updateMemberPhotoControllers = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const img_file = req.file;
+    
+    if (!img_file) {
+      return res.status(400).json({ message: 'Tidak ada file gambar yang diupload' });
+    }
+    
+    // Cek apakah member exists
+    const existingMember = await prisma.users.findFirst({
+      where: { id: parseInt(id) }
+    });
+    
+    if (!existingMember) {
+      return res.status(404).json({ message: 'Member tidak ditemukan' });
+    }
+    
+    // Delete old image from Cloudinary if exists
+    const lastImgUrl = existingMember.avatar;
+    if (lastImgUrl && lastImgUrl.includes(process.env.CLOUDINARY_CLOUD_NAME)) {
+      try {
+        console.log("Deleting old image from Cloudinary:", lastImgUrl);
+        const publicId = lastImgUrl.split("/").pop().split(".")[0];
+        await cloudinary.v2.uploader.destroy(`members/${publicId}`);
+      } catch (deleteError) {
+        console.error("Failed to delete old image:", deleteError);
+      }
+    }
+    
+    // Upload new image to Cloudinary
+    let cloudinaryUrl = null;
+    try {
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.v2.uploader
+          .upload_stream(
+            {
+              folder: "members",
+              transformation: [{ quality: "auto", fetch_format: "auto" }],
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          )
+          .end(img_file.buffer);
+      });
+      
+      cloudinaryUrl = uploadResult.secure_url;
+    } catch (uploadError) {
+      console.error("Cloudinary Upload Error:", uploadError);
+      return res.status(400).json({ message: "Gagal mengunggah gambar" });
+    }
+    
+    // Update member avatar in database
+    await prisma.users.update({
+      where: { id: parseInt(id) },
+      data: {
+        avatar: cloudinaryUrl,
+      },
+    });
+    
+    res.status(200).json({ 
+      message: 'Foto profil member berhasil diupdate',
+      avatar: cloudinaryUrl
+    });
+    
+  } catch (error) {
+    console.error("Error updating member photo:", error);
+    res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
+};
