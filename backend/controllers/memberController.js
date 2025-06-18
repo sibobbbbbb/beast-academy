@@ -185,7 +185,7 @@ export const deleteMemberControllers = async (req, res) => {
   const { id } = req.params;
   try {
     // Cek apakah member ada
-    const user = await prisma.users.findUnique({
+    const user = await prisma.users.findFirst({
       where: { id: parseInt(id) },
     });
     if (!user) {
