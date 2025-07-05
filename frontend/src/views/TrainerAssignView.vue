@@ -292,7 +292,6 @@ enum Selection {
 }
 
 // Refs untuk komponen
-const ulistRef: Ref<ChildComponentExpose | null> = ref(null);
 const trainerListRef = ref<ChildComponentExpose | null>(null);
 const memberListRef = ref<ChildComponentExpose | null>(null);
 
