@@ -217,6 +217,11 @@ export const deleteMemberControllers = async (req, res) => {
       }
     }
 
+    // delete fk in activity table
+    await prisma.activity.delete({
+      where: { user_id: parseInt(id) },
+    });
+
     await prisma.users.delete({
       where: { id: parseInt(id) },
     });
