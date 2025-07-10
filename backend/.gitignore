@@ -3,5 +3,3 @@ node_modules/
 .DS_Store
 
 backend/scripts/admin/.admin_created
-
-Dockerfile
