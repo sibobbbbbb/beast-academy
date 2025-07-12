@@ -1,17 +1,17 @@
 # Build Dependencies
 FROM node:20-alpine AS deps
 WORKDIR /app
-RUN apk add --no-cache git
 COPY package*.json ./
 RUN npm ci
 
 # Build Application
 FROM node:20-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache git
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN npx db/prisma generate
+RUN npx prisma generate
 
 # Final Production Image
 FROM node:20-alpine
