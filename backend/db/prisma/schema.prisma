@@ -19,12 +19,12 @@ model events {
 }
 
 model liked_by {
-  id     Int    @id @default(autoincrement())
-  u_id   Int
-  e_id   Int
-  created_at DateTime @default(now()) // ✅ Add this line
-  events events @relation(fields: [e_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users  users  @relation(fields: [u_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id         Int      @id @default(autoincrement())
+  u_id       Int
+  e_id       Int
+  created_at DateTime @default(now())
+  events     events   @relation(fields: [e_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [u_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -76,19 +76,18 @@ model users {
   trained_by_trained_by_trainer_idTousers                     trained_by[]           @relation("trained_by_trainer_idTousers")
   training_assignments_training_assignments_member_idTousers  training_assignments[] @relation("training_assignments_member_idTousers")
   training_assignments_training_assignments_trainer_idTousers training_assignments[] @relation("training_assignments_trainer_idTousers")
-  user_activity_scores                                         user_activity_score?
+  user_activity_scores                                        user_activity_score?
 }
 
-// New table for tracking user activity
 model user_activity_score {
-  id                       Int       @id @default(autoincrement())
-  user_id                  Int       @unique
-  notes_received_weekly    Int       @default(0)
-  days_since_last_login    Int       @default(0)
+  id                        Int      @id @default(autoincrement())
+  user_id                   Int      @unique
+  notes_received_weekly     Int      @default(0)
+  days_since_last_login     Int      @default(0)
   post_interactions_monthly Int      @default(0)
-  activity_score     Float     @default(0)
-  last_calculated          DateTime  @default(now()) @db.Timestamp(6)
-  user                     users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  activity_score            Float    @default(0)
+  last_calculated           DateTime @default(now()) @db.Timestamp(6)
+  user                      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model activity_config {
